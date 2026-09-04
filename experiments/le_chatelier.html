@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>화학 평형과 르 샤틀리에 원리 실험실</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-purple: #c084fc;
+            --accent-blue: #38bdf8;
+            --accent-red: #f87171;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --canvas-bg: #020617;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top right, #2e1065, #0f172a);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px 0 60px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: rgba(30, 41, 59, 0.85);
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            backdrop-filter: blur(8px);
+            transition: 0.2s;
+            z-index: 1000;
+        }
+        .back-btn:hover {
+            background: rgba(147, 51, 234, 0.8);
+            border-color: #c084fc;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .badge-curriculum {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(192, 132, 252, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(192, 132, 252, 0.3);
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .equation-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.1rem;
+            margin-top: 6px;
+            backdrop-filter: blur(6px);
+        }
+
+        .eq-n2o4 { color: #38bdf8; font-weight: bold; }
+        .eq-no2 { color: #fb923c; font-weight: bold; }
+        .eq-heat { color: #f43f5e; font-weight: bold; font-size: 0.95rem; }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            width: 92%;
+            max-width: 1200px;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 챔버 캔버스 영역 */
+        .chamber-container {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background: #020617;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-pill.forward {
+          background: rgba(251, 146, 60, 0.2);
+          border-color: #fb923c;
+          color: #fdba74;
+        }
+        .status-pill.reverse {
+          background: rgba(56, 189, 248, 0.2);
+          border-color: #38bdf8;
+          color: #7dd3fc;
+        }
+        .status-pill.eq {
+          background: rgba(34, 197, 94, 0.2);
+          border-color: #22c55e;
+          color: #86efac;
+        }
+
+        /* 컨트롤 그룹 */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .control-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .control-card.full-width {
+            grid-column: span 2;
+        }
+
+        .control-card label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+        }
+
+        .control-card label span.val {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        input[type=range] {
+            width: 100%;
+            height: 6px;
+            background: #334155;
+            border-radius: 4px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-purple);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(192, 132, 252, 0.5);
+        }
+
+        .btn-action-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 9px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.06);
+            color: #e2e8f0;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* 게이지 & 수식 분석 패널 */
+        .metrics-bar {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .metric-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .metric-item span.title { color: #94a3b8; font-size: 0.75rem; }
+        .metric-item span.val { font-size: 1rem; font-weight: 800; }
+
+        /* 가이드 툴팁 박스 */
+        .theory-tip {
+            background: rgba(56, 189, 248, 0.08);
+            border-left: 4px solid #38bdf8;
+            padding: 12px 14px;
+            border-radius: 0 10px 10px 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="../2d.html" class="back-btn">
+        ← 2D 실험실 목록
+    </a>
+
+    <div class="header">
+        <div class="badge-curriculum">2022 개정 진로선택 · 화학 반응의 세계 (화학 II)</div>
+        <h1>⚖️ 르 샤틀리에 원리와 화학 평형 이동</h1>
+        
+        <div class="equation-box">
+            <span class="eq-n2o4">N₂O₄ (무색 기체)</span>
+            <span>+</span>
+            <span class="eq-heat">열 (57.2 kJ)</span>
+            <span>⇄</span>
+            <span class="eq-no2">2NO₂ (적갈색 기체)</span>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        
+        <!-- 좌측: 반응 챔버 (피스톤 & 분자 시뮬레이션) -->
+        <div class="panel">
+            <div class="panel-title">
+                <span>🔬 실린더 반응 챔버</span>
+                <div class="status-pill eq" id="equilibriumStatus">
+                    동적 평형 상태 (Q = K)
+                </div>
+            </div>
+
+            <div class="chamber-container">
+                <canvas id="chamberCanvas"></canvas>
+            </div>
+
+            <div class="metrics-bar">
+                <div class="metric-item">
+                    <span class="title">N₂O₄ 분자수</span>
+                    <span class="val" style="color:#38bdf8;" id="countN2O4">20</span>
+                </div>
+                <div class="metric-item">
+                    <span class="title">NO₂ 분자수</span>
+                    <span class="val" style="color:#fb923c;" id="countNO2">40</span>
+                </div>
+                <div class="metric-item">
+                    <span class="title">반응 지수 (Q)</span>
+                    <span class="val" id="valQ">4.00</span>
+                </div>
+                <div class="metric-item">
+                    <span class="title">평형 상수 (K)</span>
+                    <span class="val" style="color:#c084fc;" id="valK">4.00</span>
+                </div>
+            </div>
+
+            <div class="theory-tip" id="theoryTip">
+                💡 <b>현재 상태</b>: 정반응 속도와 역반응 속도가 같은 <b>동적 평형</b> 상태입니다. 온도를 높이거나 부피를 압축하여 평형을 깨뜨려보세요!
+            </div>
+        </div>
+
+        <!-- 우측: 실시간 농도-시간 그래프 및 조작 패널 -->
+        <div class="panel">
+            <div class="panel-title">
+                <span>📈 실시간 농도-시간 그래프 ([C] vs Time)</span>
+                <span style="font-size: 0.8rem; color: #94a3b8;">수능 킬러 그래프 실시간 추적</span>
+            </div>
+
+            <div class="chamber-container" style="height: 220px;">
+                <canvas id="graphCanvas"></canvas>
+            </div>
+
+            <!-- 조작 컨트롤러 -->
+            <div class="controls-grid">
+                
+                <!-- 1. 압력 / 부피 조절 -->
+                <div class="control-card">
+                    <label>
+                        <span>부피 (Volume)</span>
+                        <span class="val" id="volVal">1.0 L</span>
+                    </label>
+                    <input type="range" id="volSlider" min="0.4" max="1.8" step="0.05" value="1.0">
+                    <div class="btn-action-group">
+                        <button class="action-btn" onclick="quickVolume(0.5)">⚡ 급압축</button>
+                        <button class="action-btn" onclick="quickVolume(1.6)">💨 급팽창</button>
+                    </div>
+                </div>
+
+                <!-- 2. 온도 조절 -->
+                <div class="control-card">
+                    <label>
+                        <span>온도 (Temp)</span>
+                        <span class="val" id="tempVal">298 K (25℃)</span>
+                    </label>
+                    <input type="range" id="tempSlider" min="250" max="400" step="5" value="298">
+                    <div class="btn-action-group">
+                        <button class="action-btn" onclick="setTemp(380)">🔥 가열</button>
+                        <button class="action-btn" onclick="setTemp(260)">❄️ 냉각</button>
+                    </div>
+                </div>
+
+                <!-- 3. 농도 물질 주입 -->
+                <div class="control-card full-width">
+                    <label><span>분자 직접 주입/제거 (농도 변화)</span></label>
+                    <div class="btn-action-group">
+                        <button class="action-btn" onclick="injectMolecule('NO2', 15)">➕ NO₂ (적갈색) 주입</button>
+                        <button class="action-btn" onclick="injectMolecule('N2O4', 10)">➕ N₂O₄ (무색) 주입</button>
+                        <button class="action-btn" style="background: rgba(239, 68, 68, 0.2); border-color:#f87171;" onclick="resetEquilibrium()">🔄 평형 리셋</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 물리 및 화학 평형 시뮬레이션 엔진 ---
+        const chamberCanvas = document.getElementById('chamberCanvas');
+        const ctxChamber = chamberCanvas.getContext('2d');
+        const graphCanvas = document.getElementById('graphCanvas');
+        const ctxGraph = graphCanvas.getContext('2d');
+
+        // 상태 변수
+        let volume = 1.0; // 0.4L ~ 1.8L
+        let temperature = 298; // Kelvin (250 ~ 400)
+        let n_N2O4 = 20; // 분자 개수
+        let n_NO2 = 40;  // 분자 개수
+
+        // 평형 상수 K 계산 (온도에 따른 흡열 반응 평형 상수 반트호프 식 근사)
+        function getEquilibriumConstant(T) {
+            // T=298K 일 때 K = 4.0
+            return 4.0 * Math.exp((57200 / 8.314) * (1/298 - 1/T) * 0.001);
+        }
+
+        // 반응 입자 객체 배열
+        let particles = [];
+
+        function initCanvasSize() {
+            chamberCanvas.width = chamberCanvas.parentElement.clientWidth;
+            chamberCanvas.height = chamberCanvas.parentElement.clientHeight;
+            graphCanvas.width = graphCanvas.parentElement.clientWidth;
+            graphCanvas.height = graphCanvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', initCanvasSize);
+        initCanvasSize();
+
+        // 입자 클래스
+        class Particle {
+            constructor(type, x, y) {
+                this.type = type; // 'N2O4' or 'NO2'
+                this.x = x || Math.random() * (chamberCanvas.width - 60) + 30;
+                this.y = y || Math.random() * (getPistonY() - 60) + 30;
+                const speed = (this.type === 'NO2' ? 2.2 : 1.4) * (temperature / 298);
+                const angle = Math.random() * Math.PI * 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.radius = this.type === 'N2O4' ? 14 : 7;
+            }
+
+            update(pistonY) {
+                this.x += this.vx * (temperature / 298);
+                this.y += this.vy * (temperature / 298);
+
+                // 벽 충돌
+                if (this.x - this.radius < 20) { this.x = 20 + this.radius; this.vx *= -1; }
+                if (this.x + this.radius > chamberCanvas.width - 20) { this.x = chamberCanvas.width - 20 - this.radius; this.vx *= -1; }
+                if (this.y - this.radius < pistonY + 15) { this.y = pistonY + 15 + this.radius; this.vy *= -1; }
+                if (this.y + this.radius > chamberCanvas.height - 20) { this.y = chamberCanvas.height - 20 - this.radius; this.vy *= -1; }
+            }
+
+            draw(ctx) {
+                if (this.type === 'NO2') {
+                    // NO2: 적갈색 단일 입자
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fb923c';
+                    ctx.shadowColor = '#ea580c';
+                    ctx.shadowBlur = 8;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 8px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('NO₂', this.x, this.y);
+                } else {
+                    // N2O4: 이합체 (두 개의 구 결합)
+                    ctx.beginPath();
+                    ctx.arc(this.x - 6, this.y, 9, 0, Math.PI * 2);
+                    ctx.arc(this.x + 6, this.y, 9, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(56, 189, 248, 0.85)';
+                    ctx.shadowColor = '#0284c7';
+                    ctx.shadowBlur = 10;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 9px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('N₂O₄', this.x, this.y);
+                }
+            }
+        }
+
+        // 피스톤 높이 계산 (Volume에 반비례하여 Y 위치 결정)
+        function getPistonY() {
+            const minHeight = 40;
+            const maxHeight = chamberCanvas.height - 80;
+            // volume 0.4 -> piston Y = maxHeight * 0.65
+            // volume 1.8 -> piston Y = minHeight
+            return maxHeight - (volume - 0.4) / (1.8 - 0.4) * (maxHeight - minHeight);
+        }
+
+        function createParticles() {
+            particles = [];
+            const pistonY = getPistonY();
+            for (let i = 0; i < n_N2O4; i++) {
+                particles.push(new Particle('N2O4', null, null));
+            }
+            for (let i = 0; i < n_NO2; i++) {
+                particles.push(new Particle('NO2', null, null));
+            }
+        }
+        createParticles();
+
+        // 실시간 농도 기록 데이터 (그래프용)
+        let graphHistory = [];
+        const MAX_HISTORY = 250;
+
+        // 화학 반응 평형 이동 계산 (매 프레임 미세하게 이동)
+        function stepChemicalEquilibrium() {
+            const K = getEquilibriumConstant(temperature);
+            
+            // 농도 [C] = n / V
+            const conc_NO2 = n_NO2 / volume;
+            const conc_N2O4 = n_N2O4 / volume;
+
+            // 반응 지수 Q = [NO2]^2 / [N2O4]
+            const Q = (conc_NO2 * conc_NO2) / Math.max(0.1, conc_N2O4);
+
+            // 정반응/역반응 이동 속도 (르 샤틀리에 복원력)
+            const rate = 0.04;
+            const statusEl = document.getElementById('equilibriumStatus');
+            const tipEl = document.getElementById('theoryTip');
+
+            if (Q < K - 0.2) {
+                // Q < K: 정반응 진행 (N2O4 -> 2 NO2)
+                if (n_N2O4 > 2) {
+                    n_N2O4 -= rate;
+                    n_NO2 += rate * 2;
+                }
+                statusEl.className = 'status-pill forward';
+                statusEl.innerText = '👉 정반응 우세 (N₂O₄ → 2NO₂)';
+                tipEl.innerHTML = '🔥 <b>정반응 진행 중</b>: 기체 분자수를 늘리거나 열을 흡수하는 방향(정반응)으로 평형이 이동하여 적갈색이 짙어집니다.';
+            } else if (Q > K + 0.2) {
+                // Q > K: 역반응 진행 (2 NO2 -> N2O4)
+                if (n_NO2 > 3) {
+                    n_NO2 -= rate * 2;
+                    n_N2O4 += rate;
+                }
+                statusEl.className = 'status-pill reverse';
+                statusEl.innerText = '👈 역반응 우세 (2NO₂ → N₂O₄)';
+                tipEl.innerHTML = '❄️ <b>역반응 진행 중</b>: 압력을 낮추기 위해 기체 분자수가 감소하는 방향(역반응)으로 평형이 이동하여 색이 옅어집니다.';
+            } else {
+                statusEl.className = 'status-pill eq';
+                statusEl.innerText = '⚖️ 동적 평형 상태 (Q ≒ K)';
+            }
+
+            // 입자 배열 수 동기화
+            const targetN2O4 = Math.round(n_N2O4);
+            const targetNO2 = Math.round(n_NO2);
+            const currentN2O4 = particles.filter(p => p.type === 'N2O4').length;
+            const currentNO2 = particles.filter(p => p.type === 'NO2').length;
+
+            if (currentN2O4 < targetN2O4) particles.push(new Particle('N2O4'));
+            else if (currentN2O4 > targetN2O4) {
+                const idx = particles.findIndex(p => p.type === 'N2O4');
+                if (idx !== -1) particles.splice(idx, 1);
+            }
+
+            if (currentNO2 < targetNO2) particles.push(new Particle('NO2'));
+            else if (currentNO2 > targetNO2) {
+                const idx = particles.findIndex(p => p.type === 'NO2');
+                if (idx !== -1) particles.splice(idx, 1);
+            }
+
+            // UI 수치 업데이트
+            document.getElementById('countN2O4').innerText = targetN2O4;
+            document.getElementById('countNO2').innerText = targetNO2;
+            document.getElementById('valQ').innerText = Q.toFixed(2);
+            document.getElementById('valK').innerText = K.toFixed(2);
+
+            // 그래프 데이터 누적
+            graphHistory.push({
+                cNO2: conc_NO2,
+                cN2O4: conc_N2O4
+            });
+            if (graphHistory.length > MAX_HISTORY) graphHistory.shift();
+        }
+
+        // 챔버 그리기 루프
+        function drawChamber() {
+            const w = chamberCanvas.width;
+            const h = chamberCanvas.height;
+            const pistonY = getPistonY();
+
+            ctxChamber.clearRect(0, 0, w, h);
+
+            // 1. 적갈색 가스 배경 농도에 따른 음영
+            const no2Conc = n_NO2 / volume;
+            const gasOpacity = Math.min(0.75, no2Conc / 90);
+            ctxChamber.fillStyle = `rgba(234, 88, 12, ${gasOpacity})`;
+            ctxChamber.fillRect(20, pistonY + 12, w - 40, h - pistonY - 32);
+
+            // 2. 실린더 벽면
+            ctxChamber.strokeStyle = '#475569';
+            ctxChamber.lineWidth = 6;
+            ctxChamber.strokeRect(20, 20, w - 40, h - 40);
+
+            // 3. 피스톤 (Piston)
+            ctxChamber.fillStyle = '#64748b';
+            ctxChamber.fillRect(22, pistonY, w - 44, 16);
+            ctxChamber.fillStyle = '#94a3b8';
+            ctxChamber.fillRect(w / 2 - 12, 10, 24, pistonY); // 피스톤 손잡이 축
+
+            // 4. 입자들 업데이트 및 렌더링
+            particles.forEach(p => {
+                p.update(pistonY);
+                p.draw(ctxChamber);
+            });
+        }
+
+        // 실시간 농도 그래프 그리기
+        function drawGraph() {
+            const w = graphCanvas.width;
+            const h = graphCanvas.height;
+            ctxGraph.clearRect(0, 0, w, h);
+
+            // 그리드 배경선
+            ctxGraph.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctxGraph.lineWidth = 1;
+            for (let y = 30; y < h; y += 40) {
+                ctxGraph.beginPath();
+                ctxGraph.moveTo(40, y);
+                ctxGraph.lineTo(w - 10, y);
+                ctxGraph.stroke();
+            }
+
+            // 축 그리기
+            ctxGraph.strokeStyle = '#64748b';
+            ctxGraph.lineWidth = 2;
+            ctxGraph.beginPath();
+            ctxGraph.moveTo(40, 10);
+            ctxGraph.lineTo(40, h - 25);
+            ctxGraph.lineTo(w - 10, h - 25);
+            ctxGraph.stroke();
+
+            // 축 라벨
+            ctxGraph.fillStyle = '#94a3b8';
+            ctxGraph.font = '11px sans-serif';
+            ctxGraph.fillText('농도 [C]', 6, 18);
+            ctxGraph.fillText('시간 (t) →', w - 55, h - 8);
+
+            if (graphHistory.length < 2) return;
+
+            const maxConc = 90;
+
+            // [NO2] 선 그리기 (적갈색)
+            ctxGraph.strokeStyle = '#fb923c';
+            ctxGraph.lineWidth = 2.5;
+            ctxGraph.beginPath();
+            for (let i = 0; i < graphHistory.length; i++) {
+                const x = 40 + (i / MAX_HISTORY) * (w - 60);
+                const y = (h - 25) - (graphHistory[i].cNO2 / maxConc) * (h - 50);
+                if (i === 0) ctxGraph.moveTo(x, y);
+                else ctxGraph.lineTo(x, y);
+            }
+            ctxGraph.stroke();
+
+            // [N2O4] 선 그리기 (스카이블루)
+            ctxGraph.strokeStyle = '#38bdf8';
+            ctxGraph.lineWidth = 2.5;
+            ctxGraph.beginPath();
+            for (let i = 0; i < graphHistory.length; i++) {
+                const x = 40 + (i / MAX_HISTORY) * (w - 60);
+                const y = (h - 25) - (graphHistory[i].cN2O4 / maxConc) * (h - 50);
+                if (i === 0) ctxGraph.moveTo(x, y);
+                else ctxGraph.lineTo(x, y);
+            }
+            ctxGraph.stroke();
+
+            // 범례
+            ctxGraph.fillStyle = '#fb923c';
+            ctxGraph.fillText('● [NO₂]', w - 130, 20);
+            ctxGraph.fillStyle = '#38bdf8';
+            ctxGraph.fillText('● [N₂O₄]', w - 70, 20);
+        }
+
+        function mainLoop() {
+            stepChemicalEquilibrium();
+            drawChamber();
+            drawGraph();
+            requestAnimationFrame(mainLoop);
+        }
+        mainLoop();
+
+        // 컨트롤 이벤트 리스너
+        const volSlider = document.getElementById('volSlider');
+        volSlider.addEventListener('input', (e) => {
+            volume = parseFloat(e.target.value);
+            document.getElementById('volVal').innerText = volume.toFixed(2) + ' L';
+        });
+
+        const tempSlider = document.getElementById('tempSlider');
+        tempSlider.addEventListener('input', (e) => {
+            temperature = parseInt(e.target.value);
+            document.getElementById('tempVal').innerText = `${temperature} K (${temperature - 273}℃)`;
+        });
+
+        function quickVolume(v) {
+            volume = v;
+            volSlider.value = v;
+            document.getElementById('volVal').innerText = volume.toFixed(2) + ' L';
+        }
+
+        function setTemp(t) {
+            temperature = t;
+            tempSlider.value = t;
+            document.getElementById('tempVal').innerText = `${temperature} K (${temperature - 273}℃)`;
+        }
+
+        function injectMolecule(type, count) {
+            if (type === 'NO2') n_NO2 += count;
+            else n_N2O4 += count;
+        }
+
+        function resetEquilibrium() {
+            volume = 1.0;
+            temperature = 298;
+            n_N2O4 = 20;
+            n_NO2 = 40;
+            volSlider.value = 1.0;
+            tempSlider.value = 298;
+            document.getElementById('volVal').innerText = '1.0 L';
+            document.getElementById('tempVal').innerText = '298 K (25℃)';
+            createParticles();
+            graphHistory = [];
+        }
+    </script>
+</body>
+</html>
