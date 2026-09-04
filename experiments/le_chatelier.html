@@ -565,7 +565,7 @@
                     <span>2️⃣ 미션: 가열 vs 냉각 시 평형 상수(K) 비교</span>
                 </div>
                 <div class="mission-step-desc">
-                    `[🔥 가열 (380K)]`을 누르면 계측기의 <b>K값이 4.0에서 급상승</b>하며 정반응이 일어나 챔버가 짙은 붉은색으로 바뀝니다. 반대로 `[❄️ 냉각 (260K)]` 시 K값이 급감하며 투명해지는 과정을 확인하세요.
+                    `[🔥 가열 (380K)]`을 누르면 계측기의 <b>K값이 1.60에서 약 9.15로 급상승</b>하며 정반응이 일어나 챔버가 짙은 붉은색으로 바뀝니다. 반대로 `[❄️ 냉각 (260K)]` 시 K값이 0.49로 급감하며 투명해지는 과정을 확인하세요.
                 </div>
             </div>
 
@@ -592,13 +592,14 @@
         // 상태 변수
         let volume = 1.0; // 0.4L ~ 1.8L
         let temperature = 298; // Kelvin (250 ~ 400)
-        let n_N2O4 = 20; // 분자 개수
-        let n_NO2 = 40;  // 분자 개수
+        let n_N2O4 = 20; // 분자 개수 (1개 = 0.02 mol)
+        let n_NO2 = 40;  // 분자 개수 (1개 = 0.02 mol)
+        const MOL_SCALE = 0.02; // 분자 개수 -> 몰 수(mol) 변환비
 
-        // 평형 상수 K 계산 (온도에 따른 흡열 반응 평형 상수 반트호프 식 근사)
+        // 평형 상수 K 계산 (반트호프 식: ΔH° = +57.2 kJ/mol 흡열 반응)
+        // 298K(25℃) 기준 K = 1.60
         function getEquilibriumConstant(T) {
-            // T=298K 일 때 K = 4.0
-            return 4.0 * Math.exp((57200 / 8.314) * (1/298 - 1/T) * 0.001);
+            return 1.60 * Math.exp((57200 / 8.314) * (1/298 - 1/T) * 0.35);
         }
 
         // 반응 입자 객체 배열
@@ -619,7 +620,7 @@
                 this.type = type; // 'N2O4' or 'NO2'
                 this.x = x || Math.random() * (chamberCanvas.width - 60) + 30;
                 this.y = y || Math.random() * (getPistonY() - 60) + 30;
-                const speed = (this.type === 'NO2' ? 2.2 : 1.4) * (temperature / 298);
+                const speed = (this.type === 'NO2' ? 2.2 : 1.4) * Math.sqrt(temperature / 298);
                 const angle = Math.random() * Math.PI * 2;
                 this.vx = Math.cos(angle) * speed;
                 this.vy = Math.sin(angle) * speed;
@@ -627,8 +628,8 @@
             }
 
             update(pistonY) {
-                this.x += this.vx * (temperature / 298);
-                this.y += this.vy * (temperature / 298);
+                this.x += this.vx * Math.sqrt(temperature / 298);
+                this.y += this.vy * Math.sqrt(temperature / 298);
 
                 // 벽 충돌
                 if (this.x - this.radius < 20) { this.x = 20 + this.radius; this.vx *= -1; }
@@ -677,8 +678,6 @@
         function getPistonY() {
             const minHeight = 40;
             const maxHeight = chamberCanvas.height - 80;
-            // volume 0.4 -> piston Y = maxHeight * 0.65
-            // volume 1.8 -> piston Y = minHeight
             return maxHeight - (volume - 0.4) / (1.8 - 0.4) * (maxHeight - minHeight);
         }
 
@@ -698,23 +697,25 @@
         let graphHistory = [];
         const MAX_HISTORY = 250;
 
-        // 화학 반응 평형 이동 계산 (매 프레임 미세하게 이동)
+        // 화학 반응 평형 이동 계산 (정밀 물리화학 반응 속도 모델)
         function stepChemicalEquilibrium() {
             const K = getEquilibriumConstant(temperature);
             
-            // 농도 [C] = n / V
-            const conc_NO2 = n_NO2 / volume;
-            const conc_N2O4 = n_N2O4 / volume;
+            // 실제 몰농도 [M] = (n * MOL_SCALE) / V
+            const conc_NO2 = (n_NO2 * MOL_SCALE) / volume;
+            const conc_N2O4 = (n_N2O4 * MOL_SCALE) / volume;
 
             // 반응 지수 Q = [NO2]^2 / [N2O4]
-            const Q = (conc_NO2 * conc_NO2) / Math.max(0.1, conc_N2O4);
+            const Q = (conc_NO2 * conc_NO2) / Math.max(0.01, conc_N2O4);
 
-            // 정반응/역반응 이동 속도 (르 샤틀리에 복원력)
-            const rate = 0.04;
             const statusEl = document.getElementById('equilibriumStatus');
             const tipEl = document.getElementById('theoryTip');
 
-            if (Q < K - 0.2) {
+            // 르 샤틀리에 복원력 (Q와 K의 차이에 비례한 반응 속도)
+            const diff = K - Q;
+            const rate = Math.min(0.12, Math.max(0.005, Math.abs(diff) * 0.03));
+
+            if (diff > 0.08) {
                 // Q < K: 정반응 진행 (N2O4 -> 2 NO2)
                 if (n_N2O4 > 2) {
                     n_N2O4 -= rate;
@@ -722,8 +723,8 @@
                 }
                 statusEl.className = 'status-pill forward';
                 statusEl.innerText = '👉 정반응 우세 (N₂O₄ → 2NO₂)';
-                tipEl.innerHTML = '🔥 <b>정반응 진행 중</b>: 기체 분자수를 늘리거나 열을 흡수하는 방향(정반응)으로 평형이 이동하여 적갈색이 짙어집니다.';
-            } else if (Q > K + 0.2) {
+                tipEl.innerHTML = '🔥 <b>정반응 진행 중 (Q < K)</b>: 열을 흡수하거나 기체 분자수를 늘리는 방향으로 평형이 이동하여 적갈색이 짙어집니다.';
+            } else if (diff < -0.08) {
                 // Q > K: 역반응 진행 (2 NO2 -> N2O4)
                 if (n_NO2 > 3) {
                     n_NO2 -= rate * 2;
@@ -731,7 +732,7 @@
                 }
                 statusEl.className = 'status-pill reverse';
                 statusEl.innerText = '👈 역반응 우세 (2NO₂ → N₂O₄)';
-                tipEl.innerHTML = '❄️ <b>역반응 진행 중</b>: 압력을 낮추기 위해 기체 분자수가 감소하는 방향(역반응)으로 평형이 이동하여 색이 옅어집니다.';
+                tipEl.innerHTML = '❄️ <b>역반응 진행 중 (Q > K)</b>: 압력을 낮추기 위해 기체 분자수가 감소하는 방향으로 평형이 이동하여 색이 옅어집니다.';
             } else {
                 statusEl.className = 'status-pill eq';
                 statusEl.innerText = '⚖️ 동적 평형 상태 (Q ≒ K)';
@@ -756,8 +757,8 @@
             }
 
             // UI 수치 업데이트
-            document.getElementById('countN2O4').innerText = targetN2O4;
-            document.getElementById('countNO2').innerText = targetNO2;
+            document.getElementById('countN2O4').innerText = `${targetN2O4}개 (${conc_N2O4.toFixed(2)}M)`;
+            document.getElementById('countNO2').innerText = `${targetNO2}개 (${conc_NO2.toFixed(2)}M)`;
             document.getElementById('valQ').innerText = Q.toFixed(2);
             document.getElementById('valK').innerText = K.toFixed(2);
 
@@ -778,8 +779,8 @@
             ctxChamber.clearRect(0, 0, w, h);
 
             // 1. 적갈색 가스 배경 농도에 따른 음영
-            const no2Conc = n_NO2 / volume;
-            const gasOpacity = Math.min(0.75, no2Conc / 90);
+            const no2Conc = (n_NO2 * MOL_SCALE) / volume;
+            const gasOpacity = Math.min(0.8, no2Conc / 1.8);
             ctxChamber.fillStyle = `rgba(234, 88, 12, ${gasOpacity})`;
             ctxChamber.fillRect(20, pistonY + 12, w - 40, h - pistonY - 32);
 
@@ -810,9 +811,9 @@
             // 그리드 배경선
             ctxGraph.strokeStyle = 'rgba(255, 255, 255, 0.05)';
             ctxGraph.lineWidth = 1;
-            for (let y = 30; y < h; y += 40) {
+            for (let y = 30; y < h; y += 35) {
                 ctxGraph.beginPath();
-                ctxGraph.moveTo(40, y);
+                ctxGraph.moveTo(45, y);
                 ctxGraph.lineTo(w - 10, y);
                 ctxGraph.stroke();
             }
@@ -821,27 +822,27 @@
             ctxGraph.strokeStyle = '#64748b';
             ctxGraph.lineWidth = 2;
             ctxGraph.beginPath();
-            ctxGraph.moveTo(40, 10);
-            ctxGraph.lineTo(40, h - 25);
+            ctxGraph.moveTo(45, 10);
+            ctxGraph.lineTo(45, h - 25);
             ctxGraph.lineTo(w - 10, h - 25);
             ctxGraph.stroke();
 
             // 축 라벨
             ctxGraph.fillStyle = '#94a3b8';
             ctxGraph.font = '11px sans-serif';
-            ctxGraph.fillText('농도 [C]', 6, 18);
+            ctxGraph.fillText('농도[M]', 4, 18);
             ctxGraph.fillText('시간 (t) →', w - 55, h - 8);
 
             if (graphHistory.length < 2) return;
 
-            const maxConc = 90;
+            const maxConc = 2.4; // 최대 2.4 M
 
             // [NO2] 선 그리기 (적갈색)
             ctxGraph.strokeStyle = '#fb923c';
             ctxGraph.lineWidth = 2.5;
             ctxGraph.beginPath();
             for (let i = 0; i < graphHistory.length; i++) {
-                const x = 40 + (i / MAX_HISTORY) * (w - 60);
+                const x = 45 + (i / MAX_HISTORY) * (w - 65);
                 const y = (h - 25) - (graphHistory[i].cNO2 / maxConc) * (h - 50);
                 if (i === 0) ctxGraph.moveTo(x, y);
                 else ctxGraph.lineTo(x, y);
@@ -853,7 +854,7 @@
             ctxGraph.lineWidth = 2.5;
             ctxGraph.beginPath();
             for (let i = 0; i < graphHistory.length; i++) {
-                const x = 40 + (i / MAX_HISTORY) * (w - 60);
+                const x = 45 + (i / MAX_HISTORY) * (w - 65);
                 const y = (h - 25) - (graphHistory[i].cN2O4 / maxConc) * (h - 50);
                 if (i === 0) ctxGraph.moveTo(x, y);
                 else ctxGraph.lineTo(x, y);
