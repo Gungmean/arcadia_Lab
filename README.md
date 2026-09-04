@@ -5,7 +5,8 @@
 <br>
 
 ### 🔗 **[👉 가상 실험실 웹사이트 바로가기 (Click)](https://gungmean.github.io/arcadia_Lab/)**
-*(별도 설치 없이 웹 브라우저에서 바로 모든 2D/3D 실험을 체험할 수 있습니다.)*
+### 📝 **[👉 사용자 만족도 평가 & 피드백 남기기 (Google Forms)](https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header)**
+*(별도 설치 없이 웹 브라우저에서 바로 모든 2D/3D 실험을 체험하고 평가할 수 있습니다.)*
 
 ---
 

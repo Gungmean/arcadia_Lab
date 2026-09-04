@@ -609,6 +609,13 @@
     <div class="modal-title">📝 실험실 평가 및 의견 남기기</div>
     <div class="modal-desc">여러분의 소중한 피드백은 더 나은 가상 실험실을 만드는 데 큰 도움이 됩니다!</div>
 
+    <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; padding: 14px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-size: 0.9rem; color: #93c5fd;">공식 구글 설문지로 바로 응답하기</span>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header" target="_blank" style="padding: 6px 12px; background: #2563eb; color: white; border-radius: 8px; font-size: 0.85rem; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+        구글 폼 열기 ↗
+      </a>
+    </div>
+
     <form id="feedbackForm" onsubmit="handleFeedbackSubmit(event)">
       <!-- 1. 만족도 5점 척도 -->
       <div class="form-group">
@@ -629,7 +636,7 @@
         <textarea id="customOpinion" class="feedback-textarea" placeholder="예: 화학 앙금 반응 실험도 보고 싶어요! / 모바일에서도 잘 동작하면 좋겠어요."></textarea>
       </div>
 
-      <button type="submit" class="submit-btn">소중한 의견 제출하기 🚀</button>
+      <button type="submit" class="submit-btn">구글 폼으로 의견 제출하기 🚀</button>
     </form>
   </div>
 </div>
@@ -653,6 +660,7 @@
   }
 
   // 피드백 모달 로직
+  const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header";
   let selectedRating = 5;
 
   function openFeedbackModal() {
@@ -691,7 +699,9 @@
     });
     localStorage.setItem('arcadia_feedbacks', JSON.stringify(savedFeedbacks));
 
-    alert('피드백이 성공적으로 등록되었습니다. 참여해 주셔서 감사합니다! 😊');
+    // 구글 폼 새 창 오픈
+    window.open(GOOGLE_FORM_URL, '_blank');
+    alert('피드백 참여 감사합니다! 열린 구글 설문지 창에서 최종 제출을 완료해 주세요. 😊');
     document.getElementById('customOpinion').value = '';
     closeFeedbackModal();
   }
