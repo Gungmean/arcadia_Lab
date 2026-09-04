@@ -567,7 +567,7 @@
 
         function init() {
             scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x020617, 0.015);
+            scene.fog = new THREE.FogExp2(0x020617, 0.005);
 
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.set(0, 15, 55);
@@ -578,7 +578,7 @@
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.2;
+            renderer.toneMappingExposure = 1.3;
             container.appendChild(renderer.domElement);
 
             controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -602,55 +602,58 @@
             animate();
         }
 
-        // --- 3. 조명 시스템 ---
+        // --- 3. 조명 시스템 (자연스럽고 화사한 스튜디오 라이팅) ---
         function setupLighting() {
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            // 은은한 전체 앰비언트 라이트
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
             scene.add(ambientLight);
 
-            const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
-            mainLight.position.set(30, 40, 30);
-            mainLight.castShadow = true;
+            // 메인 키 라이트 (상단 전면 부드러운 조명)
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1.4);
+            mainLight.position.set(30, 45, 40);
             scene.add(mainLight);
 
-            const blueLight = new THREE.PointLight(0x38bdf8, 2.5, 80);
-            blueLight.position.set(-25, -20, 20);
-            scene.add(blueLight);
+            // 반대편 부드러운 필 라이트 (어두운 그림자 완화)
+            const fillLight = new THREE.DirectionalLight(0xe0f2fe, 0.8);
+            fillLight.position.set(-30, -20, -30);
+            scene.add(fillLight);
 
-            const purpleLight = new THREE.PointLight(0xc084fc, 2.0, 80);
-            purpleLight.position.set(20, 25, -20);
-            scene.add(purpleLight);
+            // 은은한 푸른빛 림 라이트 (외곽 윤곽선 강조)
+            const rimLight = new THREE.PointLight(0x38bdf8, 1.8, 100);
+            rimLight.position.set(0, -30, 20);
+            scene.add(rimLight);
         }
 
-        // --- 4. 세포 3D 모델 구축 (절차적 지오메트리) ---
+        // --- 4. 세포 3D 모델 구축 (교과서 수준의 깔끔하고 직관적인 디자인) ---
         function createCellModel() {
             if (cellGroup) scene.remove(cellGroup);
             cellGroup = new THREE.Group();
             organelleMeshes = {};
 
-            // (1) 절개형 반투명 세포막 (Cutaway Cell Membrane)
+            // (1) 절개형 반투명 세포막 (깨끗한 물방울 느낌의 밝은 반투명 쉘)
             const membraneGeo = new THREE.SphereGeometry(22, 64, 32, 0, Math.PI * 1.5, 0, Math.PI);
             const membraneMat = new THREE.MeshPhysicalMaterial({
-                color: currentMode === 'animal' ? 0x0ea5e9 : 0x10b981,
+                color: currentMode === 'animal' ? 0x38bdf8 : 0x34d399,
                 transparent: true,
-                opacity: membraneOpacity,
+                opacity: 0.18,
                 roughness: 0.1,
-                metalness: 0.1,
-                transmission: 0.7,
-                ior: 1.3,
+                metalness: 0.05,
+                transmission: 0.85,
+                ior: 1.15,
                 side: THREE.DoubleSide,
                 depthWrite: false
             });
             membraneMesh = new THREE.Mesh(membraneGeo, membraneMat);
             cellGroup.add(membraneMesh);
 
-            // (2) 식물세포 세포벽 (식물 모드 시 생성)
+            // (2) 식물세포 세포벽 (산뜻한 에메랄드 그린 와이어/투명 챔버)
             if (currentMode === 'plant') {
                 const wallGeo = new THREE.BoxGeometry(40, 36, 36);
                 const wallMat = new THREE.MeshStandardMaterial({
-                    color: 0x059669,
+                    color: 0x10b981,
                     wireframe: true,
                     transparent: true,
-                    opacity: 0.4
+                    opacity: 0.35
                 });
                 cellWallMesh = new THREE.Mesh(wallGeo, wallMat);
                 cellGroup.add(cellWallMesh);
@@ -660,24 +663,24 @@
             const nucleusGroup = new THREE.Group();
             nucleusGroup.position.set(ORGANELLE_DATA.nucleus.pos.x, ORGANELLE_DATA.nucleus.pos.y, ORGANELLE_DATA.nucleus.pos.z);
             
-            // 핵 외막 (절개형)
-            const nucleusGeo = new THREE.SphereGeometry(7, 32, 32, 0, Math.PI * 1.6);
+            // 핵 외막 (우아한 소프트 바이올렛 절개 구체)
+            const nucleusGeo = new THREE.SphereGeometry(6.5, 36, 36, 0, Math.PI * 1.55);
             const nucleusMat = new THREE.MeshStandardMaterial({
-                color: 0x9333ea,
-                roughness: 0.4,
-                metalness: 0.2,
+                color: 0x8b5cf6,
+                roughness: 0.35,
+                metalness: 0.1,
                 side: THREE.DoubleSide
             });
             const nucleusMesh = new THREE.Mesh(nucleusGeo, nucleusMat);
             nucleusMesh.userData = { id: 'nucleus' };
             nucleusGroup.add(nucleusMesh);
 
-            // 내부 인 (Nucleolus)
-            const nucleolusGeo = new THREE.SphereGeometry(2.5, 24, 24);
+            // 내부 인 (화사한 핫핑크 코어)
+            const nucleolusGeo = new THREE.SphereGeometry(2.4, 24, 24);
             const nucleolusMat = new THREE.MeshStandardMaterial({
-                color: 0xd946ef,
-                emissive: 0xa21caf,
-                emissiveIntensity: 0.5,
+                color: 0xf43f5e,
+                emissive: 0xe11d48,
+                emissiveIntensity: 0.4,
                 roughness: 0.2
             });
             const nucleolusMesh = new THREE.Mesh(nucleolusGeo, nucleolusMat);
@@ -687,7 +690,7 @@
             cellGroup.add(nucleusGroup);
             organelleMeshes.nucleus = nucleusMesh;
 
-            // (4) 미토콘드리아 (Mitochondria) 3개 배치
+            // (4) 미토콘드리아 (Mitochondria) - 핫도그/소시지형 외막 + 내부 크리스타
             const mitoPositions = [
                 { x: 12, y: -4, z: 8, rot: [0.4, 0.8, 0] },
                 { x: 8, y: -10, z: -7, rot: [-0.6, 0.2, 0.5] },
@@ -699,89 +702,72 @@
                 mitoGroup.position.set(pos.x, pos.y, pos.z);
                 mitoGroup.rotation.set(...pos.rot);
 
-                // 외막 (타원형 캡슐)
-                const outerGeo = new THREE.SphereGeometry(3.5, 24, 16);
-                outerGeo.scale(1.8, 1, 1);
+                // 외막 (산뜻한 코랄 오렌지 캡슐)
+                const outerGeo = new THREE.SphereGeometry(3.0, 24, 16);
+                outerGeo.scale(1.7, 0.9, 0.9);
                 const outerMat = new THREE.MeshStandardMaterial({
-                    color: 0xea580c,
+                    color: 0xf97316,
                     transparent: true,
-                    opacity: 0.85,
+                    opacity: 0.82,
                     roughness: 0.3
                 });
                 const mitoOuter = new THREE.Mesh(outerGeo, outerMat);
-                mitoOuter.userData = { id: 'mitochondria' };
+                mitoOuter.userData = { id: 'mitochondria', isOuter: true };
                 mitoGroup.add(mitoOuter);
 
-                // 내부 크리스타 주름 표현 (골드 발광 주름)
-                const innerGeo = new THREE.TorusGeometry(2.2, 0.4, 8, 16);
-                innerGeo.scale(1.2, 0.8, 0.8);
-                const innerMat = new THREE.MeshStandardMaterial({
-                    color: 0xfbbf24,
-                    emissive: 0xd97706,
-                    emissiveIntensity: 0.6
-                });
-                const cristae = new THREE.Mesh(innerGeo, innerMat);
-                cristae.userData = { id: 'mitochondria' };
-                mitoGroup.add(cristae);
+                // 내부 크리스타 주름 (밝은 옐로우 골드 주름)
+                for (let k = -2; k <= 2; k++) {
+                    const cFoldGeo = new THREE.CylinderGeometry(0.7, 0.7, 0.2, 12);
+                    cFoldGeo.scale(1, 0.5, 1.3);
+                    const cFoldMat = new THREE.MeshStandardMaterial({
+                        color: 0xfde047,
+                        emissive: 0xeab308,
+                        emissiveIntensity: 0.4
+                    });
+                    const cFold = new THREE.Mesh(cFoldGeo, cFoldMat);
+                    cFold.position.set(k * 0.8, 0, 0);
+                    cFold.rotation.z = Math.PI / 2;
+                    cFold.userData = { id: 'mitochondria' };
+                    mitoGroup.add(cFold);
+                }
 
                 cellGroup.add(mitoGroup);
                 if (idx === 0) organelleMeshes.mitochondria = mitoOuter;
             });
 
-            // (5) 소포체 (Endoplasmic Reticulum) - 핵막과 직접 연결된 넓은 시트 및 관상 그물망
+            // (5) 소포체 (Endoplasmic Reticulum) - 핵막에 밀착된 부드러운 물결 레이어
             const erGroup = new THREE.Group();
-            erGroup.position.set(ORGANELLE_DATA.er.pos.x, ORGANELLE_DATA.er.pos.y, ORGANELLE_DATA.er.pos.z);
+            erGroup.position.set(-4, 2, -1);
 
-            // (5-A) 조면소포체 (Rough ER): 핵막을 감싸며 뻗어나온 넓은 미로형 주름 시트 (Ribosome 점착)
+            // 조면소포체: 핵 주변을 감싸는 3장의 부드러운 파란색 만곡 시트
             const roughMat = new THREE.MeshStandardMaterial({
-                color: 0x3b82f6,
-                roughness: 0.35,
-                metalness: 0.1,
+                color: 0x38bdf8,
+                roughness: 0.3,
+                metalness: 0.05,
                 side: THREE.DoubleSide
             });
 
-            for (let i = 0; i < 5; i++) {
-                // 납작하게 접힌 막성 주름 시트 (Sheet-like Folded Cisternae)
-                const sheetGeo = new THREE.TorusGeometry(5.5 + i * 1.6, 0.7, 12, 48, Math.PI * 1.1);
-                sheetGeo.scale(1.3, 0.4, 1.0);
+            for (let i = 0; i < 3; i++) {
+                const sheetGeo = new THREE.TorusGeometry(7.0 + i * 1.5, 0.5, 12, 36, Math.PI * 0.75);
+                sheetGeo.scale(1.2, 0.4, 1.0);
                 const sheetMesh = new THREE.Mesh(sheetGeo, roughMat);
-                sheetMesh.rotation.x = Math.PI / 2.3 + (i * 0.08);
-                sheetMesh.rotation.y = (i * 0.12);
-                sheetMesh.rotation.z = Math.PI * 0.15 + (i * 0.1);
-                sheetMesh.position.set(0, (i - 2) * 0.6, 0);
+                sheetMesh.rotation.x = Math.PI / 2.2 + (i * 0.1);
+                sheetMesh.rotation.z = Math.PI * 0.25;
+                sheetMesh.position.set(0, (i - 1) * 0.8, 0);
                 sheetMesh.userData = { id: 'er' };
                 erGroup.add(sheetMesh);
-
-                // 조면소포체 표면에 촘촘히 박힌 분홍색 리보솜 알갱이들
-                const attachedRiboGeo = new THREE.DodecahedronGeometry(0.18);
-                const attachedRiboMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.3 });
-                const attachedRiboInst = new THREE.InstancedMesh(attachedRiboGeo, attachedRiboMat, 30);
-                const dummyRibo = new THREE.Object3D();
-                for (let r = 0; r < 30; r++) {
-                    const angle = (r / 30) * Math.PI * 1.1;
-                    const rad = 5.5 + i * 1.6 + (Math.random() - 0.5) * 0.6;
-                    dummyRibo.position.set(
-                        Math.cos(angle) * rad * 1.3,
-                        (Math.random() - 0.5) * 0.4 + (i - 2) * 0.6,
-                        Math.sin(angle) * rad
-                    );
-                    dummyRibo.updateMatrix();
-                    attachedRiboInst.setMatrixAt(r, dummyRibo.matrix);
-                }
-                attachedRiboInst.userData = { id: 'er' };
-                erGroup.add(attachedRiboInst);
             }
 
-            // (5-B) 활면소포체 (Smooth ER): 리보솜 없이 굽이치는 관상 튜브 그물망 (Tubular Network)
+            // 활면소포체: 소포체 가장자리에 붙은 3개의 튜브 루프
             const smoothMat = new THREE.MeshStandardMaterial({
-                color: 0x60a5fa,
-                roughness: 0.25
+                color: 0x818cf8,
+                roughness: 0.3
             });
-            for (let t = 0; t < 6; t++) {
-                const tubeGeo = new THREE.TorusGeometry(2.0 + (t % 3) * 0.8, 0.35, 8, 24, Math.PI * 1.4);
+            for (let t = 0; t < 3; t++) {
+                const tubeGeo = new THREE.TorusGeometry(1.8, 0.3, 8, 20, Math.PI * 1.2);
                 const tubeMesh = new THREE.Mesh(tubeGeo, smoothMat);
-                tubeMesh.position.set(6 + (t % 2) * 1.5, -2 + t * 0.8, -3 + (t % 3) * 1.2);
-                tubeMesh.rotation.set(t * 0.5, t * 0.8, t * 0.4);
+                tubeMesh.position.set(-6, -1 + t * 1.2, 2 + t * 0.8);
+                tubeMesh.rotation.set(0.4, t * 0.6, 0.3);
                 tubeMesh.userData = { id: 'er' };
                 erGroup.add(tubeMesh);
             }
@@ -789,54 +775,32 @@
             cellGroup.add(erGroup);
             organelleMeshes.er = erGroup.children[0];
 
-            // (6) 골지체 (Golgi Apparatus) - 독립된 층상 초승달 모양 시스터나 스택 & 분비소낭 발아
+            // (6) 골지체 (Golgi Apparatus) - 정갈하게 쌓인 4장의 옐로우/오렌지 시스터나
             const golgiGroup = new THREE.Group();
-            golgiGroup.position.set(ORGANELLE_DATA.golgi.pos.x, ORGANELLE_DATA.golgi.pos.y, ORGANELLE_DATA.golgi.pos.z);
+            golgiGroup.position.set(-11, -5, 6);
             
-            // 5장의 만곡된 시스터나 주머니 층 (Curved Cisternae Stacks: Cis-face -> Trans-face)
-            const cisternaeColors = [0xfef08a, 0xfde047, 0xeab308, 0xca8a04, 0xa16207];
-            for (let i = 0; i < 5; i++) {
-                // 초승달 모양으로 휜 납작한 디스크 주머니
-                const layerGeo = new THREE.TorusGeometry(4.2 - i * 0.35, 0.55 - i * 0.04, 12, 36, Math.PI * 0.65);
-                layerGeo.scale(1.5, 0.35, 1.0);
+            const golgiColors = [0xfef08a, 0xfacc15, 0xeab308, 0xd97706];
+            for (let i = 0; i < 4; i++) {
+                const layerGeo = new THREE.TorusGeometry(3.6 - i * 0.3, 0.45, 12, 32, Math.PI * 0.6);
+                layerGeo.scale(1.4, 0.35, 1.0);
                 const layerMat = new THREE.MeshStandardMaterial({
-                    color: cisternaeColors[i],
-                    roughness: 0.25,
-                    metalness: 0.1
+                    color: golgiColors[i],
+                    roughness: 0.25
                 });
                 const layerMesh = new THREE.Mesh(layerGeo, layerMat);
-                layerMesh.position.set(0, (i - 2) * 0.95, -Math.sin(i * 0.4) * 0.8);
-                layerMesh.rotation.x = Math.PI / 2 + 0.2;
-                layerMesh.rotation.z = Math.PI * 0.18;
+                layerMesh.position.set(0, (i - 1.5) * 0.8, -i * 0.3);
+                layerMesh.rotation.x = Math.PI / 2 + 0.15;
+                layerMesh.rotation.z = Math.PI * 0.15;
                 layerMesh.userData = { id: 'golgi' };
                 golgiGroup.add(layerMesh);
-
-                // 양쪽 끝이 볼록하게 부풀어 오른 말단 팽대부 (Swollen Edges)
-                [-1, 1].forEach(side => {
-                    const edgeGeo = new THREE.SphereGeometry(0.65, 16, 16);
-                    const edgeMat = new THREE.MeshStandardMaterial({ color: cisternaeColors[i], roughness: 0.3 });
-                    const edgeMesh = new THREE.Mesh(edgeGeo, edgeMat);
-                    const angle = side === -1 ? 0 : Math.PI * 0.65;
-                    const rad = (4.2 - i * 0.35) * 1.5;
-                    edgeMesh.position.set(
-                        Math.cos(angle) * rad,
-                        (i - 2) * 0.95,
-                        Math.sin(angle) * (4.2 - i * 0.35)
-                    );
-                    edgeMesh.userData = { id: 'golgi' };
-                    golgiGroup.add(edgeMesh);
-                });
             }
 
-            // 골지체 주변에서 떨어져 나오는 수송 소포 및 분비 소포들 (Budding Transport & Secretory Vesicles)
-            const vesiclePositions = [
-                { x: -5.5, y: 1.8, z: 1.2, r: 0.6 },
-                { x: -4.8, y: -2.2, z: 2.0, r: 0.75 },
-                { x: 5.2, y: 0.5, z: -1.5, r: 0.65 },
-                { x: 4.5, y: -1.8, z: 2.5, r: 0.8 },
-                { x: 1.0, y: -3.0, z: 3.2, r: 0.7 }
-            ];
-            vesiclePositions.forEach(v => {
+            // 골지체 주변 귀여운 구형 분비 소낭들 3개
+            [
+                { x: -3.8, y: 1.2, z: 0.8, r: 0.55 },
+                { x: 3.5, y: -1.0, z: 1.5, r: 0.65 },
+                { x: 0.5, y: -2.2, z: 2.2, r: 0.6 }
+            ].forEach(v => {
                 const vGeo = new THREE.SphereGeometry(v.r, 16, 16);
                 const vMat = new THREE.MeshStandardMaterial({
                     color: 0xfacc15,
@@ -851,17 +815,18 @@
             });
 
             cellGroup.add(golgiGroup);
-            organelleMeshes.golgi = golgiGroup.children[2];
+            organelleMeshes.golgi = golgiGroup.children[1];
 
-            // (7) 리소좀 (Lysosome) - 동물세포 특화
+            // (7) 리소좀 (Lysosome) - 동물세포 전용 루비 레드 구체
             if (currentMode === 'animal') {
                 const lysoGroup = new THREE.Group();
                 lysoGroup.position.set(ORGANELLE_DATA.lysosome.pos.x, ORGANELLE_DATA.lysosome.pos.y, ORGANELLE_DATA.lysosome.pos.z);
-                const lysoGeo = new THREE.SphereGeometry(1.8, 16, 16);
+                const lysoGeo = new THREE.SphereGeometry(1.7, 24, 24);
                 const lysoMat = new THREE.MeshStandardMaterial({
-                    color: 0xef4444,
-                    emissive: 0x991b1b,
-                    emissiveIntensity: 0.4
+                    color: 0xf43f5e,
+                    emissive: 0xbe123c,
+                    emissiveIntensity: 0.35,
+                    roughness: 0.25
                 });
                 const lysoMesh = new THREE.Mesh(lysoGeo, lysoMat);
                 lysoMesh.userData = { id: 'lysosome' };
@@ -870,7 +835,7 @@
                 organelleMeshes.lysosome = lysoMesh;
             }
 
-            // (8) 엽록체 (Chloroplast) & 액포 (Vacuole) - 식물세포 특화
+            // (8) 엽록체 & 중심 액포 - 식물세포 특화
             if (currentMode === 'plant') {
                 const chloroPositions = [
                     { x: 12, y: 6, z: -8, rot: [0.4, 0.6, 0.2] },
@@ -881,13 +846,12 @@
                     chloroGroup.position.set(pos.x, pos.y, pos.z);
                     chloroGroup.rotation.set(...pos.rot);
 
-                    // (A) 외막: 반투명 절개형 타원 구체 (내부 그라나가 비쳐 보이도록)
-                    const cOuterGeo = new THREE.SphereGeometry(3.6, 32, 24, 0, Math.PI * 1.6);
-                    cOuterGeo.scale(1.6, 0.85, 1.2);
+                    // 외막: 반투명 에메랄드 그린
+                    const cOuterGeo = new THREE.SphereGeometry(3.5, 28, 20, 0, Math.PI * 1.6);
+                    cOuterGeo.scale(1.5, 0.85, 1.1);
                     const cOuterMat = new THREE.MeshStandardMaterial({
-                        color: 0x15803d,
-                        roughness: 0.2,
-                        metalness: 0.1,
+                        color: 0x16a34a,
+                        roughness: 0.25,
                         transparent: true,
                         opacity: 0.75,
                         side: THREE.DoubleSide
@@ -896,76 +860,41 @@
                     cMesh.userData = { id: 'chloroplast', isOuter: true };
                     chloroGroup.add(cMesh);
 
-                    // (B) 엽록체 내부: 스트로마 기질 베이스
-                    const stromaGeo = new THREE.SphereGeometry(3.3, 24, 16);
-                    stromaGeo.scale(1.5, 0.75, 1.1);
-                    const stromaMat = new THREE.MeshStandardMaterial({
-                        color: 0x86efac,
-                        transparent: true,
-                        opacity: 0.25,
-                        roughness: 0.5
-                    });
-                    const stromaMesh = new THREE.Mesh(stromaGeo, stromaMat);
-                    stromaMesh.userData = { id: 'chloroplast' };
-                    chloroGroup.add(stromaMesh);
-
-                    // (C) 엽록체 내부: 틸라코이드(Thylakoid)가 층층이 쌓인 그라나(Grana) 기둥 4개 배치
-                    const granaPositions = [
-                        { x: -1.8, y: -0.2, z: 0 },
-                        { x: -0.6, y: 0.2, z: -0.8 },
-                        { x: 0.7, y: 0.1, z: 0.6 },
-                        { x: 2.0, y: -0.1, z: -0.2 }
-                    ];
-
-                    granaPositions.forEach(gPos => {
-                        const granaStack = new THREE.Group();
-                        granaStack.position.set(gPos.x, gPos.y, gPos.z);
-
-                        // 동전 모양의 틸라코이드 4~5장 적층
-                        for (let layer = 0; layer < 5; layer++) {
-                            const thylakoidGeo = new THREE.CylinderGeometry(0.7, 0.7, 0.15, 16);
-                            const thylakoidMat = new THREE.MeshStandardMaterial({
-                                color: 0x22c55e,
+                    // 내부 그라나 기둥 3개 (틸라코이드 적층)
+                    const gOffsets = [-1.4, 0, 1.4];
+                    gOffsets.forEach(gx => {
+                        const gStack = new THREE.Group();
+                        gStack.position.set(gx, 0, 0);
+                        for (let layer = 0; layer < 4; layer++) {
+                            const tGeo = new THREE.CylinderGeometry(0.65, 0.65, 0.14, 16);
+                            const tMat = new THREE.MeshStandardMaterial({
+                                color: 0x4ade80,
                                 emissive: 0x15803d,
-                                emissiveIntensity: 0.4,
-                                roughness: 0.3
+                                emissiveIntensity: 0.4
                             });
-                            const thylakoidMesh = new THREE.Mesh(thylakoidGeo, thylakoidMat);
-                            thylakoidMesh.position.y = (layer - 2) * 0.22;
-                            thylakoidMesh.userData = { id: 'chloroplast' };
-                            granaStack.add(thylakoidMesh);
+                            const tMesh = new THREE.Mesh(tGeo, tMat);
+                            tMesh.position.y = (layer - 1.5) * 0.22;
+                            tMesh.userData = { id: 'chloroplast' };
+                            gStack.add(tMesh);
                         }
-
-                        chloroGroup.add(granaStack);
+                        chloroGroup.add(gStack);
                     });
-
-                    // (D) 그라나 사이를 연결하는 스트로마 라멜라(Lamellae) 관 표현
-                    const lamellaGeo = new THREE.CylinderGeometry(0.08, 0.08, 3.8, 8);
-                    const lamellaMat = new THREE.MeshStandardMaterial({
-                        color: 0x4ade80,
-                        emissive: 0x16a34a,
-                        emissiveIntensity: 0.5
-                    });
-                    const lamellaMesh = new THREE.Mesh(lamellaGeo, lamellaMat);
-                    lamellaMesh.rotation.z = Math.PI / 2;
-                    lamellaMesh.userData = { id: 'chloroplast' };
-                    chloroGroup.add(lamellaMesh);
 
                     cellGroup.add(chloroGroup);
                     if (idx === 0) organelleMeshes.chloroplast = cMesh;
                 });
 
-                // 중심 액포 (Vacuole)
+                // 중심 액포 (맑고 투명한 시안 블루 물방울)
                 const vacGroup = new THREE.Group();
                 vacGroup.position.set(ORGANELLE_DATA.vacuole.pos.x, ORGANELLE_DATA.vacuole.pos.y, ORGANELLE_DATA.vacuole.pos.z);
-                const vacGeo = new THREE.SphereGeometry(7.5, 32, 32);
-                vacGeo.scale(1.2, 1.4, 1);
+                const vacGeo = new THREE.SphereGeometry(7.0, 32, 32);
+                vacGeo.scale(1.2, 1.3, 1);
                 const vacMat = new THREE.MeshPhysicalMaterial({
-                    color: 0x06b6d4,
+                    color: 0x38bdf8,
                     transparent: true,
-                    opacity: 0.5,
+                    opacity: 0.45,
                     roughness: 0.1,
-                    transmission: 0.8
+                    transmission: 0.85
                 });
                 const vacMesh = new THREE.Mesh(vacGeo, vacMat);
                 vacMesh.userData = { id: 'vacuole' };
@@ -974,13 +903,13 @@
                 organelleMeshes.vacuole = vacMesh;
             }
 
-            // (9) 수많은 리보솜 점들 (Ribosomes)
-            const riboGeo = new THREE.DodecahedronGeometry(0.3);
-            const riboMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.2 });
-            const riboInstanced = new THREE.InstancedMesh(riboGeo, riboMat, 120);
+            // (9) 소수의 정돈된 리보솜 파티클 (기존의 난잡한 120개 덩어리 제거하고 깔끔한 35개 배치)
+            const riboGeo = new THREE.SphereGeometry(0.22, 8, 8);
+            const riboMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.3 });
+            const riboInstanced = new THREE.InstancedMesh(riboGeo, riboMat, 35);
             const dummy = new THREE.Object3D();
-            for (let i = 0; i < 120; i++) {
-                const r = 9 + Math.random() * 10;
+            for (let i = 0; i < 35; i++) {
+                const r = 8 + Math.random() * 8;
                 const theta = Math.random() * Math.PI * 2;
                 const phi = Math.acos(2 * Math.random() - 1);
                 dummy.position.set(
