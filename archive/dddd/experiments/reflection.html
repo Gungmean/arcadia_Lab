@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>거울 반사 실험실</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --canvas-bg: #020617;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        h2 {
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+        }
+
+        .desc {
+            color: var(--text-dim);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        canvas {
+            background: var(--canvas-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            cursor: crosshair;
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 740px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        label span {
+            color: var(--accent-yellow);
+            font-weight: bold;
+        }
+
+        input[type=range] {
+            appearance: none;
+            background: #334155;
+            height: 6px;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-yellow);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .stats {
+            margin-top: 15px;
+            grid-column: span 2;
+            font-size: 16px;
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>🔦 빛의 반사 실험실</h2>
+    <p class="desc">마우스를 캔버스 위에서 움직여 입사각과 반사각의 관계를 확인하세요.</p>
+
+    <canvas id="reflectCanvas" width="800" height="400"></canvas>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>광원 높이 <span id="hVal">200 px</span></label>
+            <input type="range" id="height" min="50" max="350" value="200">
+        </div>
+        <div class="control-group">
+            <label>빛의 강도 <span id="iVal">0.8</span></label>
+            <input type="range" id="intensity" min="0.1" max="1.0" step="0.1" value="0.8">
+        </div>
+
+        <div class="stats" id="stats">
+            입사각(θi): 0° | 반사각(θr): 0°
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('reflectCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let mouseX = 100;
+        let lightY = 200;
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const mirrorY = canvas.height - 50;
+            const centerX = canvas.width / 2;
+
+            // 1. 거울 그리기
+            ctx.fillStyle = "#94a3b8";
+            ctx.fillRect(50, mirrorY, canvas.width - 100, 10);
+            // 거울 질감 (빗금)
+            ctx.strokeStyle = "rgba(255,255,255,0.2)";
+            ctx.lineWidth = 1;
+            for (let i = 60; i < canvas.width - 60; i += 10) {
+                ctx.beginPath(); ctx.moveTo(i, mirrorY + 10); ctx.lineTo(i - 5, mirrorY + 20); ctx.stroke();
+            }
+
+            // 2. 법선 그리기 (Normal Line)
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = "rgba(255,255,255,0.3)";
+            ctx.beginPath(); ctx.moveTo(centerX, mirrorY); ctx.lineTo(centerX, 50); ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 3. 빛의 계산
+            const startX = mouseX;
+            const startY = lightY;
+            const targetX = centerX;
+            const targetY = mirrorY;
+
+            // 각도 계산 (라디안 -> 도)
+            const dx = targetX - startX;
+            const dy = targetY - startY;
+            const angleRad = Math.atan2(Math.abs(dx), Math.abs(dy));
+            const angleDeg = (angleRad * 180 / Math.PI).toFixed(1);
+
+            const intensity = document.getElementById('intensity').value;
+
+            // 4. 입사광 (Incident Ray)
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(targetX, targetY);
+            ctx.strokeStyle = `rgba(245, 158, 11, ${intensity})`;
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#f59e0b";
+            ctx.stroke();
+
+            // 5. 반사광 (Reflected Ray)
+            const reflectEndX = targetX + (targetX - startX);
+            const reflectEndY = startY;
+
+            ctx.beginPath();
+            ctx.moveTo(targetX, targetY);
+            ctx.lineTo(reflectEndX, reflectEndY);
+            ctx.strokeStyle = `rgba(239, 68, 68, ${intensity})`; // 반사광은 붉은색 계열로 구분
+            ctx.shadowColor = "#ef4444";
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // 6. 광원 표시
+            ctx.beginPath();
+            ctx.arc(startX, startY, 8, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+
+            // 7. 각도 텍스트 업데이트
+            document.getElementById('stats').innerHTML =
+                `입사각(<span style="color:var(--accent-yellow)">θi</span>): ${angleDeg}° | 
+                 반사각(<span style="color:var(--accent-red)">θr</span>): ${angleDeg}°`;
+        }
+
+        // 마우스 및 슬라이더 이벤트
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            draw();
+        });
+
+        document.getElementById('height').addEventListener('input', (e) => {
+            lightY = parseInt(e.target.value);
+            document.getElementById('hVal').innerText = lightY + " px";
+            draw();
+        });
+
+        document.getElementById('intensity').addEventListener('input', (e) => {
+            document.getElementById('iVal').innerText = e.target.value;
+            draw();
+        });
+
+        // 초기 실행
+        draw();
+    </script>
+</body>
+
+</html>

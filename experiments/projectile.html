@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>포물선 운동 실험실 - 경로 추적</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #3b82f6;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --canvas-bg: #020617;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        h2 {
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 30px;
+        }
+
+        canvas {
+            background: var(--canvas-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 740px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        label span {
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        input[type=range] {
+            appearance: none;
+            background: #334155;
+            height: 6px;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        button {
+            grid-column: span 2;
+            padding: 14px;
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .stats {
+            margin-top: 15px;
+            grid-column: span 2;
+            font-size: 14px;
+            color: var(--text-dim);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../2d.html" style="position: fixed; top: 16px; left: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: rgba(30, 41, 59, 0.85); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; backdrop-filter: blur(8px); transition: 0.2s; z-index: 1000;" onmouseover="this.style.background='rgba(59, 130, 246, 0.9)'" onmouseout="this.style.background='rgba(30, 41, 59, 0.85)'">
+      ← 2D 실험실 목록
+    </a>
+
+    <h2>⚾ 경로 추적 포물선 실험실</h2>
+    <canvas id="simCanvas" width="800" height="400"></canvas>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>초기 속도 <span id="vVal">50 m/s</span></label>
+            <input type="range" id="velocity" min="10" max="100" value="50">
+        </div>
+        <div class="control-group">
+            <label>발사 각도 <span id="aVal">45°</span></label>
+            <input type="range" id="angle" min="0" max="90" value="45">
+        </div>
+        <div class="control-group">
+            <label>중력 가속도 <span id="gVal">9.8 m/s²</span></label>
+            <input type="range" id="gravity" min="1" max="20" step="0.1" value="9.8">
+        </div>
+        <div class="control-group">
+            <label>궤적 선명도 <span id="traceVal">0.3</span></label>
+            <input type="range" id="traceAlpha" min="0.1" max="1.0" step="0.1" value="0.3">
+        </div>
+
+        <button onclick="startSimulation()">발사 및 경로 그리기</button>
+
+        <div class="stats" id="stats">시작 버튼을 눌러 공의 경로를 확인하세요.</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let animationId;
+        let t = 0;
+        let path = []; // 궤적 좌표를 저장할 배열
+
+        function startSimulation() {
+            cancelAnimationFrame(animationId);
+
+            const v0 = parseFloat(document.getElementById('velocity').value);
+            const angleDeg = parseFloat(document.getElementById('angle').value);
+            const g = parseFloat(document.getElementById('gravity').value);
+
+            const angleRad = angleDeg * Math.PI / 180;
+            const vx = v0 * Math.cos(angleRad);
+            const vy0 = v0 * Math.sin(angleRad);
+
+            t = 0;
+            path = []; // 경로 초기화
+            draw(vx, vy0, g);
+        }
+
+        function draw(vx, vy0, g) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. 지면 그리기
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(255,255,255,0.1)";
+            ctx.moveTo(0, canvas.height - 10);
+            ctx.lineTo(canvas.width, canvas.height - 10);
+            ctx.stroke();
+
+            // 2. 물리 계산
+            let x = vx * t;
+            let y = (vy0 * t) - (0.5 * g * t * t);
+            let drawX = x + 30;
+            let drawY = canvas.height - 10 - y;
+
+            // 3. 경로 데이터 저장 (실시간 추가)
+            if (drawY <= canvas.height - 10) {
+                path.push({ x: drawX, y: drawY });
+            }
+
+            // 4. 저장된 경로 그리기 (Trace)
+            if (path.length > 1) {
+                ctx.beginPath();
+                ctx.setLineDash([5, 5]); // 점선 효과
+                ctx.strokeStyle = `rgba(59, 130, 246, ${document.getElementById('traceAlpha').value})`;
+                ctx.lineWidth = 2;
+                ctx.moveTo(path[0].x, path[0].y);
+                for (let i = 1; i < path.length; i++) {
+                    ctx.lineTo(path[i].x, path[i].y);
+                }
+                ctx.stroke();
+                ctx.setLineDash([]); // 점선 해제
+            }
+
+            // 5. 현재 위치의 공 그리기
+            ctx.beginPath();
+            ctx.arc(drawX, drawY, 6, 0, Math.PI * 2);
+            ctx.fillStyle = "#3b82f6";
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#3b82f6";
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            t += 0.12; // 시간 증분 (속도감 조절)
+
+            // 땅에 닿기 전까지 애니메이션 지속
+            if (drawY <= canvas.height - 10 && drawX <= canvas.width) {
+                animationId = requestAnimationFrame(() => draw(vx, vy0, g));
+            } else {
+                // 종료 시 최종 통계 업데이트
+                const flightTime = (2 * vy0) / g;
+                const maxRange = vx * flightTime;
+                document.getElementById('stats').innerText = `최종 도달 거리: ${maxRange.toFixed(2)}m | 비행 시간: ${flightTime.toFixed(2)}s`;
+            }
+        }
+
+        // UI 이벤트 바인딩
+        const sliders = [
+            { id: 'velocity', unit: 'm/s' },
+            { id: 'angle', unit: '°' },
+            { id: 'gravity', unit: 'm/s²' },
+            { id: 'traceAlpha', unit: '' }
+        ];
+
+        sliders.forEach(s => {
+            const el = document.getElementById(s.id);
+            el.addEventListener('input', (e) => {
+                const targetId = s.id === 'traceAlpha' ? 'traceVal' : s.id.charAt(0) + 'Val';
+                document.getElementById(targetId).innerText = `${e.target.value}${s.unit}`;
+            });
+        });
+    </script>
+</body>
+
+</html>

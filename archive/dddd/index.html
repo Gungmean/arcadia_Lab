@@ -1,0 +1,153 @@
+<!-- ========================= -->
+<!-- 메인 메뉴 (index.html) -->
+<!-- ========================= -->
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>가상 실험실</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:'Segoe UI', sans-serif;
+    }
+
+    body{
+      width:100%;
+      height:100vh;
+      background:#0f172a;
+      overflow:hidden;
+      color:white;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+
+    .bg{
+      position:absolute;
+      width:100%;
+      height:100%;
+      background:
+      radial-gradient(circle at top left,#1e293b 0%,transparent 35%),
+      radial-gradient(circle at bottom right,#2563eb 0%,transparent 30%);
+      opacity:0.9;
+    }
+
+    .container{
+      position:relative;
+      z-index:1;
+      text-align:center;
+      width:90%;
+      max-width:900px;
+    }
+
+    .title{
+      font-size:4rem;
+      font-weight:700;
+      margin-bottom:10px;
+      letter-spacing:2px;
+    }
+
+    .subtitle{
+      color:#cbd5e1;
+      font-size:1rem;
+      margin-bottom:60px;
+    }
+
+    .menu{
+      display:flex;
+      gap:30px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+
+    .card{
+      width:280px;
+      height:200px;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.08);
+      backdrop-filter:blur(10px);
+      border-radius:24px;
+
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+
+      cursor:pointer;
+      transition:0.25s;
+    }
+
+    .card:hover{
+      transform:translateY(-8px) scale(1.02);
+      background:rgba(255,255,255,0.1);
+      border-color:#3b82f6;
+      box-shadow:0 0 30px rgba(59,130,246,0.3);
+    }
+
+    .icon{
+      font-size:3.5rem;
+      margin-bottom:15px;
+    }
+
+    .card h2{
+      font-size:1.8rem;
+      margin-bottom:8px;
+    }
+
+    .card p{
+      color:#cbd5e1;
+      font-size:0.95rem;
+    }
+
+    @media(max-width:700px){
+      .title{
+        font-size:2.8rem;
+      }
+
+      .menu{
+        flex-direction:column;
+        align-items:center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="bg"></div>
+
+  <div class="container">
+
+    <div class="title">가상 실험실</div>
+
+    <div class="subtitle">
+      실험 방식을 선택하세요
+    </div>
+
+    <div class="menu">
+
+      <!-- 2D 실험실 연결 -->
+      <div class="card" onclick="location.href='2d.html'">
+        <div class="icon">🧪</div>
+        <h2>2D 실험실</h2>
+        <p>간단하고 빠른 실험</p>
+      </div>
+
+      <!-- 3D 실험실 연결 -->
+      <div class="card" onclick="location.href='3d.html'">
+        <div class="icon">🧬</div>
+        <h2>3D 실험실</h2>
+        <p>입체적인 가상 실험 공간</p>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

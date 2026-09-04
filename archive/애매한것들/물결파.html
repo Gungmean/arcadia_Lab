@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>물결파 실험실 - 자유 업로드 에디션</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-cyan: #22d3ee;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --canvas-bg: #020617;
+        }
+
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            display: flex; flex-direction: column; align-items: center; 
+            background-color: var(--bg-color); 
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+            color: var(--text-main); margin: 0; padding: 40px 0;
+        }
+
+        h2 { font-weight: 700; letter-spacing: -1px; margin-bottom: 10px; }
+        .desc { color: var(--text-dim); font-size: 14px; margin-bottom: 25px; text-align: center; line-height: 1.5; }
+
+        canvas { 
+            background: var(--canvas-bg); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
+
+        .controls { 
+            background: var(--card-bg); padding: 30px; border-radius: 20px; 
+            margin-top: 30px; display: grid; grid-template-columns: repeat(2, 1fr); 
+            gap: 20px; border: 1px solid rgba(255, 255, 255, 0.05); width: 740px;
+        }
+
+        .control-group { display: flex; flex-direction: column; }
+        label { font-size: 13px; color: var(--text-dim); margin-bottom: 10px; display: flex; justify-content: space-between; }
+        label span.val { color: var(--accent-cyan); font-weight: bold; }
+
+        input[type=range] {
+            -webkit-appearance: none; background: #334155; height: 6px; border-radius: 10px; outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent-cyan); border-radius: 50%; cursor: pointer;
+        }
+
+        /* 세련된 파일 업로드 버튼 스타일 */
+        .file-upload-zone {
+            grid-column: span 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .file-upload-zone:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(34, 211, 238, 0.04);
+        }
+        .file-upload-zone input { display: none; }
+        .file-upload-zone span { font-size: 14px; font-weight: bold; color: var(--text-main); }
+
+        .stats { 
+            grid-column: span 2; font-size: 14px; color: var(--text-main); 
+            background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; 
+            text-align: center; border: 1px solid rgba(255,255,255,0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <h2>🌊 물결파 및 매질 진동 실험실</h2>
+    <p class="desc">아래 업로드 박스를 통해 이미지를 추가하고 파동의 연직 진동을 관찰하세요.</p>
+    
+    <canvas id="waveCanvas" width="800" height="400"></canvas>
+
+    <div class="controls">
+        <label class="file-upload-zone">
+            <input type="file" id="imageFileInput" accept="image/*">
+            <span>📷 내 컴퓨터에서 이미지(오리, 배 등) 불러오기</span>
+        </label>
+
+        <div class="control-group">
+            <label>진폭 (파도의 높이) <span class="val" id="ampVal">40 px</span></label>
+            <input type="range" id="amplitude" min="10" max="80" value="40">
+        </div>
+        <div class="control-group">
+            <label>파장 (Wavelength) <span class="val" id="waveVal">120 px</span></label>
+            <input type="range" id="wavelength" min="60" max="250" value="120">
+        </div>
+        <div class="control-group">
+            <label>물체 크기 (사이즈) <span class="val" id="sizeVal">55 px</span></label>
+            <input type="range" id="boatSize" min="20" max="100" value="55">
+        </div>
+        <div class="control-group">
+            <label>물체 X 위치 <span class="val" id="boatVal">400 px</span></label>
+            <input type="range" id="boatX" min="100" max="700" value="400">
+        </div>
+
+        <div class="stats" id="stats">
+            💡 배경이 투명한 PNG 이미지를 넣으시면 훨씬 자연스럽고 예쁘게 연출됩니다!
+        </div>
+    </div>
+
+    <script {rule1:strict-completion}>
+        const canvas = document.getElementById('waveCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const midY = canvas.height / 2 + 50; 
+        let time = 0;
+
+        const cols = 80; 
+        const rows = 12; 
+        const spacingX = canvas.width / cols;
+        const spacingY = 15;
+
+        // 이미지 객체 생성
+        let customImage = new Image();
+        // 이미지를 아직 업로드하지 않았을 때 기본값으로 보여줄 귀여운 오리 이모지 세팅
+        customImage.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><text y='80' font-size='80'>🐤</text></svg>";
+
+        // 로컬 파일 업로드 처리 (FileReader를 사용해 보안 오류 원천 차단)
+        document.getElementById('imageFileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    customImage.src = event.target.result; // 이미지를 데이터 주소로 변환하여 로드
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const amp = parseFloat(document.getElementById('amplitude').value);
+            const waveLen = parseFloat(document.getElementById('wavelength').value);
+            const boatX = parseFloat(document.getElementById('boatX').value);
+            const boatSize = parseFloat(document.getElementById('boatSize').value);
+
+            time += 0.05;
+
+            // 배경 가이드선
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+            ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(canvas.width, midY); ctx.stroke();
+
+            // 물 입자 격자 구조 그리기
+            for (let r = 0; r < rows; r++) {
+                const depthFactor = Math.exp(-r * 0.2); 
+                for (let c = 0; c <= cols; c++) {
+                    const originX = c * spacingX;
+                    const originY = midY + r * spacingY;
+                    const phase = (originX / waveLen) * Math.PI * 2 - time;
+                    const currentY = originY + Math.sin(phase) * amp * depthFactor;
+
+                    // 매질의 연직 진동 가이드라인용 마커 입자 (빨간색)
+                    if (c % 8 === 4 && r === 0) {
+                        ctx.strokeStyle = "rgba(239, 68, 68, 0.15)";
+                        ctx.beginPath(); ctx.moveTo(originX, midY - amp - 10); ctx.lineTo(originX, midY + (rows * spacingY)); ctx.stroke();
+                        ctx.beginPath(); ctx.arc(originX, currentY, 4, 0, Math.PI * 2);
+                        ctx.fillStyle = "#ef4444";
+                        ctx.fill();
+                    } else {
+                        ctx.beginPath(); ctx.arc(originX, currentY, 1.5, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(34, 211, 238, ${0.8 - (r * 0.06)})`;
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // 물체의 물리 연직 위치 계산
+            const boatPhase = (boatX / waveLen) * Math.PI * 2 - time;
+            const boatY = midY + Math.sin(boatPhase) * amp;
+
+            // 가로축 고정 점선 가이드
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath(); ctx.moveTo(boatX, 30); ctx.lineTo(boatX, canvas.height - 30); ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 물체 이미지 렌더링
+            if (customImage.complete) {
+                ctx.drawImage(
+                    customImage, 
+                    boatX - boatSize / 2, 
+                    boatY - boatSize + 5, // 수면 접촉면 보정
+                    boatSize, 
+                    boatSize
+                );
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // UI 슬라이더 값 매핑
+        const bindUI = (id, targetId, unit = "") => {
+            document.getElementById(id).addEventListener('input', (e) => {
+                document.getElementById(targetId).innerText = e.target.value + unit;
+            });
+        };
+
+        bindUI('amplitude', 'ampVal', ' px');
+        bindUI('wavelength', 'waveVal', ' px');
+        bindUI('boatSize', 'sizeVal', ' px');
+        bindUI('boatX', 'boatVal', ' px');
+
+        // 루프 작동
+        animate();
+    </script>
+</body>
+</html>

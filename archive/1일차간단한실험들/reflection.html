@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>빛의 굴절 및 반사 실험실</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-yellow: #f59e0b;
+            --accent-blue: #3b82f6;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --canvas-bg: #020617;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        h2 {
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+        }
+
+        .desc {
+            color: var(--text-dim);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        canvas {
+            background: var(--canvas-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            cursor: crosshair;
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 740px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        label span {
+            color: var(--accent-yellow);
+            font-weight: bold;
+        }
+
+        select {
+            padding: 10px;
+            background: #334155;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .stats {
+            margin-top: 15px;
+            grid-column: span 2;
+            font-size: 15px;
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>🌈 빛의 굴절 및 반사 실험실</h2>
+    <p class="desc">마우스를 움직여 빛을 쏘고, 매질(공기, 물, 유리)에 따른 변화를 관찰하세요.</p>
+
+    <canvas id="opticsCanvas" width="800" height="400"></canvas>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>매질 1 (상단) <span>굴절률: <span id="n1Val">1.0</span></span></label>
+            <select id="medium1">
+                <option value="1.0">공기 (n=1.0)</option>
+                <option value="1.33">물 (n=1.33)</option>
+                <option value="1.5">유리 (n=1.5)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>매질 2 (하단) <span>굴절률: <span id="n2Val">1.33</span></span></label>
+            <select id="medium2">
+                <option value="1.0">공기 (n=1.0)</option>
+                <option value="1.33" selected>물 (n=1.33)</option>
+                <option value="1.5">유리 (n=1.5)</option>
+            </select>
+        </div>
+
+        <div class="stats" id="stats">
+            입사각: 0° | 반사각: 0° | 굴절각: 0°
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('opticsCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let mouseX = 200, mouseY = 100;
+        const midY = canvas.height / 2;
+
+        const colors = {
+            "1.0": "rgba(255, 255, 255, 0.05)", // 공기
+            "1.33": "rgba(59, 130, 246, 0.2)",  // 물
+            "1.5": "rgba(148, 163, 184, 0.4)"   // 유리
+        };
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const n1 = parseFloat(document.getElementById('medium1').value);
+            const n2 = parseFloat(document.getElementById('medium2').value);
+
+            // 1. 매질 배경 그리기
+            ctx.fillStyle = colors[n1.toString()];
+            ctx.fillRect(0, 0, canvas.width, midY);
+            ctx.fillStyle = colors[n2.toString()];
+            ctx.fillRect(0, midY, canvas.width, midY);
+
+            // 2. 경계선 및 법선
+            ctx.strokeStyle = "rgba(255,255,255,0.3)";
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(0, midY); ctx.lineTo(canvas.width, midY); ctx.stroke();
+
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath(); ctx.moveTo(canvas.width / 2, 50); ctx.lineTo(canvas.width / 2, canvas.height - 50); ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 3. 빛의 경로 계산
+            const centerX = canvas.width / 2;
+            const dx = centerX - mouseX;
+            const dy = midY - mouseY;
+
+            // 입사각 (theta1)
+            const theta1 = Math.atan2(Math.abs(dx), Math.abs(dy));
+            const theta1Deg = (theta1 * 180 / Math.PI).toFixed(1);
+
+            // 스넬의 법칙: n1 * sin(theta1) = n2 * sin(theta2)
+            const sinTheta2 = (n1 / n2) * Math.sin(theta1);
+            let theta2 = Math.asin(sinTheta2);
+            let isTotalInternalReflection = isNaN(theta2);
+
+            // 4. 입사광 그리기
+            ctx.beginPath();
+            ctx.moveTo(mouseX, mouseY);
+            ctx.lineTo(centerX, midY);
+            ctx.strokeStyle = "#f59e0b";
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 15; ctx.shadowColor = "#f59e0b";
+            ctx.stroke();
+
+            // 5. 반사광 그리기 (항상 존재)
+            ctx.beginPath();
+            ctx.moveTo(centerX, midY);
+            ctx.lineTo(centerX + dx, mouseY);
+            ctx.strokeStyle = "rgba(239, 68, 68, 0.6)";
+            ctx.stroke();
+
+            // 6. 굴절광 또는 전반사 그리기
+            ctx.beginPath();
+            ctx.moveTo(centerX, midY);
+            if (isTotalInternalReflection) {
+                // 전반사 처리
+                ctx.lineTo(centerX + dx, mouseY);
+                ctx.strokeStyle = "#f59e0b";
+                document.getElementById('stats').style.color = "#ef4444";
+                var info = `입사각: ${theta1Deg}° | 전반사 발생!`;
+            } else {
+                const theta2Deg = (theta2 * 180 / Math.PI).toFixed(1);
+                const refractLen = 200;
+                const rx = centerX + (dx > 0 ? -1 : 1) * Math.sin(theta2) * refractLen;
+                const ry = midY + Math.cos(theta2) * refractLen;
+                ctx.lineTo(rx, ry);
+                ctx.strokeStyle = "#3b82f6";
+                document.getElementById('stats').style.color = "var(--text-main)";
+                var info = `입사각: ${theta1Deg}° | 반사각: ${theta1Deg}° | 굴절각: ${theta2Deg}°`;
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            document.getElementById('stats').innerText = info;
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = e.clientX - rect.left;
+            mouseY = e.clientY - rect.top;
+            // 상단 영역에서만 광원 이동 가능하게 제한 (선택 사항)
+            if (mouseY > midY - 10) mouseY = midY - 10;
+            draw();
+        });
+
+        document.querySelectorAll('select').forEach(s => {
+            s.addEventListener('change', (e) => {
+                const id = e.target.id === 'medium1' ? 'n1Val' : 'n2Val';
+                document.getElementById(id).innerText = e.target.value;
+                draw();
+            });
+        });
+
+        draw();
+    </script>
+</body>
+
+</html>

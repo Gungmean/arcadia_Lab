@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>분자 충돌 단진자 실험실</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-orange: #fb923c;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --canvas-bg: #020617;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        h2 {
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+        }
+
+        .desc {
+            color: var(--text-dim);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        canvas {
+            background: var(--canvas-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 740px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        label span {
+            color: var(--accent-orange);
+            font-weight: bold;
+        }
+
+        input[type=range] {
+            appearance: none;
+            background: #334155;
+            height: 6px;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-orange);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        button {
+            grid-column: span 2;
+            padding: 14px;
+            background-color: var(--accent-orange);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .stats {
+            margin-top: 15px;
+            grid-column: span 2;
+            font-size: 14px;
+            color: var(--text-dim);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../2d.html" style="position: fixed; top: 16px; left: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: rgba(30, 41, 59, 0.85); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; backdrop-filter: blur(8px); transition: 0.2s; z-index: 1000;" onmouseover="this.style.background='rgba(59, 130, 246, 0.9)'" onmouseout="this.style.background='rgba(30, 41, 59, 0.85)'">
+      ← 2D 실험실 목록
+    </a>
+
+    <h2>🕰️ 분자 충돌 및 에너지 감쇠 실험</h2>
+    <p class="desc">진자가 공기 분자들과 충돌하며 운동 에너지를 전달하고 멈추는 과정을 관찰하세요.</p>
+
+    <canvas id="collisionCanvas" width="800" height="450"></canvas>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>분자 밀도 <span id="dVal">150</span></label>
+            <input type="range" id="density" min="50" max="400" value="150">
+        </div>
+        <div class="control-group">
+            <label>시작 각도 <span id="aVal">60°</span></label>
+            <input type="range" id="angle" min="0" max="90" value="60">
+        </div>
+
+        <button onclick="resetSim()">실험 시작</button>
+
+        <div class="stats" id="stats">진자가 공기 분자에 부딪히면 속도가 줄어듭니다.</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('collisionCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        let pendulum = { a: 0, aV: 0, aA: 0, r: 220, x: 0, y: 0, mass: 30 };
+        let animId;
+        const g = 0.4;
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.r = 2;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+        }
+
+        function resetSim() {
+            cancelAnimationFrame(animId);
+            const density = document.getElementById('density').value;
+            const startAngle = document.getElementById('angle').value;
+
+            particles = Array.from({ length: density }, () => new Particle());
+            pendulum.a = startAngle * Math.PI / 180;
+            pendulum.aV = 0;
+
+            animate();
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const ox = canvas.width / 2, oy = 50;
+
+            // 1. 진자 물리 업데이트
+            pendulum.aA = (-1 * g / (pendulum.r / 10)) * Math.sin(pendulum.a);
+            pendulum.aV += pendulum.aA;
+            pendulum.a += pendulum.aV;
+
+            pendulum.x = ox + pendulum.r * Math.sin(pendulum.a);
+            pendulum.y = oy + pendulum.r * Math.cos(pendulum.a);
+
+            // 2. 분자 업데이트 및 충돌 검사
+            particles.forEach(p => {
+                p.update();
+
+                // 거리 계산 (충돌 체크)
+                const dx = p.x - pendulum.x;
+                const dy = p.y - pendulum.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < pendulum.mass) {
+                    // 충돌 발생: 진자의 속도 감소 (에너지 전달)
+                    pendulum.aV *= 0.985;
+                    // 분자는 튕겨나감
+                    p.vx += pendulum.aV * 10 * Math.cos(pendulum.a);
+                    p.vy += Math.abs(pendulum.aV) * 5;
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(251, 146, 60, 0.4)";
+                ctx.fill();
+            });
+
+            // 3. 진자 그리기
+            ctx.strokeStyle = "rgba(255,255,255,0.1)";
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(pendulum.x, pendulum.y); ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(pendulum.x, pendulum.y, pendulum.mass, 0, Math.PI * 2);
+            ctx.fillStyle = varColor();
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = varColor();
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            animId = requestAnimationFrame(animate);
+        }
+
+        function varColor() {
+            // 속도에 따라 색상 변화 (에너지 시각화)
+            const speed = Math.abs(pendulum.aV) * 500;
+            return `hsl(30, 100%, ${Math.min(50 + speed, 80)}%)`;
+        }
+
+        document.getElementById('density').addEventListener('input', (e) => document.getElementById('dVal').innerText = e.target.value);
+        document.getElementById('angle').addEventListener('input', (e) => document.getElementById('aVal').innerText = e.target.value + "°");
+
+        resetSim();
+    </script>
+</body>
+
+</html>

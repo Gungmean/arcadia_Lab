@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>단진자 실험실 - 다크 에디션</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-green: #10b981;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --canvas-bg: #020617;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        h2 {
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 30px;
+        }
+
+        canvas {
+            background: var(--canvas-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 740px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        label span {
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        input[type=range] {
+            appearance: none;
+            background: #334155;
+            height: 6px;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        button {
+            grid-column: span 2;
+            padding: 14px;
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .stats {
+            margin-top: 15px;
+            grid-column: span 2;
+            font-size: 14px;
+            color: var(--text-dim);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../2d.html" style="position: fixed; top: 16px; left: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: rgba(30, 41, 59, 0.85); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; backdrop-filter: blur(8px); transition: 0.2s; z-index: 1000;" onmouseover="this.style.background='rgba(59, 130, 246, 0.9)'" onmouseout="this.style.background='rgba(30, 41, 59, 0.85)'">
+      ← 2D 실험실 목록
+    </a>
+
+    <h2>🕰️ 경로 추적 단진자 실험실</h2>
+    <canvas id="pendulumCanvas" width="800" height="450"></canvas>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>줄의 길이 (L) <span id="lVal">200 px</span></label>
+            <input type="range" id="length" min="50" max="350" value="200">
+        </div>
+        <div class="control-group">
+            <label>시작 각도 (θ) <span id="aVal">45°</span></label>
+            <input type="range" id="angle" min="0" max="90" value="45">
+        </div>
+        <div class="control-group">
+            <label>중력 가속도 (g) <span id="gVal">9.8 m/s²</span></label>
+            <input type="range" id="gravity" min="1" max="20" step="0.1" value="9.8">
+        </div>
+        <div class="control-group">
+            <label>궤적 선명도 <span id="traceVal">0.4</span></label>
+            <input type="range" id="traceAlpha" min="0" max="1" step="0.1" value="0.4">
+        </div>
+
+        <button onclick="resetSimulation()">실험 시작 / 초기화</button>
+
+        <div class="stats" id="stats">이론적 주기(T): 0s | 실시간 각도: 0°</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('pendulumCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let animationId;
+        let angle, angleVel, angleAcc;
+        let L, g, originX, originY;
+        let path = [];
+
+        function resetSimulation() {
+            cancelAnimationFrame(animationId);
+
+            L = parseFloat(document.getElementById('length').value);
+            const startAngleDeg = parseFloat(document.getElementById('angle').value);
+            g = parseFloat(document.getElementById('gravity').value) * 0.4; // 시각적 속도 보정
+
+            originX = canvas.width / 2;
+            originY = 50;
+
+            angle = startAngleDeg * Math.PI / 180;
+            angleVel = 0.0;
+            angleAcc = 0.0;
+            path = []; // 경로 초기화
+
+            const realG = parseFloat(document.getElementById('gravity').value);
+            const T = 2 * Math.PI * Math.sqrt((L / 100) / realG);
+            document.getElementById('stats').innerText = `이론적 주기(T): ${T.toFixed(2)}s | 궤적은 실시간으로 기록됩니다.`;
+
+            update();
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. 물리 계산
+            angleAcc = (-1 * g / (L / 10)) * Math.sin(angle);
+            angleVel += angleAcc;
+            angleVel *= 0.999; // 미세한 공기 저항 (선택 사항)
+            angle += angleVel;
+
+            const x = L * Math.sin(angle) + originX;
+            const y = L * Math.cos(angle) + originY;
+
+            // 2. 경로 저장
+            path.push({ x: x, y: y });
+            if (path.length > 200) path.shift(); // 너무 길어지면 앞부분 삭제
+
+            // 3. 경로 그리기 (Trace)
+            const alpha = document.getElementById('traceAlpha').value;
+            if (path.length > 1 && alpha > 0) {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(16, 185, 129, ${alpha})`;
+                ctx.lineWidth = 1.5;
+                ctx.moveTo(path[0].x, path[0].y);
+                for (let i = 1; i < path.length; i++) {
+                    ctx.lineTo(path[i].x, path[i].y);
+                }
+                ctx.stroke();
+            }
+
+            // 4. 줄 그리기
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+            ctx.lineWidth = 2;
+            ctx.moveTo(originX, originY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+            // 5. 지지대
+            ctx.fillStyle = "#475569";
+            ctx.fillRect(originX - 20, originY - 5, 40, 10);
+
+            // 6. 추 그리기 (네온 그린)
+            ctx.beginPath();
+            ctx.arc(x, y, 15, 0, Math.PI * 2);
+            ctx.fillStyle = "#10b981";
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#10b981";
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            animationId = requestAnimationFrame(update);
+        }
+
+        // UI 업데이트
+        const setupUI = (id, unit) => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', (e) => {
+                const displayId = id === 'traceAlpha' ? 'traceVal' : id.charAt(0) + 'Val';
+                document.getElementById(displayId).innerText = `${e.target.value}${unit}`;
+            });
+        };
+
+        setupUI('length', ' px');
+        setupUI('angle', '°');
+        setupUI('gravity', ' m/s²');
+        setupUI('traceAlpha', '');
+
+        resetSimulation();
+    </script>
+</body>
+
+</html>

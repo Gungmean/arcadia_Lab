@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>비가역 현상 실험실 - 분자 확산</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-purple: #a855f7;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --canvas-bg: #020617;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        h2 {
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+        }
+
+        p.desc {
+            color: var(--text-dim);
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        canvas {
+            background: var(--canvas-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 740px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        label span {
+            color: var(--accent-purple);
+            font-weight: bold;
+        }
+
+        input[type=range] {
+            appearance: none;
+            background: #334155;
+            height: 6px;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-purple);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        button {
+            grid-column: span 2;
+            padding: 14px;
+            background-color: var(--accent-purple);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .stats {
+            margin-top: 15px;
+            grid-column: span 2;
+            font-size: 14px;
+            color: var(--text-dim);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="../2d.html" style="position: fixed; top: 16px; left: 16px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: rgba(30, 41, 59, 0.85); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; backdrop-filter: blur(8px); transition: 0.2s; z-index: 1000;" onmouseover="this.style.background='rgba(59, 130, 246, 0.9)'" onmouseout="this.style.background='rgba(30, 41, 59, 0.85)'">
+      ← 2D 실험실 목록
+    </a>
+
+    <h2>🌬️ 비가역 현상: 기체 확산 실험</h2>
+    <p class="desc">분자들이 무작위로 충돌하며 평형 상태로 나아가는 과정을 관찰하세요.</p>
+
+    <canvas id="gasCanvas" width="800" height="400"></canvas>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>분자 개수 <span id="countVal">100</span></label>
+            <input type="range" id="count" min="20" max="300" value="100">
+        </div>
+        <div class="control-group">
+            <label>온도 (에너지) <span id="tempVal">3</span></label>
+            <input type="range" id="temp" min="1" max="10" step="0.5" value="3">
+        </div>
+
+        <button onclick="initSimulation()">분자 주입 (실험 시작)</button>
+
+        <div class="stats" id="stats">분자들이 왼쪽 구역에 갇혀 있습니다. 버튼을 누르면 칸막이가 제거됩니다.</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gasCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        let animId;
+        let isReleased = false;
+
+        class Particle {
+            constructor(x, y, vX, vY, radius) {
+                this.x = x;
+                this.y = y;
+                this.vX = vX;
+                this.vY = vY;
+                this.radius = radius;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = "#a855f7";
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = "#a855f7";
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            update() {
+                this.x += this.vX;
+                this.y += this.vY;
+
+                // 벽 충돌 처리
+                if (this.x - this.radius < 0 || this.x + this.radius > canvas.width) {
+                    this.vX *= -1;
+                    this.x = this.x < this.radius ? this.radius : canvas.width - this.radius;
+                }
+                if (this.y - this.radius < 0 || this.y + this.radius > canvas.height) {
+                    this.vY *= -1;
+                    this.y = this.y < this.radius ? this.radius : canvas.height - this.radius;
+                }
+
+                // 칸막이 충돌 (해제 전)
+                if (!isReleased && this.x + this.radius > canvas.width / 2) {
+                    this.vX *= -1;
+                    this.x = canvas.width / 2 - this.radius;
+                }
+            }
+        }
+
+        function initSimulation() {
+            cancelAnimationFrame(animId);
+            isReleased = true;
+            const count = parseInt(document.getElementById('count').value);
+            const temp = parseFloat(document.getElementById('temp').value);
+
+            particles = [];
+            for (let i = 0; i < count; i++) {
+                // 초기 위치는 왼쪽 영역 무작위
+                const x = Math.random() * (canvas.width / 2 - 20) + 10;
+                const y = Math.random() * (canvas.height - 20) + 10;
+                // 속도는 온도에 비례
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * temp + 1;
+                const vX = Math.cos(angle) * speed;
+                const vY = Math.sin(angle) * speed;
+
+                particles.push(new Particle(x, y, vX, vY, 3));
+            }
+
+            document.getElementById('stats').innerText = "비가역 확산 진행 중... 다시 원래대로 뭉치지 않습니다.";
+            animate();
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 칸막이 그리기 (해제 전후 시각화)
+            if (!isReleased) {
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = "rgba(255,255,255,0.5)";
+            } else {
+                ctx.setLineDash([]);
+                ctx.strokeStyle = "rgba(255,255,255,0.05)";
+            }
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            animId = requestAnimationFrame(animate);
+        }
+
+        // 초기 상태 (칸막이 뒤에 대기)
+        function setupPre() {
+            isReleased = false;
+            initSimulation();
+            isReleased = false; // 강제로 다시 잠금
+            document.getElementById('stats').innerText = "분자들이 왼쪽에 몰려있습니다. 버튼을 눌러 확산시키세요.";
+        }
+
+        // UI 이벤트
+        document.getElementById('count').addEventListener('input', (e) => document.getElementById('countVal').innerText = e.target.value);
+        document.getElementById('temp').addEventListener('input', (e) => document.getElementById('tempVal').innerText = e.target.value);
+
+        setupPre();
+    </script>
+</body>
+
+</html>

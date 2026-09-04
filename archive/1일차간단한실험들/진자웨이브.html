@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>진자 웨이브 실험실</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #22d3ee;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --canvas-bg: #020617;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        h2 {
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 30px;
+        }
+
+        canvas {
+            background: var(--canvas-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 740px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        label span {
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+
+        input[type=range] {
+            appearance: none;
+            background: #334155;
+            height: 6px;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        button {
+            grid-column: span 2;
+            padding: 14px;
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .stats {
+            grid-column: span 2;
+            font-size: 13px;
+            color: var(--text-dim);
+            text-align: center;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>🌊 진자 웨이브 실험실 (Pendulum Wave)</h2>
+    <canvas id="waveCanvas" width="800" height="500"></canvas>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>기본 주기 횟수 (N) <span id="nVal">15</span></label>
+            <input type="range" id="count" min="10" max="25" value="15">
+        </div>
+        <div class="control-group">
+            <label>실험 시간 (T) <span id="tVal">60 s</span></label>
+            <input type="range" id="time" min="30" max="120" value="60">
+        </div>
+
+        <button onclick="initWave()">시뮬레이션 재시작</button>
+
+        <div class="stats">
+            각 진자는 서로 다른 길이를 가지며, 설정된 시간(T)이 지나면 다시 모두 일렬로 정렬됩니다.<br>
+            그 사이의 시간 동안 뱀 모양, 이중 나선 등 기하학적인 웨이브가 나타납니다.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('waveCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let pendulums = [];
+        const numPendulums = 15;
+        let startTime;
+        let animId;
+
+        class Pendulum {
+            constructor(index, totalTime, baseCycles) {
+                this.index = index;
+                // 각 진자는 totalTime 동안 (baseCycles + index)번 왕복하도록 길이를 설정
+                this.cycles = baseCycles + index;
+                this.totalTime = totalTime;
+                this.length = 400 * Math.pow((totalTime / (2 * Math.PI * this.cycles)), 2) * 9.8 * 50;
+                // 시뮬레이션 가시성을 위해 길이 조정
+                this.actualLength = 150 + (index * 12);
+                this.maxAngle = Math.PI / 6; // 30도
+            }
+
+            draw(elapsed) {
+                // 각 진자의 주기 계산
+                const period = this.totalTime / this.cycles;
+                const angle = this.maxAngle * Math.cos((2 * Math.PI * elapsed) / period);
+
+                const x0 = canvas.width / 2;
+                const y0 = 20;
+                const x = x0 + this.actualLength * Math.sin(angle);
+                const y = y0 + this.actualLength * Math.cos(angle);
+
+                // 줄 그리기
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(148, 163, 184, 0.3)";
+                ctx.moveTo(x0, y0);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                // 추 그리기 (그라데이션 색상)
+                const hue = 180 + (this.index * 10);
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${hue}, 80%, 60%, 1)`;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = `hsla(${hue}, 80%, 60%, 0.8)`;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function initWave() {
+            cancelAnimationFrame(animId);
+            const baseCycles = parseInt(document.getElementById('count').value);
+            const totalTime = parseInt(document.getElementById('time').value);
+
+            pendulums = [];
+            for (let i = 0; i < numPendulums; i++) {
+                pendulums.push(new Pendulum(i, totalTime, baseCycles));
+            }
+
+            startTime = Date.now();
+            animate();
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 지지대
+            ctx.fillStyle = "#334155";
+            ctx.fillRect(canvas.width / 2 - 100, 15, 200, 5);
+
+            const elapsed = (Date.now() - startTime) / 1000;
+
+            // 뒤에 있는 진자부터 그리기
+            pendulums.forEach(p => p.draw(elapsed));
+
+            animId = requestAnimationFrame(animate);
+        }
+
+        // UI 업데이트
+        document.getElementById('count').addEventListener('input', (e) => document.getElementById('nVal').innerText = e.target.value);
+        document.getElementById('time').addEventListener('input', (e) => document.getElementById('tVal').innerText = e.target.value + " s");
+
+        initWave();
+    </script>
+</body>
+
+</html>
