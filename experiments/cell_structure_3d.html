@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D 인터랙티브 세포 구조 탐색기</title>
+    <!-- Three.js & OrbitControls & Tween.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
     <style>
         :root {
             --bg-color: #020617;
@@ -601,7 +605,7 @@
                 { x: -14, y: 7, z: -6, rot: [0.2, -0.7, 0.3] }
             ];
 
-            mitoLocations.forEach((pos, idx) => {
+            mitoPositions.forEach((pos, idx) => {
                 const mitoGroup = new THREE.Group();
                 mitoGroup.position.set(pos.x, pos.y, pos.z);
                 mitoGroup.rotation.set(...pos.rot);
