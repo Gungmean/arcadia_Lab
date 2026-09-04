@@ -54,15 +54,17 @@
       cursor: pointer;
       backdrop-filter: blur(8px);
       transition: all 0.2s;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
+      text-decoration: none;
     }
 
     .feedback-btn:hover {
       background: rgba(59, 130, 246, 0.8);
       border-color: #3b82f6;
       transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
     }
 
     .container{
@@ -161,156 +163,6 @@
       font-weight: 600;
     }
 
-    /* Modal Styles */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(8px);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      padding: 20px;
-    }
-
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .modal-box {
-      background: #1e293b;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 20px;
-      width: 100%;
-      max-width: 480px;
-      padding: 30px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-      position: relative;
-      animation: modalFadeIn 0.25s ease;
-      text-align: left;
-    }
-
-    @keyframes modalFadeIn {
-      from { opacity: 0; transform: scale(0.95) translateY(10px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    .modal-close {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 1.5rem;
-      cursor: pointer;
-      line-height: 1;
-    }
-
-    .modal-close:hover {
-      color: white;
-    }
-
-    .modal-title {
-      font-size: 1.4rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: #f8fafc;
-    }
-
-    .modal-desc {
-      font-size: 0.9rem;
-      color: #94a3b8;
-      margin-bottom: 24px;
-      line-height: 1.5;
-    }
-
-    .form-group {
-      margin-bottom: 22px;
-    }
-
-    .form-label {
-      display: block;
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: #e2e8f0;
-    }
-
-    .rating-group {
-      display: flex;
-      gap: 10px;
-      justify-content: space-between;
-    }
-
-    .rating-btn {
-      flex: 1;
-      padding: 12px 0;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      color: #cbd5e1;
-      font-size: 1.1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-align: center;
-    }
-
-    .rating-btn:hover {
-      background: rgba(59, 130, 246, 0.2);
-      border-color: #3b82f6;
-      color: #60a5fa;
-    }
-
-    .rating-btn.selected {
-      background: #2563eb;
-      border-color: #3b82f6;
-      color: white;
-      box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
-    }
-
-    .feedback-textarea {
-      width: 100%;
-      height: 100px;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 12px 14px;
-      color: white;
-      font-size: 0.95rem;
-      resize: none;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .feedback-textarea:focus {
-      border-color: #3b82f6;
-    }
-
-    .submit-btn {
-      width: 100%;
-      padding: 14px;
-      background: #2563eb;
-      border: none;
-      border-radius: 12px;
-      color: white;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-top: 10px;
-    }
-
-    .submit-btn:hover {
-      background: #1d4ed8;
-      transform: translateY(-2px);
-    }
-
     @media(max-width:700px){
       .title{
         font-size:2.5rem;
@@ -332,9 +184,9 @@
   <div class="bg"></div>
 
   <div class="header-bar">
-    <button class="feedback-btn" onclick="openFeedbackModal()">
-      💬 평가 및 피드백 남기기
-    </button>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header" target="_blank" class="feedback-btn">
+      💬 평가 및 피드백 남기기 ↗
+    </a>
   </div>
 
   <div class="container">
@@ -343,7 +195,7 @@
     <div class="title">인터랙티브 가상 실험실</div>
 
     <div class="subtitle">
-      수업 중 접하는 과학 개념을 직접 조작하고 시각적으로 관찰해보세요.
+      2022 개정 교육과정 기반 과학 개념을 직접 조작하고 시각적으로 관찰해보세요.
     </div>
 
     <div class="menu">
@@ -352,8 +204,8 @@
       <div class="card" onclick="location.href='2d.html'">
         <div class="icon">🧪</div>
         <h2>2D 실험실</h2>
-        <p>물리·화학 인터랙티브 시뮬레이션</p>
-        <span class="card-tag">8개 실험 준비됨 →</span>
+        <p>물·화·생·지 인터랙티브 시뮬레이션</p>
+        <span class="card-tag">8개 실험 탐색하기 →</span>
       </div>
 
       <!-- 3D 실험실 연결 -->
@@ -366,93 +218,6 @@
 
     </div>
   </div>
-
-  <!-- Feedback Modal -->
-  <div class="modal-overlay" id="feedbackModal" onclick="closeFeedbackModal(event)">
-    <div class="modal-box" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="closeFeedbackModal()">×</button>
-      <div class="modal-title">📝 실험실 평가 및 의견 남기기</div>
-      <div class="modal-desc">여러분의 소중한 피드백은 더 나은 가상 실험실을 만드는 데 큰 도움이 됩니다!</div>
-
-      <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; padding: 14px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 0.9rem; color: #93c5fd;">공식 구글 설문지로 바로 응답하기</span>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header" target="_blank" style="padding: 6px 12px; background: #2563eb; color: white; border-radius: 8px; font-size: 0.85rem; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-          구글 폼 열기 ↗
-        </a>
-      </div>
-
-      <form id="feedbackForm" onsubmit="handleFeedbackSubmit(event)">
-        <!-- 1. 만족도 5점 척도 -->
-        <div class="form-group">
-          <label class="form-label">1. 실험실 전반적인 만족도 (5점 만점)</label>
-          <div class="rating-group">
-            <button type="button" class="rating-btn" onclick="selectRating(1)">1점</button>
-            <button type="button" class="rating-btn" onclick="selectRating(2)">2점</button>
-            <button type="button" class="rating-btn" onclick="selectRating(3)">3점</button>
-            <button type="button" class="rating-btn" onclick="selectRating(4)">4점</button>
-            <button type="button" class="rating-btn selected" onclick="selectRating(5)">5점 ⭐</button>
-          </div>
-          <input type="hidden" id="selectedScore" value="5">
-        </div>
-
-        <!-- 2. 추가되었으면 하는 실험 / 자유 의견 -->
-        <div class="form-group">
-          <label class="form-label" for="customOpinion">2. 추가되었으면 하는 실험이나 바라는 점</label>
-          <textarea id="customOpinion" class="feedback-textarea" placeholder="예: 화학 앙금 반응 실험도 보고 싶어요! / 모바일에서도 잘 동작하면 좋겠어요."></textarea>
-        </div>
-
-        <button type="submit" class="submit-btn">구글 폼으로 의견 제출하기 🚀</button>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header";
-    let selectedRating = 5;
-
-    function openFeedbackModal() {
-      document.getElementById('feedbackModal').classList.add('active');
-    }
-
-    function closeFeedbackModal(e) {
-      if (e && e.target !== e.currentTarget && !e.target.classList.contains('modal-close')) return;
-      document.getElementById('feedbackModal').classList.remove('active');
-    }
-
-    function selectRating(score) {
-      selectedRating = score;
-      document.getElementById('selectedScore').value = score;
-      const btns = document.querySelectorAll('.rating-btn');
-      btns.forEach((btn, idx) => {
-        if (idx + 1 === score) {
-          btn.classList.add('selected');
-        } else {
-          btn.classList.remove('selected');
-        }
-      });
-    }
-
-    function handleFeedbackSubmit(e) {
-      e.preventDefault();
-      const score = document.getElementById('selectedScore').value;
-      const opinion = document.getElementById('customOpinion').value.trim();
-
-      // 로컬 스토리지에 피드백 임시 저장
-      const savedFeedbacks = JSON.parse(localStorage.getItem('arcadia_feedbacks') || '[]');
-      savedFeedbacks.push({
-        score: score,
-        opinion: opinion,
-        date: new Date().toLocaleString()
-      });
-      localStorage.setItem('arcadia_feedbacks', JSON.stringify(savedFeedbacks));
-
-      // 구글 폼 새 창 오픈
-      window.open(GOOGLE_FORM_URL, '_blank');
-      alert('피드백 참여 감사합니다! 열린 구글 설문지 창에서 최종 제출을 완료해 주세요. 😊');
-      document.getElementById('customOpinion').value = '';
-      closeFeedbackModal();
-    }
-  </script>
 
 </body>
 </html>
