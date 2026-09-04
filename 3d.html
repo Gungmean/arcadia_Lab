@@ -1,20 +1,16 @@
-<!-- ========================= -->
-<!-- 3D 실험실 (3d.html) -->
-<!-- ========================= -->
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D 실험실</title>
+  <title>3D 가상 실험실</title>
 
   <style>
     *{
       margin:0;
       padding:0;
       box-sizing:border-box;
-      font-family:'Segoe UI', sans-serif;
+      font-family:'Pretendard', 'Segoe UI', sans-serif;
     }
 
     body{
@@ -38,77 +34,137 @@
       width:90%;
       max-width:1200px;
       margin:auto;
-      padding:60px 0;
+      padding:50px 0 80px 0;
     }
 
     .topbar{
       display:flex;
       justify-content:space-between;
       align-items:center;
-      margin-bottom:50px;
+      margin-bottom:25px;
     }
 
     .title{
-      font-size:3rem;
+      font-size:2.8rem;
       font-weight:700;
+      letter-spacing:-0.5px;
     }
 
-    .back{
-      padding:12px 20px;
+    .btn-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn{
+      padding:10px 18px;
       border:none;
-      border-radius:14px;
-      background:#0ea5e9;
+      border-radius:12px;
+      background:#0284c7;
       color:white;
+      font-size:0.95rem;
+      font-weight:600;
       cursor:pointer;
       transition:0.2s;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
     }
 
-    .back:hover{
-      background:#38bdf8;
+    .btn:hover{
+      background:#0ea5e9;
+      transform:translateY(-2px);
+    }
+
+    .btn.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .btn.secondary:hover {
+      background: rgba(14, 165, 233, 0.8);
+      border-color: #38bdf8;
+      box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
     }
 
     .subtitle{
-      color:#cbd5e1;
-      margin-bottom:40px;
-      font-size:1rem;
+      color:#94a3b8;
+      margin-bottom:35px;
+      font-size:1.05rem;
     }
 
     .grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-      gap:25px;
+      grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+      gap:24px;
     }
 
     .card{
       background:rgba(255,255,255,0.05);
       border:1px solid rgba(255,255,255,0.08);
-      border-radius:24px;
-      padding:35px 25px;
+      border-radius:20px;
+      padding:28px 24px;
       backdrop-filter:blur(10px);
-      transition:0.25s;
+      transition:all 0.25s ease;
       cursor:pointer;
+      display:flex;
+      flex-direction:column;
+      position:relative;
+      overflow:hidden;
     }
 
     .card:hover{
-      transform:translateY(-6px) scale(1.01);
+      transform:translateY(-6px);
       border-color:#38bdf8;
-      box-shadow:0 0 25px rgba(14,165,233,0.3);
+      background:rgba(255,255,255,0.08);
+      box-shadow:0 12px 30px rgba(14,165,233,0.3);
+    }
+
+    .badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(52, 211, 153, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .badge.soon {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border-color: rgba(148, 163, 184, 0.3);
     }
 
     .icon{
-      font-size:3rem;
-      margin-bottom:18px;
+      font-size:2.8rem;
+      margin-bottom:16px;
     }
 
     .card h2{
-      margin-bottom:10px;
-      font-size:1.5rem;
+      margin-bottom:8px;
+      font-size:1.35rem;
+      font-weight:700;
     }
 
     .card p{
-      color:#cbd5e1;
+      color:#94a3b8;
       line-height:1.5;
-      font-size:0.95rem;
+      font-size:0.9rem;
+      flex-grow:1;
+    }
+
+    .card-footer {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.85rem;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
   </style>
 </head>
@@ -120,41 +176,70 @@
 <div class="container">
 
   <div class="topbar">
-    <div class="title">3D 실험실</div>
+    <div class="title">3D 가상 실험실</div>
 
-    <button class="back" onclick="location.href='index.html'">
-      뒤로가기
-    </button>
+    <div class="btn-group">
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header" target="_blank" class="btn secondary">
+        💬 평가 및 피드백 남기기 ↗
+      </a>
+      <button class="btn" onclick="location.href='index.html'">
+        🏠 메인으로
+      </button>
+    </div>
   </div>
 
   <div class="subtitle">
-    입체 실험 환경을 선택하세요
+    WebGL 3D 그래픽스를 통해 분자·세포·천체의 입체 구조를 360도로 탐색하세요
   </div>
 
   <div class="grid">
 
-    <div class="card">
-      <div class="icon">🪐</div>
-      <h2>중력 시뮬레이션</h2>
-      <p>행성과 중력 상호작용 체험</p>
-    </div>
-
-    <div class="card">
-      <div class="icon">⚛️</div>
-      <h2>원자 구조</h2>
-      <p>3D 원자 모델 탐색</p>
-    </div>
-
-    <div class="card">
+    <!-- [3D 정식 오픈] 세포 구조 탐색기 -->
+    <div class="card" onclick="location.href='experiments/cell_structure_3d.html'">
+      <span class="badge">생명과학 · 세포와물질대사</span>
       <div class="icon">🧬</div>
-      <h2>DNA 모델</h2>
-      <p>이중 나선 구조 관찰</p>
+      <h2>3D 세포 구조 탐색기</h2>
+      <p>동물/식물 세포 360° 3D 회전, 절개막 내부 소기관 초점 줌인 및 단백질 분비 경로 시뮬레이션</p>
+      <div class="card-footer">
+        <span style="color: #34d399; font-weight: bold;">3D 탐색 시작하기</span>
+        <span style="color: #34d399;">→</span>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="icon">🌋</div>
-      <h2>화산 활동</h2>
-      <p>지형과 분출 과정 시뮬레이션</p>
+    <!-- [3D 예정] 중력 시뮬레이션 -->
+    <div class="card" onclick="alert('3D 중력 및 행성 궤도 시뮬레이터가 준비 중입니다!')">
+      <span class="badge soon">추가 예정</span>
+      <div class="icon">🪐</div>
+      <h2>3D 중력 시뮬레이션</h2>
+      <p>행성 간 만유인력 상호작용과 3차원 공전 궤도 역학</p>
+      <div class="card-footer">
+        <span style="color: #94a3b8;">개발 진행 중</span>
+        <span style="color: #94a3b8;">⏳</span>
+      </div>
+    </div>
+
+    <!-- [3D 예정] 원자 구조 모델 -->
+    <div class="card" onclick="alert('3D 원자 오비탈 및 보어 모델 시뮬레이터가 준비 중입니다!')">
+      <span class="badge soon">추가 예정</span>
+      <div class="icon">⚛️</div>
+      <h2>3D 원자 오비탈 모델</h2>
+      <p>전자껍질 및 s/p 오비탈 3차원 확률 밀도 분포 탐색</p>
+      <div class="card-footer">
+        <span style="color: #94a3b8;">개발 진행 중</span>
+        <span style="color: #94a3b8;">⏳</span>
+      </div>
+    </div>
+
+    <!-- [3D 예정] DNA 이중나선 -->
+    <div class="card" onclick="alert('3D DNA 이중나선 및 복제 시뮬레이터가 준비 중입니다!')">
+      <span class="badge soon">추가 예정</span>
+      <div class="icon">🧬</div>
+      <h2>DNA 이중나선 & 복제</h2>
+      <p>상보적 염기쌍(A-T, G-C) 결합과 반보존적 복제 모형</p>
+      <div class="card-footer">
+        <span style="color: #94a3b8;">개발 진행 중</span>
+        <span style="color: #94a3b8;">⏳</span>
+      </div>
     </div>
 
   </div>

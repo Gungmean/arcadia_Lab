@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 인터랙티브 세포 구조 탐색기</title>
+    <style>
+        :root {
+            --bg-color: #020617;
+            --card-bg: rgba(15, 23, 42, 0.85);
+            --accent-green: #10b981;
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+            --accent-purple: #a855f7;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Pretendard', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #webgl-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* 상단 네비게이션 & 헤더 */
+        .header-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .header-left, .header-right {
+            pointer-events: auto;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 16px;
+            background: rgba(15, 23, 42, 0.85);
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: 0.2s;
+        }
+        .back-btn:hover {
+            background: rgba(59, 130, 246, 0.8);
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .title-group {
+            margin-top: 10px;
+        }
+
+        .badge-curriculum {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            margin-bottom: 6px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+        }
+
+        /* 모드 전환 탭 (동물세포 / 식물세포) */
+        .mode-switch-group {
+            display: flex;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 4px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            gap: 4px;
+        }
+
+        .mode-btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+        }
+
+        /* 하단 컨트롤 패널 */
+        .bottom-bar {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 8px 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .ctrl-btn {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .ctrl-btn.active {
+            background: #10b981;
+            border-color: #34d399;
+            color: white;
+        }
+
+        /* 우측 소기관 상세 정보 카드 */
+        .organelle-card {
+            position: absolute;
+            right: 24px;
+            top: 90px;
+            width: 340px;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(16px);
+            z-index: 10;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+            transform: translateX(380px);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .organelle-card.open {
+            transform: translateX(0);
+        }
+
+        .card-close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.4rem;
+            cursor: pointer;
+        }
+        .card-close-btn:hover { color: white; }
+
+        .organelle-tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .organelle-name {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: #f8fafc;
+        }
+
+        .organelle-desc {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        .exam-box {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #3b82f6;
+            padding: 10px 12px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: #93c5fd;
+        }
+
+        /* 3D 화면 조작 안내 툴팁 */
+        .interaction-hint {
+            position: absolute;
+            bottom: 85px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: #64748b;
+            z-index: 5;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        /* 소기관 목록 퀵 셀렉터 (좌측) */
+        .organelle-menu {
+            position: absolute;
+            left: 20px;
+            top: 130px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.75);
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            max-height: calc(100vh - 240px);
+            overflow-y: auto;
+        }
+
+        .menu-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+            padding-left: 4px;
+        }
+
+        .menu-item-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .menu-item-btn:hover {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: #3b82f6;
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .dot-icon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+    </style>
+    <!-- Three.js & OrbitControls CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+</head>
+<body>
+
+    <div id="webgl-container"></div>
+
+    <!-- 상단 바 -->
+    <div class="header-bar">
+        <div class="header-left">
+            <a href="../3d.html" class="back-btn">
+                ← 3D 실험실 목록
+            </a>
+            <div class="title-group">
+                <div class="badge-curriculum">2022 개정 생명과학 · 세포와 물질대사</div>
+                <h1 id="cellTitle">🧬 3D 인터랙티브 동물세포 모델</h1>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="mode-switch-group">
+                <button class="mode-btn active" id="btnAnimal" onclick="switchCellMode('animal')">🧫 동물세포</button>
+                <button class="mode-btn" id="btnPlant" onclick="switchCellMode('plant')">🌿 식물세포</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 좌측 소기관 빠른 선택 메뉴 -->
+    <div class="organelle-menu" id="quickMenu">
+        <div class="menu-title">세포소기관 탐색</div>
+        <!-- 동적 생성됨 -->
+    </div>
+
+    <!-- 조작 힌트 -->
+    <div class="interaction-hint">
+        마우스 드래그: 360° 회전 | 휠: 줌인/줌아웃 | 소기관 클릭: 초점 확대 및 기능 확인
+    </div>
+
+    <!-- 하단 액션 바 -->
+    <div class="bottom-bar">
+        <button class="ctrl-btn" id="btnSecretion" onclick="toggleSecretionAnimation()">
+            ✨ 단백질 분비 경로 시뮬레이션
+        </button>
+        <button class="ctrl-btn" id="btnMembrane" onclick="toggleMembrane()">
+            🔍 세포막 투명도 조절
+        </button>
+        <button class="ctrl-btn" onclick="resetCamera()">
+            🔄 시점 리셋
+        </button>
+    </div>
+
+    <!-- 우측 소기관 정보 카드 -->
+    <div class="organelle-card" id="organelleCard">
+        <button class="card-close-btn" onclick="closeCard()">×</button>
+        <div class="organelle-tag" id="cardTag">이중막 구조</div>
+        <div class="organelle-name" id="cardName">미토콘드리아 (Mitochondria)</div>
+        <div class="organelle-desc" id="cardDesc">
+            세포 호흡을 통해 유기물을 분해하여 생명 활동 에너지인 ATP를 합성하는 세포의 발전소입니다.
+        </div>
+        <div class="exam-box" id="cardExam">
+            💡 <b>수능/내신 빈출 포인트</b>: 자체 DNA와 리보솜을 가지고 있어 스스로 복제 및 단백질 합성이 가능한 세포내 공생설의 증거!
+        </div>
+    </div>
+
+    <script>
+        // --- 1. 세포소기관 데이터 정의 (2022 개정 생명과학 기준) ---
+        const ORGANELLE_DATA = {
+            nucleus: {
+                name: "핵 (Nucleus & Nucleolus)",
+                tag: "이중막 · 유전 정보 저장소",
+                tagColor: "rgba(168, 85, 247, 0.2)",
+                tagTextColor: "#c084fc",
+                desc: "DNA가 포함된 유전 물질(염색사)을 보관하며, 세포의 모든 생명 활동을 총괄하는 컨트롤 타워입니다. 핵공을 통해 RNA와 단백질이 출입합니다.",
+                exam: "핵막은 2장의 인지질 2중층으로 이루어진 이중막 구조이며, 내부의 '인(Nucleolus)'에서 리보솜 RNA(rRNA)가 합성됩니다.",
+                pos: { x: 0, y: 0, z: 0 },
+                camPos: { x: 0, y: 5, z: 22 }
+            },
+            mitochondria: {
+                name: "미토콘드리아 (Mitochondria)",
+                tag: "이중막 · 세포 호흡 & ATP 합성",
+                tagColor: "rgba(249, 115, 22, 0.2)",
+                tagTextColor: "#fb923c",
+                desc: "세포 호흡이 일어나는 장소로, 포도당 등 유기물을 산소와 반응시켜 생명 활동의 에너지원인 ATP를 대량으로 합성합니다.",
+                exam: "내막이 안쪽으로 주름진 크리스타(Cristae) 구조를 형성하여 표면적을 넓히며, 자체 DNA와 리보솜을 지닌 이중막 소기관입니다.",
+                pos: { x: 12, y: -4, z: 8 },
+                camPos: { x: 16, y: -2, z: 16 }
+            },
+            er: {
+                name: "소포체 (Endoplasmic Reticulum)",
+                tag: "단일막 · 단백질 가공 & 수송",
+                tagColor: "rgba(59, 130, 246, 0.2)",
+                tagTextColor: "#60a5fa",
+                desc: "핵막과 연결된 주름진 막 구조로, 리보솜이 붙어 있는 조면소포체(단백질 가공/수송)와 리보솜이 없는 활면소포체(지질 합성, 해독 작용)로 나뉩니다.",
+                exam: "리보솜에서 합성된 폴리펩타이드를 소포체 내강에서 3차원 입체 구조로 접고 가공하여 골지체로 전달합니다.",
+                pos: { x: -6, y: 5, z: -2 },
+                camPos: { x: -8, y: 8, z: 12 }
+            },
+            golgi: {
+                name: "골지체 (Golgi Apparatus)",
+                tag: "단일막 · 단백질 수송 & 분비",
+                tagColor: "rgba(234, 179, 8, 0.2)",
+                tagTextColor: "#facc15",
+                desc: "납작한 시스터나(Cisterna) 주머니가 층층이 포개진 형태로, 소포체로부터 전달받은 단백질을 최종 수식·포장하여 분비소낭에 담아 세포 밖으로 분비합니다.",
+                exam: "소포체에서 수송소포로 이동 → 골지체에서 당화 등 최종 가공 → 분비소낭을 통해 세포막과 융합(외포작용)하여 방출!",
+                pos: { x: -12, y: -5, z: 7 },
+                camPos: { x: -16, y: -4, z: 16 }
+            },
+            lysosome: {
+                name: "리소좀 (Lysosome)",
+                tag: "단일막 · 세포 내 소화",
+                tagColor: "rgba(239, 68, 68, 0.2)",
+                tagTextColor: "#f87171",
+                desc: "골지체에서 형성된 소포로, 다양한 가수 분해 효소를 함유하여 외부에서 들어온 이물질이나 노후된 세포 소기관을 분해(세포 내 소화)합니다.",
+                exam: "가수분해 효소는 산성 환경(pH 5)에서 최적 활성을 가지므로, 리소좀 내부 막의 수소 이온 펌프가 산성을 유지합니다.",
+                pos: { x: 8, y: 9, z: -7 },
+                camPos: { x: 10, y: 12, z: -2 }
+            },
+            chloroplast: {
+                name: "엽록체 (Chloroplast) [식물세포]",
+                tag: "이중막 · 광합성 & 포도당 합성",
+                tagColor: "rgba(16, 185, 129, 0.2)",
+                tagTextColor: "#34d399",
+                desc: "빛에너지를 흡수하여 물과 이산화탄소로부터 포도당과 산소를 합성하는 광합성 장소입니다. 식물 세포와 조류에만 존재합니다.",
+                exam: "동전 모양의 틸라코이드가 쌓인 '그라나'와 기질인 '스트로마'로 구성되며, 미토콘드리아처럼 자체 DNA와 리보솜을 지닙니다.",
+                pos: { x: 12, y: 6, z: -8 },
+                camPos: { x: 16, y: 8, z: -2 }
+            },
+            vacuole: {
+                name: "중심 액포 (Central Vacuole) [식물세포]",
+                tag: "단일막 · 삼투압 조절 & 물질 저장",
+                tagColor: "rgba(6, 182, 212, 0.2)",
+                tagTextColor: "#22d3ee",
+                desc: "성숙한 식물 세포에서 큰 부피를 차지하며, 물, 무기염류, 색소, 노폐물 등을 저장하고 세포의 형태 유지 및 삼투압을 조절합니다.",
+                exam: "세포가 성숙할수록 액포의 크기가 커지며, 세포 내부 팽압을 형성하여 식물체가 꼿꼿이 서 있도록 지탱합니다.",
+                pos: { x: -8, y: -2, z: -8 },
+                camPos: { x: -12, y: 0, z: -2 }
+            },
+            ribosome: {
+                name: "리보솜 (Ribosome)",
+                tag: "막 없음 · 단백질 합성 공장",
+                tagColor: "rgba(244, 114, 182, 0.2)",
+                tagTextColor: "#f472b6",
+                desc: "rRNA와 단백질로 이루어진 아주 작은 알갱이로, mRNA의 유전 암호(코돈)를 해독하여 아미노산을 연결하는 단백질 합성이 일어납니다.",
+                exam: "막 구조가 없는 세포소기관이며, 세포질에 자유롭게 떠 있거나 조면소포체 외막에 부착되어 존재합니다.",
+                pos: { x: -3, y: 3, z: 5 },
+                camPos: { x: -4, y: 4, z: 12 }
+            }
+        };
+
+        // --- 2. Three.js 씬 및 렌더러 초기화 ---
+        let scene, camera, renderer, controls;
+        let cellGroup, membraneMesh, cellWallMesh;
+        let organelleMeshes = {};
+        let currentMode = 'animal'; // 'animal' or 'plant'
+        let raycaster, mouse;
+        let isSecretionRunning = false;
+        let secretionParticles = [];
+        let membraneOpacity = 0.35;
+
+        const container = document.getElementById('webgl-container');
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x020617, 0.015);
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 15, 55);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxDistance = 120;
+            controls.minDistance = 10;
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            setupLighting();
+            createCellModel();
+            createBackgroundStars();
+            buildQuickMenu();
+
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('pointermove', onPointerMove);
+            window.addEventListener('click', onClick);
+
+            animate();
+        }
+
+        // --- 3. 조명 시스템 ---
+        function setupLighting() {
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            mainLight.position.set(30, 40, 30);
+            mainLight.castShadow = true;
+            scene.add(mainLight);
+
+            const blueLight = new THREE.PointLight(0x38bdf8, 2.5, 80);
+            blueLight.position.set(-25, -20, 20);
+            scene.add(blueLight);
+
+            const purpleLight = new THREE.PointLight(0xc084fc, 2.0, 80);
+            purpleLight.position.set(20, 25, -20);
+            scene.add(purpleLight);
+        }
+
+        // --- 4. 세포 3D 모델 구축 (절차적 지오메트리) ---
+        function createCellModel() {
+            if (cellGroup) scene.remove(cellGroup);
+            cellGroup = new THREE.Group();
+            organelleMeshes = {};
+
+            // (1) 절개형 반투명 세포막 (Cutaway Cell Membrane)
+            const membraneGeo = new THREE.SphereGeometry(22, 64, 32, 0, Math.PI * 1.5, 0, Math.PI);
+            const membraneMat = new THREE.MeshPhysicalMaterial({
+                color: currentMode === 'animal' ? 0x0ea5e9 : 0x10b981,
+                transparent: true,
+                opacity: membraneOpacity,
+                roughness: 0.1,
+                metalness: 0.1,
+                transmission: 0.7,
+                ior: 1.3,
+                side: THREE.DoubleSide,
+                depthWrite: false
+            });
+            membraneMesh = new THREE.Mesh(membraneGeo, membraneMat);
+            cellGroup.add(membraneMesh);
+
+            // (2) 식물세포 세포벽 (식물 모드 시 생성)
+            if (currentMode === 'plant') {
+                const wallGeo = new THREE.BoxGeometry(40, 36, 36);
+                const wallMat = new THREE.MeshStandardMaterial({
+                    color: 0x059669,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.4
+                });
+                cellWallMesh = new THREE.Mesh(wallGeo, wallMat);
+                cellGroup.add(cellWallMesh);
+            }
+
+            // (3) 핵 (Nucleus) & 인 (Nucleolus)
+            const nucleusGroup = new THREE.Group();
+            nucleusGroup.position.set(ORGANELLE_DATA.nucleus.pos.x, ORGANELLE_DATA.nucleus.pos.y, ORGANELLE_DATA.nucleus.pos.z);
+            
+            // 핵 외막 (절개형)
+            const nucleusGeo = new THREE.SphereGeometry(7, 32, 32, 0, Math.PI * 1.6);
+            const nucleusMat = new THREE.MeshStandardMaterial({
+                color: 0x9333ea,
+                roughness: 0.4,
+                metalness: 0.2,
+                side: THREE.DoubleSide
+            });
+            const nucleusMesh = new THREE.Mesh(nucleusGeo, nucleusMat);
+            nucleusMesh.userData = { id: 'nucleus' };
+            nucleusGroup.add(nucleusMesh);
+
+            // 내부 인 (Nucleolus)
+            const nucleolusGeo = new THREE.SphereGeometry(2.5, 24, 24);
+            const nucleolusMat = new THREE.MeshStandardMaterial({
+                color: 0xd946ef,
+                emissive: 0xa21caf,
+                emissiveIntensity: 0.5,
+                roughness: 0.2
+            });
+            const nucleolusMesh = new THREE.Mesh(nucleolusGeo, nucleolusMat);
+            nucleolusMesh.userData = { id: 'nucleus' };
+            nucleusGroup.add(nucleolusMesh);
+
+            cellGroup.add(nucleusGroup);
+            organelleMeshes.nucleus = nucleusMesh;
+
+            // (4) 미토콘드리아 (Mitochondria) 3개 배치
+            const mitoPositions = [
+                { x: 12, y: -4, z: 8, rot: [0.4, 0.8, 0] },
+                { x: 8, y: -10, z: -7, rot: [-0.6, 0.2, 0.5] },
+                { x: -14, y: 7, z: -6, rot: [0.2, -0.7, 0.3] }
+            ];
+
+            mitoLocations.forEach((pos, idx) => {
+                const mitoGroup = new THREE.Group();
+                mitoGroup.position.set(pos.x, pos.y, pos.z);
+                mitoGroup.rotation.set(...pos.rot);
+
+                // 외막 (타원형 캡슐)
+                const outerGeo = new THREE.SphereGeometry(3.5, 24, 16);
+                outerGeo.scale(1.8, 1, 1);
+                const outerMat = new THREE.MeshStandardMaterial({
+                    color: 0xea580c,
+                    transparent: true,
+                    opacity: 0.85,
+                    roughness: 0.3
+                });
+                const mitoOuter = new THREE.Mesh(outerGeo, outerMat);
+                mitoOuter.userData = { id: 'mitochondria' };
+                mitoGroup.add(mitoOuter);
+
+                // 내부 크리스타 주름 표현 (골드 발광 주름)
+                const innerGeo = new THREE.TorusGeometry(2.2, 0.4, 8, 16);
+                innerGeo.scale(1.2, 0.8, 0.8);
+                const innerMat = new THREE.MeshStandardMaterial({
+                    color: 0xfbbf24,
+                    emissive: 0xd97706,
+                    emissiveIntensity: 0.6
+                });
+                const cristae = new THREE.Mesh(innerGeo, innerMat);
+                cristae.userData = { id: 'mitochondria' };
+                mitoGroup.add(cristae);
+
+                cellGroup.add(mitoGroup);
+                if (idx === 0) organelleMeshes.mitochondria = mitoOuter;
+            });
+
+            // (5) 소포체 (Endoplasmic Reticulum)
+            const erGroup = new THREE.Group();
+            erGroup.position.set(ORGANELLE_DATA.er.pos.x, ORGANELLE_DATA.er.pos.y, ORGANELLE_DATA.er.pos.z);
+            for (let i = 0; i < 4; i++) {
+                const ringGeo = new THREE.TorusGeometry(8 + i * 1.5, 0.5, 8, 32, Math.PI * 0.8);
+                const ringMat = new THREE.MeshStandardMaterial({
+                    color: 0x3b82f6,
+                    roughness: 0.3
+                });
+                const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+                ringMesh.rotation.x = Math.PI / 2 + (i * 0.15);
+                ringMesh.rotation.z = i * 0.2;
+                ringMesh.userData = { id: 'er' };
+                erGroup.add(ringMesh);
+            }
+            cellGroup.add(erGroup);
+            organelleMeshes.er = erGroup.children[0];
+
+            // (6) 골지체 (Golgi Apparatus)
+            const golgiGroup = new THREE.Group();
+            golgiGroup.position.set(ORGANELLE_DATA.golgi.pos.x, ORGANELLE_DATA.golgi.pos.y, ORGANELLE_DATA.golgi.pos.z);
+            for (let i = 0; i < 5; i++) {
+                const layerGeo = new THREE.CylinderGeometry(4 - i * 0.4, 4 - i * 0.4, 0.4, 24);
+                layerGeo.scale(1.4, 1, 0.6);
+                const layerMat = new THREE.MeshStandardMaterial({
+                    color: 0xeab308,
+                    roughness: 0.3
+                });
+                const layerMesh = new THREE.Mesh(layerGeo, layerMat);
+                layerMesh.position.y = i * 0.9;
+                layerMesh.rotation.z = Math.sin(i * 0.3) * 0.2;
+                layerMesh.userData = { id: 'golgi' };
+                golgiGroup.add(layerMesh);
+            }
+            cellGroup.add(golgiGroup);
+            organelleMeshes.golgi = golgiGroup.children[2];
+
+            // (7) 리소좀 (Lysosome) - 동물세포 특화
+            if (currentMode === 'animal') {
+                const lysoGroup = new THREE.Group();
+                lysoGroup.position.set(ORGANELLE_DATA.lysosome.pos.x, ORGANELLE_DATA.lysosome.pos.y, ORGANELLE_DATA.lysosome.pos.z);
+                const lysoGeo = new THREE.SphereGeometry(1.8, 16, 16);
+                const lysoMat = new THREE.MeshStandardMaterial({
+                    color: 0xef4444,
+                    emissive: 0x991b1b,
+                    emissiveIntensity: 0.4
+                });
+                const lysoMesh = new THREE.Mesh(lysoGeo, lysoMat);
+                lysoMesh.userData = { id: 'lysosome' };
+                lysoGroup.add(lysoMesh);
+                cellGroup.add(lysoGroup);
+                organelleMeshes.lysosome = lysoMesh;
+            }
+
+            // (8) 엽록체 (Chloroplast) & 액포 (Vacuole) - 식물세포 특화
+            if (currentMode === 'plant') {
+                // 엽록체 3개
+                const chloroPositions = [
+                    { x: 12, y: 6, z: -8, rot: [0.5, 0.3, 0] },
+                    { x: -10, y: -10, z: 8, rot: [-0.3, 0.6, 0.2] }
+                ];
+                chloroPositions.forEach((pos, idx) => {
+                    const chloroGroup = new THREE.Group();
+                    chloroGroup.position.set(pos.x, pos.y, pos.z);
+                    chloroGroup.rotation.set(...pos.rot);
+
+                    const cOuterGeo = new THREE.SphereGeometry(3.5, 24, 16);
+                    cOuterGeo.scale(1.6, 0.8, 1.2);
+                    const cOuterMat = new THREE.MeshStandardMaterial({
+                        color: 0x16a34a,
+                        roughness: 0.3
+                    });
+                    const cMesh = new THREE.Mesh(cOuterGeo, cOuterMat);
+                    cMesh.userData = { id: 'chloroplast' };
+                    chloroGroup.add(cMesh);
+
+                    cellGroup.add(chloroGroup);
+                    if (idx === 0) organelleMeshes.chloroplast = cMesh;
+                });
+
+                // 중심 액포 (Vacuole)
+                const vacGroup = new THREE.Group();
+                vacGroup.position.set(ORGANELLE_DATA.vacuole.pos.x, ORGANELLE_DATA.vacuole.pos.y, ORGANELLE_DATA.vacuole.pos.z);
+                const vacGeo = new THREE.SphereGeometry(7.5, 32, 32);
+                vacGeo.scale(1.2, 1.4, 1);
+                const vacMat = new THREE.MeshPhysicalMaterial({
+                    color: 0x06b6d4,
+                    transparent: true,
+                    opacity: 0.5,
+                    roughness: 0.1,
+                    transmission: 0.8
+                });
+                const vacMesh = new THREE.Mesh(vacGeo, vacMat);
+                vacMesh.userData = { id: 'vacuole' };
+                vacGroup.add(vacMesh);
+                cellGroup.add(vacGroup);
+                organelleMeshes.vacuole = vacMesh;
+            }
+
+            // (9) 수많은 리보솜 점들 (Ribosomes)
+            const riboGeo = new THREE.DodecahedronGeometry(0.3);
+            const riboMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.2 });
+            const riboInstanced = new THREE.InstancedMesh(riboGeo, riboMat, 120);
+            const dummy = new THREE.Object3D();
+            for (let i = 0; i < 120; i++) {
+                const r = 9 + Math.random() * 10;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                dummy.position.set(
+                    r * Math.sin(phi) * Math.cos(theta),
+                    r * Math.sin(phi) * Math.sin(theta),
+                    r * Math.cos(phi)
+                );
+                dummy.updateMatrix();
+                riboInstanced.setMatrixAt(i, dummy.matrix);
+            }
+            riboInstanced.userData = { id: 'ribosome' };
+            cellGroup.add(riboInstanced);
+            organelleMeshes.ribosome = riboInstanced;
+
+            scene.add(cellGroup);
+        }
+
+        // --- 5. 배경 미세 입자 효과 ---
+        function createBackgroundStars() {
+            const starGeo = new THREE.BufferGeometry();
+            const starCount = 600;
+            const starPos = new Float32Array(starCount * 3);
+            for (let i = 0; i < starCount * 3; i++) {
+                starPos[i] = (Math.random() - 0.5) * 300;
+            }
+            starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+            const starMat = new THREE.PointsMaterial({
+                color: 0x38bdf8,
+                size: 0.8,
+                transparent: true,
+                opacity: 0.4
+            });
+            const starField = new THREE.Points(starGeo, starMat);
+            scene.add(starField);
+        }
+
+        // --- 6. 좌측 소기관 퀵 메뉴 빌드 ---
+        function buildQuickMenu() {
+            const menuContainer = document.getElementById('quickMenu');
+            menuContainer.innerHTML = '<div class="menu-title">세포소기관 탐색</div>';
+
+            Object.keys(ORGANELLE_DATA).forEach(key => {
+                // 식물 전용 / 동물 전용 필터링
+                if (currentMode === 'animal' && (key === 'chloroplast' || key === 'vacuole')) return;
+                if (currentMode === 'plant' && key === 'lysosome') return;
+
+                const data = ORGANELLE_DATA[key];
+                const btn = document.createElement('button');
+                btn.className = 'menu-item-btn';
+                btn.innerHTML = `
+                    <span class="dot-icon" style="background:${data.tagTextColor}"></span>
+                    <span>${data.name.split(' (')[0]}</span>
+                `;
+                btn.onclick = () => focusOrganelle(key);
+                menuContainer.appendChild(btn);
+            });
+        }
+
+        // --- 7. 인터랙션 및 포커스 애니메이션 ---
+        function focusOrganelle(key) {
+            const data = ORGANELLE_DATA[key];
+            if (!data) return;
+
+            // 카메라 Tween 이동
+            new TWEEN.Tween(camera.position)
+                .to(data.camPos, 1000)
+                .easing(TWEEN.Easing.Cubic.Out)
+                .start();
+
+            new TWEEN.Tween(controls.target)
+                .to(data.pos, 1000)
+                .easing(TWEEN.Easing.Cubic.Out)
+                .start();
+
+            // 우측 정보 카드 표시
+            document.getElementById('cardTag').innerText = data.tag;
+            document.getElementById('cardTag').style.background = data.tagColor;
+            document.getElementById('cardTag').style.color = data.tagTextColor;
+            document.getElementById('cardName').innerText = data.name;
+            document.getElementById('cardDesc').innerText = data.desc;
+            document.getElementById('cardExam').innerHTML = `💡 <b>수능/내신 빈출 포인트</b>: ${data.exam}`;
+
+            document.getElementById('organelleCard').classList.add('open');
+        }
+
+        function closeCard() {
+            document.getElementById('organelleCard').classList.remove('open');
+        }
+
+        function resetCamera() {
+            closeCard();
+            new TWEEN.Tween(camera.position)
+                .to({ x: 0, y: 15, z: 55 }, 900)
+                .easing(TWEEN.Easing.Cubic.Out)
+                .start();
+
+            new TWEEN.Tween(controls.target)
+                .to({ x: 0, y: 0, z: 0 }, 900)
+                .easing(TWEEN.Easing.Cubic.Out)
+                .start();
+        }
+
+        // 마우스 클릭 시 레이캐스팅
+        function onClick(event) {
+            if (event.clientY < 80 || event.clientY > window.innerHeight - 80) return;
+            if (event.clientX < 180 || event.clientX > window.innerWidth - 380 && document.getElementById('organelleCard').classList.contains('open')) return;
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(cellGroup.children, true);
+
+            if (intersects.length > 0) {
+                let hitObj = intersects[0].object;
+                while (hitObj && !hitObj.userData.id && hitObj.parent) {
+                    hitObj = hitObj.parent;
+                }
+                if (hitObj && hitObj.userData && hitObj.userData.id) {
+                    focusOrganelle(hitObj.userData.id);
+                }
+            }
+        }
+
+        function onPointerMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+
+        // --- 8. 단백질 분비 경로 애니메이션 (Protein Secretion Pathway) ---
+        function toggleSecretionAnimation() {
+            isSecretionRunning = !isSecretionRunning;
+            const btn = document.getElementById('btnSecretion');
+            btn.classList.toggle('active', isSecretionRunning);
+
+            if (isSecretionRunning) {
+                focusOrganelle('er');
+                createSecretionParticle();
+            }
+        }
+
+        function createSecretionParticle() {
+            if (!isSecretionRunning) return;
+
+            const geo = new THREE.SphereGeometry(0.7, 12, 12);
+            const mat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+            const particle = new THREE.Mesh(geo, mat);
+            scene.add(particle);
+
+            // 경로: 핵 -> 소포체 -> 골지체 -> 세포막 밖
+            const waypoints = [
+                { x: 0, y: 0, z: 0 },
+                { x: -6, y: 5, z: -2 },
+                { x: -12, y: -5, z: 7 },
+                { x: -22, y: -8, z: 12 }
+            ];
+
+            particle.position.set(waypoints[0].x, waypoints[0].y, waypoints[0].z);
+
+            let tween1 = new TWEEN.Tween(particle.position).to(waypoints[1], 1200).easing(TWEEN.Easing.Quadratic.InOut);
+            let tween2 = new TWEEN.Tween(particle.position).to(waypoints[2], 1200).easing(TWEEN.Easing.Quadratic.InOut);
+            let tween3 = new TWEEN.Tween(particle.position).to(waypoints[3], 1200).easing(TWEEN.Easing.Quadratic.InOut)
+                .onComplete(() => {
+                    scene.remove(particle);
+                    if (isSecretionRunning) setTimeout(createSecretionParticle, 600);
+                });
+
+            tween1.chain(tween2);
+            tween2.chain(tween3);
+            tween1.start();
+        }
+
+        // 세포막 투명도 조절
+        function toggleMembrane() {
+            membraneOpacity = membraneOpacity > 0.15 ? 0.08 : 0.45;
+            if (membraneMesh) membraneMesh.material.opacity = membraneOpacity;
+        }
+
+        // 동물세포 / 식물세포 모드 전환
+        function switchCellMode(mode) {
+            currentMode = mode;
+            document.getElementById('btnAnimal').classList.toggle('active', mode === 'animal');
+            document.getElementById('btnPlant').classList.toggle('active', mode === 'plant');
+            document.getElementById('cellTitle').innerText = mode === 'animal' ? '🧫 3D 인터랙티브 동물세포 모델' : '🌿 3D 인터랙티브 식물세포 모델';
+
+            createCellModel();
+            buildQuickMenu();
+            resetCamera();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate(time) {
+            requestAnimationFrame(animate);
+            TWEEN.update(time);
+            controls.update();
+
+            // 부드러운 자동 미세 자전 회전 (사용자 조작 중이 아닐 때)
+            if (!controls.state || controls.state === -1) {
+                cellGroup.rotation.y += 0.0015;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
