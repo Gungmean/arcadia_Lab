@@ -4,7 +4,7 @@
 
 <br>
 
-### 🔗 **[👉 가상 실험실 웹사이트 바로가기 (Click)](https://gungmean.github.io/arcadia_Lab/)**
+### 🌐 **[👉 공식 가상 실험실 웹사이트 바로가기 (Vercel)](https://arcadia-lab.vercel.app/)**
 ### 📝 **[👉 사용자 만족도 평가 & 피드백 남기기 (Google Forms)](https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header)**
 *(별도 설치 없이 웹 브라우저에서 바로 모든 2D/3D 실험을 체험하고 평가할 수 있습니다.)*
 
@@ -41,19 +41,14 @@
 ## 🛠️ 기술 스택 (Tech Stack)
 - **Frontend**: Pure HTML5, Modern CSS3 (Glassmorphism Dark Theme UI), Vanilla JavaScript
 - **Graphics Engine**: HTML5 2D Canvas API
-- **Deployment**: GitHub Pages (Static Web Hosting)
+- **Deployment**: Vercel (초고속 실시간 자동 배포) / GitHub Pages
 
 ---
 
-## 🚀 실행 및 배포 방법
+## 🚀 공식 배포 사이트 접속
 
-### 1. 로컬에서 실행
-저장소를 클론한 후, `index.html` 파일을 웹 브라우저(Chrome, Edge 등)로 열면 바로 실행됩니다.
-
-### 2. GitHub Pages 배포
-1. GitHub 저장소의 `Settings` > `Pages` 메뉴로 이동합니다.
-2. **Branch**를 `main`, 폴더를 `/(root)`로 지정한 후 **Save**를 클릭합니다.
-3. 수 분 내에 생성되는 배포 URL(`https://<username>.github.io/<repo-name>/`)을 통해 접속할 수 있습니다.
+- 🌐 **Vercel 실시간 배포 사이트**: [https://arcadia-lab.vercel.app/](https://arcadia-lab.vercel.app/)
+- 📝 **사용자 피드백 설문지**: [Google Forms 바로가기](https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header)
 
 ---
 
