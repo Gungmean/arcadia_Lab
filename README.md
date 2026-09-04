@@ -31,17 +31,21 @@
 | **💨 기체 분자 확산** | 화학/물리 (열역학) | 격벽 개방 후 분자들의 무작위 충돌과 엔트로피 증가에 따른 비가역 확산 시뮬레이션 |
 | **⚖️ 르 샤틀리에 화학 평형** | 화학 II (화학 반응의 세계) | N₂O₄ ⇄ 2NO₂ 반응에서 부피(압력), 온도 조절 및 실시간 농도-시간([C]-t) 수능 킬러 그래프 |
 
-### 🧬 3D 가상 실험실 (확장 예정)
-- 🪐 중력 시뮬레이션 (행성 간 인력)
-- ⚛️ 3D 원자 구조 모델
-- 🧬 DNA 이중나선 모델
-- 🌋 판 구조론 및 화산 분출 시뮬레이션
+### 🧬 3D 가상 실험실
+| 실험명 | 과목/분야 | 주요 내용 및 조작 요소 |
+| :--- | :--- | :--- |
+| **🧬 3D 세포 소기관 탐색기** | 생명과학 II (세포와 물질대사) | 동물/식물세포 모드, 360° 자유 회전, 소기관 정밀 클릭 포커싱, 엽록체 내부 그라나 틸라코이드 X-ray 투과, 소포체(조면/활면) vs 골지체(시스터나/분비소포) 형태학적 구별, 단백질 분비 경로 팔로우 카메라 |
+
+---
+
+## 📜 버전별 패치노트 (Changelog)
+- 전체 버전별 상세 업데이트 기록은 **[`PATCHNOTES.md`](./PATCHNOTES.md)** 에서 확인하실 수 있습니다.
 
 ---
 
 ## 🛠️ 기술 스택 (Tech Stack)
 - **Frontend**: Pure HTML5, Modern CSS3 (Glassmorphism Dark Theme UI), Vanilla JavaScript
-- **Graphics Engine**: HTML5 2D Canvas API
+- **Graphics Engine**: HTML5 2D Canvas API, Three.js (WebGL 3D Rendering Engine), OrbitControls, Tween.js
 - **Deployment**: Vercel (초고속 실시간 자동 배포) / GitHub Pages
 
 ---
