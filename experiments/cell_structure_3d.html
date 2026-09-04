@@ -951,19 +951,38 @@
             });
         }
 
+        let isFocusing = false;
+
         // --- 7. 인터랙션 및 포커스 애니메이션 ---
         function focusOrganelle(key) {
             const data = ORGANELLE_DATA[key];
             if (!data) return;
 
-            // 카메라 Tween 이동
+            isFocusing = true;
+
+            // 소기관의 현재 실제 월드 좌표 계산 (cellGroup의 회전 반영)
+            let targetWorldPos = new THREE.Vector3(data.pos.x, data.pos.y, data.pos.z);
+            targetWorldPos.applyMatrix4(cellGroup.matrixWorld);
+
+            // 해당 소기관 위치에서 약간 위/뒤로 떨어진 최적 카메라 위치 산출
+            let camOffset = new THREE.Vector3(data.camPos.x - data.pos.x, data.camPos.y - data.pos.y, data.camPos.z - data.pos.z);
+            // 너무 멀지 않게 클램핑 (10~15 거리 유지)
+            if (camOffset.length() < 5) camOffset.set(4, 6, 12);
+            camOffset.applyQuaternion(cellGroup.quaternion);
+            
+            let desiredCamPos = targetWorldPos.clone().add(camOffset);
+
+            // 기존 진행 중인 Tween 중복 방지
+            TWEEN.removeAll();
+
+            // 카메라 위치 & 컨트롤 타겟 부드러운 전환
             new TWEEN.Tween(camera.position)
-                .to(data.camPos, 1000)
+                .to(desiredCamPos, 900)
                 .easing(TWEEN.Easing.Cubic.Out)
                 .start();
 
             new TWEEN.Tween(controls.target)
-                .to(data.pos, 1000)
+                .to(targetWorldPos, 900)
                 .easing(TWEEN.Easing.Cubic.Out)
                 .start();
 
@@ -972,7 +991,7 @@
                 cellGroup.traverse(child => {
                     if (child.isMesh && child.userData && child.userData.id === key && child.userData.isOuter) {
                         new TWEEN.Tween(child.material)
-                            .to({ opacity: 0.35 }, 600)
+                            .to({ opacity: 0.3 }, 500)
                             .start();
                     }
                 });
@@ -991,12 +1010,14 @@
 
         function closeCard() {
             document.getElementById('organelleCard').classList.remove('open');
+            isFocusing = false;
+
             // 외막 투명도 복원
             if (cellGroup) {
                 cellGroup.traverse(child => {
                     if (child.isMesh && child.userData && child.userData.isOuter) {
                         new TWEEN.Tween(child.material)
-                            .to({ opacity: 0.75 }, 600)
+                            .to({ opacity: 0.75 }, 500)
                             .start();
                     }
                 });
@@ -1005,35 +1026,49 @@
 
         function resetCamera() {
             closeCard();
+            isFocusing = false;
+
+            TWEEN.removeAll();
+
             new TWEEN.Tween(camera.position)
-                .to({ x: 0, y: 15, z: 55 }, 900)
+                .to({ x: 0, y: 15, z: 55 }, 800)
                 .easing(TWEEN.Easing.Cubic.Out)
                 .start();
 
             new TWEEN.Tween(controls.target)
-                .to({ x: 0, y: 0, z: 0 }, 900)
+                .to({ x: 0, y: 0, z: 0 }, 800)
                 .easing(TWEEN.Easing.Cubic.Out)
                 .start();
         }
 
-        // 마우스 클릭 시 레이캐스팅
+        // 마우스 클릭 시 레이캐스팅 (세포막/세포벽 제외하고 소기관 직접 타겟팅)
         function onClick(event) {
-            if (event.clientY < 80 || event.clientY > window.innerHeight - 80) return;
-            if (event.clientX < 180 || event.clientX > window.innerWidth - 380 && document.getElementById('organelleCard').classList.contains('open')) return;
+            // UI 영역 클릭 무시
+            if (event.clientY < 70 || event.clientY > window.innerHeight - 70) return;
+            if (event.clientX < 160) return;
+            if (event.clientX > window.innerWidth - 380 && document.getElementById('organelleCard').classList.contains('open')) return;
 
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
+            
+            // cellGroup 내의 모든 자식 객체 검사
             const intersects = raycaster.intersectObjects(cellGroup.children, true);
 
-            if (intersects.length > 0) {
-                let hitObj = intersects[0].object;
-                while (hitObj && !hitObj.userData.id && hitObj.parent) {
+            for (let hit of intersects) {
+                let hitObj = hit.object;
+                
+                // 세포막과 세포벽은 투과하여 내부 소기관 감지
+                if (hitObj === membraneMesh || hitObj === cellWallMesh) continue;
+
+                while (hitObj && !hitObj.userData.id && hitObj.parent && hitObj.parent !== cellGroup) {
                     hitObj = hitObj.parent;
                 }
+
                 if (hitObj && hitObj.userData && hitObj.userData.id) {
                     focusOrganelle(hitObj.userData.id);
+                    break;
                 }
             }
         }
@@ -1225,8 +1260,8 @@
                 activeProteinMesh.rotation.y += 0.04;
                 activeProteinMesh.rotation.x += 0.02;
             } else {
-                // 일반 모드: 부드러운 자동 미세 자전 회전 (사용자 조작 중이 아닐 때)
-                if (!controls.state || controls.state === -1) {
+                // 일반 모드: 소기관을 포커싱하고 있지 않고 사용자 조작 중이 아닐 때만 부드럽게 미세 자전
+                if (!isFocusing && (!controls.state || controls.state === -1)) {
                     cellGroup.rotation.y += 0.0015;
                 }
             }
