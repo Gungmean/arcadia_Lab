@@ -526,10 +526,10 @@
                 tag: "이중막 · 광합성 & 포도당 합성",
                 tagColor: "rgba(16, 185, 129, 0.2)",
                 tagTextColor: "#34d399",
-                desc: "빛에너지를 흡수하여 물과 이산화탄소로부터 포도당과 산소를 합성하는 광합성 장소입니다. 식물 세포와 조류에만 존재합니다.",
-                exam: "동전 모양의 틸라코이드가 쌓인 '그라나'와 기질인 '스트로마'로 구성되며, 미토콘드리아처럼 자체 DNA와 리보솜을 지닙니다.",
+                desc: "빛에너지를 흡수하여 물과 이산화탄소로부터 포도당과 산소를 합성하는 광합성 장소입니다. 내부에는 동전 모양의 틸라코이드가 쌓인 '그라나'와 기질인 '스트로마'가 정교하게 구성되어 있습니다.",
+                exam: "엽록체 내부의 '그라나(틸라코이드 막)'에서 명반응(광인산화/ATP합성)이, '스트로마(기질)'에서 암반응(캘빈회로/포도당합성)이 일어납니다.",
                 pos: { x: 12, y: 6, z: -8 },
-                camPos: { x: 16, y: 8, z: -2 }
+                camPos: { x: 15, y: 8, z: -1 }
             },
             vacuole: {
                 name: "중심 액포 (Central Vacuole) [식물세포]",
@@ -784,25 +784,84 @@
 
             // (8) 엽록체 (Chloroplast) & 액포 (Vacuole) - 식물세포 특화
             if (currentMode === 'plant') {
-                // 엽록체 3개
                 const chloroPositions = [
-                    { x: 12, y: 6, z: -8, rot: [0.5, 0.3, 0] },
-                    { x: -10, y: -10, z: 8, rot: [-0.3, 0.6, 0.2] }
+                    { x: 12, y: 6, z: -8, rot: [0.4, 0.6, 0.2] },
+                    { x: -10, y: -10, z: 8, rot: [-0.3, 0.8, -0.4] }
                 ];
                 chloroPositions.forEach((pos, idx) => {
                     const chloroGroup = new THREE.Group();
                     chloroGroup.position.set(pos.x, pos.y, pos.z);
                     chloroGroup.rotation.set(...pos.rot);
 
-                    const cOuterGeo = new THREE.SphereGeometry(3.5, 24, 16);
-                    cOuterGeo.scale(1.6, 0.8, 1.2);
+                    // (A) 외막: 반투명 절개형 타원 구체 (내부 그라나가 비쳐 보이도록)
+                    const cOuterGeo = new THREE.SphereGeometry(3.6, 32, 24, 0, Math.PI * 1.6);
+                    cOuterGeo.scale(1.6, 0.85, 1.2);
                     const cOuterMat = new THREE.MeshStandardMaterial({
-                        color: 0x16a34a,
-                        roughness: 0.3
+                        color: 0x15803d,
+                        roughness: 0.2,
+                        metalness: 0.1,
+                        transparent: true,
+                        opacity: 0.75,
+                        side: THREE.DoubleSide
                     });
                     const cMesh = new THREE.Mesh(cOuterGeo, cOuterMat);
-                    cMesh.userData = { id: 'chloroplast' };
+                    cMesh.userData = { id: 'chloroplast', isOuter: true };
                     chloroGroup.add(cMesh);
+
+                    // (B) 엽록체 내부: 스트로마 기질 베이스
+                    const stromaGeo = new THREE.SphereGeometry(3.3, 24, 16);
+                    stromaGeo.scale(1.5, 0.75, 1.1);
+                    const stromaMat = new THREE.MeshStandardMaterial({
+                        color: 0x86efac,
+                        transparent: true,
+                        opacity: 0.25,
+                        roughness: 0.5
+                    });
+                    const stromaMesh = new THREE.Mesh(stromaGeo, stromaMat);
+                    stromaMesh.userData = { id: 'chloroplast' };
+                    chloroGroup.add(stromaMesh);
+
+                    // (C) 엽록체 내부: 틸라코이드(Thylakoid)가 층층이 쌓인 그라나(Grana) 기둥 4개 배치
+                    const granaPositions = [
+                        { x: -1.8, y: -0.2, z: 0 },
+                        { x: -0.6, y: 0.2, z: -0.8 },
+                        { x: 0.7, y: 0.1, z: 0.6 },
+                        { x: 2.0, y: -0.1, z: -0.2 }
+                    ];
+
+                    granaPositions.forEach(gPos => {
+                        const granaStack = new THREE.Group();
+                        granaStack.position.set(gPos.x, gPos.y, gPos.z);
+
+                        // 동전 모양의 틸라코이드 4~5장 적층
+                        for (let layer = 0; layer < 5; layer++) {
+                            const thylakoidGeo = new THREE.CylinderGeometry(0.7, 0.7, 0.15, 16);
+                            const thylakoidMat = new THREE.MeshStandardMaterial({
+                                color: 0x22c55e,
+                                emissive: 0x15803d,
+                                emissiveIntensity: 0.4,
+                                roughness: 0.3
+                            });
+                            const thylakoidMesh = new THREE.Mesh(thylakoidGeo, thylakoidMat);
+                            thylakoidMesh.position.y = (layer - 2) * 0.22;
+                            thylakoidMesh.userData = { id: 'chloroplast' };
+                            granaStack.add(thylakoidMesh);
+                        }
+
+                        chloroGroup.add(granaStack);
+                    });
+
+                    // (D) 그라나 사이를 연결하는 스트로마 라멜라(Lamellae) 관 표현
+                    const lamellaGeo = new THREE.CylinderGeometry(0.08, 0.08, 3.8, 8);
+                    const lamellaMat = new THREE.MeshStandardMaterial({
+                        color: 0x4ade80,
+                        emissive: 0x16a34a,
+                        emissiveIntensity: 0.5
+                    });
+                    const lamellaMesh = new THREE.Mesh(lamellaGeo, lamellaMat);
+                    lamellaMesh.rotation.z = Math.PI / 2;
+                    lamellaMesh.userData = { id: 'chloroplast' };
+                    chloroGroup.add(lamellaMesh);
 
                     cellGroup.add(chloroGroup);
                     if (idx === 0) organelleMeshes.chloroplast = cMesh;
@@ -908,6 +967,17 @@
                 .easing(TWEEN.Easing.Cubic.Out)
                 .start();
 
+            // 엽록체 또는 소기관 포커스 시 외막을 더 투명하게 만들어 내부 그라나/크리스테가 선명하게 보이도록 연출
+            if (cellGroup) {
+                cellGroup.traverse(child => {
+                    if (child.isMesh && child.userData && child.userData.id === key && child.userData.isOuter) {
+                        new TWEEN.Tween(child.material)
+                            .to({ opacity: 0.35 }, 600)
+                            .start();
+                    }
+                });
+            }
+
             // 우측 정보 카드 표시
             document.getElementById('cardTag').innerText = data.tag;
             document.getElementById('cardTag').style.background = data.tagColor;
@@ -921,6 +991,16 @@
 
         function closeCard() {
             document.getElementById('organelleCard').classList.remove('open');
+            // 외막 투명도 복원
+            if (cellGroup) {
+                cellGroup.traverse(child => {
+                    if (child.isMesh && child.userData && child.userData.isOuter) {
+                        new TWEEN.Tween(child.material)
+                            .to({ opacity: 0.75 }, 600)
+                            .start();
+                    }
+                });
+            }
         }
 
         function resetCamera() {
