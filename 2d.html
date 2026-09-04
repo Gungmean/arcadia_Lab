@@ -41,7 +41,7 @@
       display:flex;
       justify-content:space-between;
       align-items:center;
-      margin-bottom:30px;
+      margin-bottom:25px;
     }
 
     .title{
@@ -86,8 +86,68 @@
 
     .subtitle{
       color:#94a3b8;
-      margin-bottom:35px;
+      margin-bottom:28px;
       font-size:1.05rem;
+    }
+
+    /* 과목별 카테고리 탭 스타일 */
+    .category-nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 35px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 10px 22px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .tab-btn.active {
+      background: #2563eb;
+      border-color: #3b82f6;
+      color: white;
+      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
+    }
+
+    .tab-btn.active[data-target="physics"] {
+      background: #0284c7;
+      border-color: #38bdf8;
+      box-shadow: 0 4px 20px rgba(2, 132, 199, 0.4);
+    }
+
+    .tab-btn.active[data-target="chem"] {
+      background: #9333ea;
+      border-color: #c084fc;
+      box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4);
+    }
+
+    .tab-btn.active[data-target="life"] {
+      background: #059669;
+      border-color: #34d399;
+      box-shadow: 0 4px 20px rgba(5, 150, 105, 0.4);
+    }
+
+    .tab-btn.active[data-target="earth"] {
+      background: #d97706;
+      border-color: #fbbf24;
+      box-shadow: 0 4px 20px rgba(217, 119, 6, 0.4);
     }
 
     .grid{
@@ -117,6 +177,10 @@
       box-shadow:0 12px 30px rgba(59,130,246,0.25);
     }
 
+    .card.hidden {
+      display: none;
+    }
+
     .badge {
       position: absolute;
       top: 20px;
@@ -125,15 +189,33 @@
       font-weight: 600;
       padding: 4px 10px;
       border-radius: 20px;
-      background: rgba(59, 130, 246, 0.2);
-      color: #60a5fa;
-      border: 1px solid rgba(59, 130, 246, 0.3);
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
     }
 
     .badge.chem {
-      background: rgba(168, 85, 247, 0.2);
+      background: rgba(192, 132, 252, 0.15);
       color: #c084fc;
-      border-color: rgba(168, 85, 247, 0.3);
+      border-color: rgba(192, 132, 252, 0.3);
+    }
+
+    .badge.life {
+      background: rgba(52, 211, 153, 0.15);
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.3);
+    }
+
+    .badge.earth {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.3);
+    }
+
+    .badge.soon {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border-color: rgba(148, 163, 184, 0.3);
     }
 
     .icon{
@@ -324,7 +406,7 @@
 <div class="container">
 
   <div class="topbar">
-    <div class="title">2D 실험실</div>
+    <div class="title">2D 가상 실험실</div>
 
     <div class="btn-group">
       <button class="btn secondary" onclick="openFeedbackModal()">
@@ -337,13 +419,32 @@
   </div>
 
   <div class="subtitle">
-    원하는 주제의 인터랙티브 가상 실험실을 선택하세요
+    원하는 과목을 선택하여 인터랙티브 실험을 진행해보세요
   </div>
 
-  <div class="grid">
+  <!-- 과목별 상단 필터 탭 (물·화·생·지) -->
+  <div class="category-nav">
+    <button class="tab-btn active" data-target="all" onclick="filterCategory('all', this)">
+      🌟 전체 보기 (<span id="count-all">8</span>)
+    </button>
+    <button class="tab-btn" data-target="physics" onclick="filterCategory('physics', this)">
+      ⚡ 물리 (Physics)
+    </button>
+    <button class="tab-btn" data-target="chem" onclick="filterCategory('chem', this)">
+      🧪 화학 (Chemistry)
+    </button>
+    <button class="tab-btn" data-target="life" onclick="filterCategory('life', this)">
+      🧬 생명과학 (Life Science)
+    </button>
+    <button class="tab-btn" data-target="earth" onclick="filterCategory('earth', this)">
+      🌍 지구과학 (Earth Science)
+    </button>
+  </div>
 
-    <!-- 자기장 및 자기력선 -->
-    <div class="card" onclick="location.href='experiments/magnet.html'">
+  <div class="grid" id="experimentGrid">
+
+    <!-- [물리] 자기장 및 자기력선 -->
+    <div class="card" data-category="physics" onclick="location.href='experiments/magnet.html'">
       <span class="badge">물리 · 전자기</span>
       <div class="icon">🧲</div>
       <h2>자기장 및 자기력선</h2>
@@ -354,8 +455,8 @@
       </div>
     </div>
 
-    <!-- 물결파 실험 -->
-    <div class="card" onclick="location.href='experiments/wave.html'">
+    <!-- [물리] 물결파 실험 -->
+    <div class="card" data-category="physics" onclick="location.href='experiments/wave.html'">
       <span class="badge">물리 · 파동</span>
       <div class="icon">🌊</div>
       <h2>물결파 실험실</h2>
@@ -366,8 +467,8 @@
       </div>
     </div>
 
-    <!-- 빛의 반사 -->
-    <div class="card" onclick="location.href='experiments/reflection.html'">
+    <!-- [물리] 빛의 반사 -->
+    <div class="card" data-category="physics" onclick="location.href='experiments/reflection.html'">
       <span class="badge">물리 · 광학</span>
       <div class="icon">☀️</div>
       <h2>빛의 반사 실험</h2>
@@ -378,8 +479,8 @@
       </div>
     </div>
 
-    <!-- 진자 웨이브 -->
-    <div class="card" onclick="location.href='experiments/pendulum_wave.html'">
+    <!-- [물리] 진자 웨이브 -->
+    <div class="card" data-category="physics" onclick="location.href='experiments/pendulum_wave.html'">
       <span class="badge">물리 · 역학</span>
       <div class="icon">🔮</div>
       <h2>진자 웨이브 (Wave)</h2>
@@ -390,8 +491,8 @@
       </div>
     </div>
 
-    <!-- 비가역 진자 운동 -->
-    <div class="card" onclick="location.href='experiments/pendulum_decay.html'">
+    <!-- [물리] 비가역 진자 운동 -->
+    <div class="card" data-category="physics" onclick="location.href='experiments/pendulum_decay.html'">
       <span class="badge">물리 · 역학</span>
       <div class="icon">⏱️</div>
       <h2>비가역 진자 운동</h2>
@@ -402,8 +503,8 @@
       </div>
     </div>
 
-    <!-- 단진자 운동 -->
-    <div class="card" onclick="location.href='experiments/pendulum_simple.html'">
+    <!-- [물리] 단진자 운동 -->
+    <div class="card" data-category="physics" onclick="location.href='experiments/pendulum_simple.html'">
       <span class="badge">물리 · 역학</span>
       <div class="icon">🟢</div>
       <h2>단진자 운동</h2>
@@ -414,8 +515,8 @@
       </div>
     </div>
 
-    <!-- 포물선 운동 -->
-    <div class="card" onclick="location.href='experiments/projectile.html'">
+    <!-- [물리] 포물선 운동 -->
+    <div class="card" data-category="physics" onclick="location.href='experiments/projectile.html'">
       <span class="badge">물리 · 역학</span>
       <div class="icon">🚀</div>
       <h2>포물선 운동</h2>
@@ -426,15 +527,75 @@
       </div>
     </div>
 
-    <!-- 기체 분자 확산 -->
-    <div class="card" onclick="location.href='experiments/diffusion.html'">
-      <span class="badge chem">화학/물리 · 열역학</span>
+    <!-- [화학] 기체 분자 확산 -->
+    <div class="card" data-category="chem" onclick="location.href='experiments/diffusion.html'">
+      <span class="badge chem">화학 · 열역학</span>
       <div class="icon">💨</div>
       <h2>기체 분자 확산</h2>
       <p>격벽 개방 시 분자 충돌과 엔트로피 증가에 따른 비가역 확산 현상</p>
       <div class="card-footer">
-        <span>실험 시작하기</span>
-        <span>→</span>
+        <span style="color: #c084fc;">실험 시작하기</span>
+        <span style="color: #c084fc;">→</span>
+      </div>
+    </div>
+
+    <!-- [화학] 산-염기 중화 반응 (예정 카드) -->
+    <div class="card" data-category="chem" onclick="alert('화학: 산-염기 중화 적정 및 이온수 변화 시뮬레이터가 곧 추가됩니다!')">
+      <span class="badge soon">추가 예정</span>
+      <div class="icon">🧪</div>
+      <h2>산-염기 중화 반응</h2>
+      <p>HCl과 NaOH 반응에 따른 이온 수 및 온도 변화 실시간 추적 그래프</p>
+      <div class="card-footer">
+        <span style="color: #94a3b8;">개발 진행 중</span>
+        <span style="color: #94a3b8;">⏳</span>
+      </div>
+    </div>
+
+    <!-- [생명] 삼투 현상 (예정 카드) -->
+    <div class="card" data-category="life" onclick="alert('생명과학: 삼투 현상과 세포 부피 변화 시뮬레이터가 곧 추가됩니다!')">
+      <span class="badge soon">추가 예정</span>
+      <div class="icon">🧫</div>
+      <h2>세포막과 삼투 현상</h2>
+      <p>고장액·등장액·저장액 농도에 따른 적혈구 용혈 및 양파세포 원형질 분리</p>
+      <div class="card-footer">
+        <span style="color: #94a3b8;">개발 진행 중</span>
+        <span style="color: #94a3b8;">⏳</span>
+      </div>
+    </div>
+
+    <!-- [생명] 멘델의 유전 분리비 (예정 카드) -->
+    <div class="card" data-category="life" onclick="alert('생명과학: 멘델 유전 퍼넷 사각형 시뮬레이터가 곧 추가됩니다!')">
+      <span class="badge soon">추가 예정</span>
+      <div class="icon">🧬</div>
+      <h2>멘델 유전 (퍼넷 사각형)</h2>
+      <p>완두콩 유전자형 교배에 따른 우열의 원리와 표현형 분리비 시뮬레이션</p>
+      <div class="card-footer">
+        <span style="color: #94a3b8;">개발 진행 중</span>
+        <span style="color: #94a3b8;">⏳</span>
+      </div>
+    </div>
+
+    <!-- [지구] 천체 일주 운동 및 행성 역행 (예정 카드) -->
+    <div class="card" data-category="earth" onclick="alert('지구과학: 행성 겉보기 운동 및 역행 시뮬레이터가 곧 추가됩니다!')">
+      <span class="badge soon">추가 예정</span>
+      <div class="icon">🪐</div>
+      <h2>행성의 겉보기 운동 (역행)</h2>
+      <p>천동설 시점과 지동설 시점을 전환하며 외행성의 역행 궤적 관찰</p>
+      <div class="card-footer">
+        <span style="color: #94a3b8;">개발 진행 중</span>
+        <span style="color: #94a3b8;">⏳</span>
+      </div>
+    </div>
+
+    <!-- [지구] 지진파 주시곡선 (예정 카드) -->
+    <div class="card" data-category="earth" onclick="alert('지구과학: 지진파 P파·S파 주시곡선 시뮬레이터가 곧 추가됩니다!')">
+      <span class="badge soon">추가 예정</span>
+      <div class="icon">📈</div>
+      <h2>지진파 주시곡선 (P·S파)</h2>
+      <p>진앙 거리와 진원 깊이에 따른 P파, S파 도달 시간 및 PS시 분석</p>
+      <div class="card-footer">
+        <span style="color: #94a3b8;">개발 진행 중</span>
+        <span style="color: #94a3b8;">⏳</span>
       </div>
     </div>
 
@@ -474,6 +635,24 @@
 </div>
 
 <script>
+  // 과목별 필터링 함수
+  function filterCategory(category, element) {
+    // 탭 활성화 상태 변경
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
+
+    const cards = document.querySelectorAll('#experimentGrid .card');
+    cards.forEach(card => {
+      const cardCategory = card.getAttribute('data-category');
+      if (category === 'all' || cardCategory === category) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+  }
+
+  // 피드백 모달 로직
   let selectedRating = 5;
 
   function openFeedbackModal() {
