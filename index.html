@@ -1,223 +1,38 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>가상 실험실 (Virtual Science Lab)</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4f2ed">
+  <title>Arcadia Lab | 가상 과학 실험실</title>
   <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:'Pretendard', 'Segoe UI', sans-serif;
-    }
-
-    body{
-      width:100%;
-      min-height:100vh;
-      background:#0f172a;
-      color:white;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      position:relative;
-      overflow-x:hidden;
-    }
-
-    .bg{
-      position:fixed;
-      width:100%;
-      height:100%;
-      background:
-      radial-gradient(circle at top left,#1e293b 0%,transparent 35%),
-      radial-gradient(circle at bottom right,#2563eb 0%,transparent 30%);
-      opacity:0.9;
-      z-index:-1;
-    }
-
-    .header-bar {
-      position: absolute;
-      top: 24px;
-      right: 28px;
-      z-index: 10;
-    }
-
-    .feedback-btn {
-      padding: 10px 18px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #f8fafc;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      backdrop-filter: blur(8px);
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      text-decoration: none;
-    }
-
-    .feedback-btn:hover {
-      background: rgba(59, 130, 246, 0.8);
-      border-color: #3b82f6;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-    }
-
-    .container{
-      position:relative;
-      z-index:1;
-      text-align:center;
-      width:90%;
-      max-width:900px;
-      padding: 40px 0;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 6px 14px;
-      border-radius: 20px;
-      background: rgba(59, 130, 246, 0.15);
-      color: #60a5fa;
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 20px;
-      letter-spacing: 0.5px;
-    }
-
-    .title{
-      font-size:3.5rem;
-      font-weight:800;
-      margin-bottom:12px;
-      letter-spacing:-1px;
-      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .subtitle{
-      color:#94a3b8;
-      font-size:1.1rem;
-      margin-bottom:50px;
-      line-height: 1.6;
-    }
-
-    .menu{
-      display:flex;
-      gap:28px;
-      justify-content:center;
-      flex-wrap:wrap;
-    }
-
-    .card{
-      width:300px;
-      height:220px;
-      background:rgba(255,255,255,0.05);
-      border:1px solid rgba(255,255,255,0.08);
-      backdrop-filter:blur(10px);
-      border-radius:24px;
-      padding: 24px;
-
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
-
-      cursor:pointer;
-      transition:all 0.25s ease;
-      position: relative;
-    }
-
-    .card:hover{
-      transform:translateY(-8px) scale(1.02);
-      background:rgba(255,255,255,0.08);
-      border-color:#3b82f6;
-      box-shadow:0 12px 35px rgba(59,130,246,0.3);
-    }
-
-    .icon{
-      font-size:3.5rem;
-      margin-bottom:15px;
-    }
-
-    .card h2{
-      font-size:1.6rem;
-      font-weight:700;
-      margin-bottom:8px;
-    }
-
-    .card p{
-      color:#94a3b8;
-      font-size:0.95rem;
-    }
-
-    .card-tag {
-      position: absolute;
-      bottom: 14px;
-      font-size: 0.8rem;
-      color: #38bdf8;
-      font-weight: 600;
-    }
-
-    @media(max-width:700px){
-      .title{
-        font-size:2.5rem;
-      }
-      .menu{
-        flex-direction:column;
-        align-items:center;
-      }
-      .card {
-        width: 100%;
-        max-width: 320px;
-      }
-    }
+    @font-face { font-family:'Griun'; src:url('Griun_Yeeun-Rg.ttf') format('truetype'); font-display:swap; }
+    :root { --paper:#f4f2ed; --ink:#18201c; --quiet:#6b716c; --line:#cbd0c8; --accent:#b64c27; --accent-soft:#f3e2da; }
+    * { box-sizing:border-box; } body { margin:0; min-width:320px; background:var(--paper); color:var(--ink); font-family:'Malgun Gothic','Apple SD Gothic Neo',Arial,sans-serif; }
+    .topbar { width:min(1100px,calc(100% - 40px)); min-height:72px; margin:auto; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
+    .brand { color:var(--ink); font:700 .76rem/1 ui-monospace,Consolas,monospace; letter-spacing:.11em; text-decoration:none; }.feedback { color:var(--quiet); font-size:.82rem; text-decoration:none; }.feedback:hover { color:var(--accent); text-decoration:underline; text-underline-offset:4px; }
+    main { width:min(1100px,calc(100% - 40px)); min-height:calc(100vh - 72px); margin:auto; display:grid; grid-template-columns:180px 1fr; padding:clamp(56px,10vw,130px) 0 58px; }
+    .folio { padding-top:6px; color:var(--accent); font:700 .72rem/1.5 ui-monospace,Consolas,monospace; letter-spacing:.08em; }.folio::after { content:''; display:block; width:34px; height:1px; margin-top:15px; background:currentColor; }
+    .intro { max-width:730px; }.eyebrow { margin:0 0 20px; color:var(--quiet); font-size:.75rem; font-weight:700; letter-spacing:.08em; }.eyebrow span { color:var(--accent); }
+    h1 { margin:0; font-family:'Griun','Malgun Gothic',sans-serif; font-size:clamp(2.2rem,5vw,4.35rem); font-weight:400; line-height:1.12; letter-spacing:-.06em; }.description { max-width:520px; margin:28px 0 0; color:#4d554e; font-size:1rem; line-height:1.85; }
+    .lab-list { margin-top:62px; border-top:2px solid var(--ink); }.lab-link { display:grid; grid-template-columns:82px 1fr auto; align-items:center; gap:20px; min-height:135px; border-bottom:1px solid var(--line); color:var(--ink); text-decoration:none; transition:padding .16s,background .16s; }.lab-link:hover { padding-left:14px; background:rgba(255,255,255,.28); }.lab-number { color:var(--accent); font:700 .78rem/1 ui-monospace,Consolas,monospace; }.lab-link h2 { margin:0 0 8px; font-size:1.35rem; letter-spacing:-.04em; }.lab-link p { margin:0; color:var(--quiet); font-size:.9rem; line-height:1.6; }.arrow { color:var(--accent); font-size:1.35rem; padding-right:6px; }.footnote { margin:29px 0 0; color:var(--quiet); font-size:.76rem; }
+    @media(max-width:650px) { .topbar,main { width:min(100% - 32px,1100px); }.topbar { min-height:62px; }.feedback { font-size:.74rem; } main { grid-template-columns:1fr; min-height:auto; padding:62px 0 42px; }.folio { margin-bottom:28px; }.description { font-size:.93rem; }.lab-list { margin-top:43px; }.lab-link { grid-template-columns:54px 1fr auto; gap:11px; min-height:116px; }.lab-link h2 { font-size:1.15rem; }.lab-link p { font-size:.82rem; }.arrow { font-size:1.15rem; } }
   </style>
 </head>
-
 <body>
-
-  <div class="bg"></div>
-
-  <div class="header-bar">
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header" target="_blank" class="feedback-btn">
-      💬 평가 및 피드백 남기기 ↗
-    </a>
-  </div>
-
-  <div class="container">
-    <div class="badge">ARCADIA · VIRTUAL LAB</div>
-
-    <div class="title">인터랙티브 가상 실험실</div>
-
-    <div class="subtitle">
-      2022 개정 교육과정 기반 과학 개념을 직접 조작하고 시각적으로 관찰해보세요.
-    </div>
-
-    <div class="menu">
-
-      <!-- 2D 실험실 연결 -->
-      <div class="card" onclick="location.href='2d.html'">
-        <div class="icon">🧪</div>
-        <h2>2D 실험실</h2>
-        <p>물·화·생·지 인터랙티브 시뮬레이션</p>
-        <span class="card-tag">8개 실험 탐색하기 →</span>
-      </div>
-
-      <!-- 3D 실험실 연결 -->
-      <div class="card" onclick="location.href='3d.html'">
-        <div class="icon">🧬</div>
-        <h2>3D 실험실</h2>
-        <p>입체 가상 공간 및 모델 탐색</p>
-        <span class="card-tag">준비 중 →</span>
-      </div>
-
-    </div>
-  </div>
-
+  <header class="topbar"><a class="brand" href="index.html">ARCADIA / LAB</a><a class="feedback" href="https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header" target="_blank" rel="noopener noreferrer">의견 남기기</a></header>
+  <main>
+    <aside class="folio">SCIENCE<br>LAB / 01</aside>
+    <section class="intro">
+      <p class="eyebrow"><span>ARCADIA</span> VIRTUAL SCIENCE LAB</p>
+      <h1>보고, 만지고,<br>이해하는 과학.</h1>
+      <p class="description">교과서 속 현상을 직접 바꾸어 보며 관찰하는 가상 실험실입니다. 변수를 조절하고 결과의 차이를 확인해 보세요.</p>
+      <nav class="lab-list" aria-label="실험실 선택">
+        <a class="lab-link" href="2d.html"><span class="lab-number">01 / 2D</span><span><h2>시뮬레이션 실험실</h2><p>파동, 역학, 전자기, 화학 현상을 조작하며 살펴봅니다.</p></span><span class="arrow" aria-hidden="true">→</span></a>
+        <a class="lab-link" href="3d.html"><span class="lab-number">02 / 3D</span><span><h2>입체 탐구 실험실</h2><p>세포처럼 내부 구조가 중요한 대상을 회전하고 확대합니다.</p></span><span class="arrow" aria-hidden="true">→</span></a>
+      </nav>
+      <p class="footnote">2022 개정 교육과정 기반 · ARCADIA SCIENCE CLUB</p>
+    </section>
+  </main>
 </body>
 </html>

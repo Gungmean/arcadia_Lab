@@ -3,6 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../assets/arcadia.css">
     <title>거울 반사 실험실</title>
     <style>
         :root {
@@ -210,12 +212,14 @@
                  반사각(<span style="color:var(--accent-red)">θr</span>): ${angleDeg}°`;
         }
 
-        // 마우스 및 슬라이더 이벤트
-        canvas.addEventListener('mousemove', (e) => {
+        // 포인터 및 슬라이더 이벤트: CSS로 축소된 모바일 캔버스도 내부 좌표와 일치시킨다.
+        function updateLightFromPointer(e) {
             const rect = canvas.getBoundingClientRect();
-            mouseX = e.clientX - rect.left;
+            mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
             draw();
-        });
+        }
+        canvas.addEventListener('pointermove', updateLightFromPointer);
+        canvas.addEventListener('pointerdown', updateLightFromPointer);
 
         document.getElementById('height').addEventListener('input', (e) => {
             lightY = parseInt(e.target.value);
