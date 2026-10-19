@@ -63,11 +63,31 @@ body > a[style*='position: fixed']:hover {
   color: var(--bugwang-white) !important;
 }
 
-button.active, .active, .tab-btn.active, .speed-btn.active, .toggle-play.playing,
-.state, .badge, .status-pill.eq {
+button.active, .active, .tab-btn.active, .speed-btn.active, .toggle-play.playing {
   background-color: var(--bugwang-indigo) !important;
   border-color: var(--bugwang-sky) !important;
   color: var(--bugwang-white) !important;
+}
+
+/* Labels communicate category or state; unlike controls, they do not need a filled chip. */
+.badge, .state, .status-pill, .badge.soon {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: var(--bugwang-sky) !important;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.club-logo {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  object-fit: contain;
 }
 
 input, select, textarea {
@@ -104,6 +124,11 @@ html {
 
 body, button, input, select, textarea, label, a, p, span, td, th {
   font-family: 'Gmarket Sans', sans-serif !important;
+}
+
+@media (max-width: 560px) {
+  .club-logo { width: 34px; height: 34px; }
+  .brand-lockup { gap: 8px; }
 }
 
 h1, h2 {
