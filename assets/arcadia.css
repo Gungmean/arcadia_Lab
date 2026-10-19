@@ -90,6 +90,21 @@ button.active, .active, .tab-btn.active, .speed-btn.active, .toggle-play.playing
   object-fit: contain;
 }
 
+.site-footer {
+  width: min(1040px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 0 0 42px;
+  display: flex;
+  justify-content: center;
+}
+
+.team-logo {
+  display: block;
+  width: clamp(150px, 28vw, 280px);
+  height: auto;
+  object-fit: contain;
+}
+
 input, select, textarea {
   background: var(--bugwang-black) !important;
   border-color: var(--bugwang-blue) !important;
@@ -129,6 +144,7 @@ body, button, input, select, textarea, label, a, p, span, td, th {
 @media (max-width: 560px) {
   .club-logo { width: 34px; height: 34px; }
   .brand-lockup { gap: 8px; }
+  .site-footer { width: min(100% - 32px, 1040px); padding-bottom: 30px; }
 }
 
 h1, h2 {
