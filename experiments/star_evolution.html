@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../assets/arcadia.css">
+    <title>별의 진화와 블랙홀 생성 | Arcadia Lab</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; color: #e2e8f0; font-family: 'Malgun Gothic', sans-serif; user-select: none; }
+        #canvas-container { width: 100vw; height: 100vh; display: block; }
+        
+        .panel { position: absolute; background: rgba(10, 15, 30, 0.9); border: 1px solid #334155; border-radius: 12px; padding: 20px; box-shadow: 0 4px 30px rgba(0, 150, 255, 0.2); backdrop-filter: blur(10px); }
+        h3 { margin: 0 0 15px 0; color: #38bdf8; font-size: 1.2em; border-bottom: 1px solid #334155; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
+        
+        #controls { top: 20px; left: 20px; width: 340px; }
+        .control-row { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 0.95em; color: #bae6fd; font-weight: bold; }
+        input[type=range] { width: 100%; cursor: pointer; accent-color: #38bdf8; }
+        
+        .btn-group { display: flex; gap: 8px; margin-bottom: 12px; }
+        button { flex: 1; padding: 10px 5px; background: #0ea5e9; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 0.9em; }
+        button:hover { background: #0284c7; }
+        button.pause { background: #f59e0b; }
+        button.pause:hover { background: #d97706; }
+        button.reset { background: #ef4444; }
+        button.reset:hover { background: #b91c1c; }
+        
+        .speed-group { display: flex; gap: 4px; justify-content: space-between; flex-wrap: wrap; }
+        .speed-btn { background: #1e293b; color: #94a3b8; padding: 6px 8px; font-size: 0.75em; border-radius: 4px; border: 1px solid #334155; cursor: pointer; font-weight: bold; flex: 1; min-width: 45px;}
+        .speed-btn.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; }
+
+        #info-panel { top: 20px; right: 20px; width: 320px; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.95em; border-bottom: 1px dashed #334155; padding-bottom: 5px;}
+        .highlight { color: #facc15; font-weight: bold; }
+
+        /* 🔬 초정밀 실시간 성분 분석기 스타일 */
+        #element-panel { bottom: 20px; right: 20px; width: 320px; border-top: 3px solid #38bdf8; }
+        .target-zone { text-align: center; font-size: 1.1em; font-weight: bold; color: #22d3ee; margin-bottom: 15px; padding: 8px; background: rgba(34, 211, 238, 0.1); border-radius: 6px; border: 1px solid rgba(34, 211, 238, 0.3); }
+        .element-bar-container { margin-bottom: 12px; }
+        .element-label { display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 4px; color: #cbd5e1; }
+        .element-bar-bg { background: #0f172a; height: 10px; border-radius: 5px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
+        .element-bar-fill { height: 100%; width: 0%; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 5px; box-shadow: 0 0 8px currentColor; }
+        
+        #instructions { position: absolute; bottom: 20px; left: 20px; color: #64748b; font-size: 0.85em; pointer-events: none; line-height: 1.6; text-shadow: 0 1px 3px #000; }
+        #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; pointer-events: none; transition: 0.2s; }
+        #crosshair::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4px; height: 4px; background: rgba(255,255,255,0.5); border-radius: 50%; }
+        #crosshair.active { border-color: #38bdf8; transform: translate(-50%, -50%) scale(1.2); }
+        #crosshair.active::after { background: #38bdf8; box-shadow: 0 0 10px #38bdf8; }
+        .back-btn { position:absolute; z-index:20; top:20px; left:20px; padding:8px 11px; border:1px solid #475569; border-radius:6px; background:rgba(2,6,23,.78); color:#e2e8f0; font-size:.78rem; text-decoration:none; }
+        @media (max-width:700px) {
+            .back-btn { top:12px; left:12px; }
+            .panel { border-radius:8px; padding:12px; }
+            #controls { top:54px; left:12px; width:min(245px,calc(100vw - 24px)); max-height:calc(100svh - 70px); overflow-y:auto; }
+            #info-panel, #element-panel, #instructions, #crosshair { display:none; }
+            h3 { font-size:1rem; } .control-row { margin-bottom:13px; } .btn-group button { min-height:38px; }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+    <a class="back-btn" href="../3d.html">← 3D 실험실 목록</a>
+    <div id="canvas-container"></div>
+    <div id="crosshair"></div>
+
+    <div id="controls" class="panel">
+        <h3>🌌 시스템 제어 콘솔</h3>
+        <div class="control-row">
+            <label>초기 질량: 태양의 <span id="mass-val">100</span>배</label>
+            <input type="range" id="mass-slider" min="0.1" max="100" step="0.1" value="100">
+        </div>
+        <div class="control-row">
+            <label>진행도 (Time): <span id="time-val">0</span>%</label>
+            <input type="range" id="time-slider" min="0" max="100" step="0.05" value="0">
+        </div>
+        <div class="btn-group">
+            <button id="btn-play">▶ 재생</button>
+            <button id="btn-pause" class="pause">⏸ 정지</button>
+            <button id="btn-reset" class="reset">↺ 리셋</button>
+        </div>
+        <div class="speed-group">
+            <button class="speed-btn" data-speed="0.01">0.01x</button>
+            <button class="speed-btn" data-speed="0.05">0.05x</button>
+            <button class="speed-btn" data-speed="0.1">0.1x</button>
+            <button class="speed-btn active" data-speed="1">1x</button>
+            <button class="speed-btn" data-speed="5">5x</button>
+        </div>
+    </div>
+
+    <div id="info-panel" class="panel">
+        <h3>📊 물리 데이터</h3>
+        <div class="stat-row"><span>진화 단계</span> <span id="stage-text" class="highlight">주계열성</span></div>
+        <div class="stat-row"><span>표면 온도</span> <span id="temp-text">5,800 K</span></div>
+        <div class="stat-row"><span>반지름</span> <span id="radius-text">1.0 R☉</span></div>
+        <div class="stat-row"><span>현상 상태</span> <span id="status-text" style="color: #38bdf8;">안정적인 핵융합</span></div>
+    </div>
+
+    <div id="element-panel" class="panel">
+        <h3>🎯 정밀 관측 스캐너</h3>
+        <div id="target-zone-display" class="target-zone">관측 대기 중...</div>
+        <div id="element-dynamic-content"></div>
+    </div>
+
+    <div id="instructions">
+        [조작] 좌클릭 드래그: 시점 회전 | 스크롤: 줌<br>
+        * 시야 정중앙(크로스헤어) 또는 마우스 커서가 가리키는 <b>깊이(표면/내부/중심핵)</b>에 따라 원소 비율이 다르게 스캔됩니다.
+    </div>
+
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000000);
+        camera.position.set(0, 30, 250);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping; // 더 사실적인 빛 산란을 위한 톤매핑 교정
+        renderer.toneMappingExposure = 1.2;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // --- 🎯 정밀 레이캐스팅을 위한 보이지 않는 프록시(Proxy) 시스템 도입 ---
+        // 복잡한 파티클 대신 보이지 않는 충돌체를 만들어 퍼포먼스와 깊이 감지 정확도를 극대화합니다.
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let targetZone = "우주 공간"; 
+        
+        const proxyMat = new THREE.MeshBasicMaterial({ visible: false }); // 화면엔 안 보이고 마우스만 감지함
+        
+        const coreProxy = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), proxyMat);
+        coreProxy.name = "항성 중심핵 (Core)";
+        const mantleProxy = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), proxyMat);
+        mantleProxy.name = "항성 내부 (복사층/맨틀)";
+        const surfaceProxy = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), proxyMat);
+        surfaceProxy.name = "항성 표면 (대기/광구)";
+        
+        const bhProxy = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), proxyMat);
+        bhProxy.name = "사건의 지평선 (Event Horizon)";
+        const diskProxy = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, 0.5, 32), proxyMat);
+        diskProxy.name = "강착원반 (Accretion Disk)";
+        
+        scene.add(coreProxy, mantleProxy, surfaceProxy, bhProxy, diskProxy);
+        const hitTargets = [coreProxy, mantleProxy, surfaceProxy, bhProxy, diskProxy];
+
+        // --- 일반 항성 렌더링 객체 ---
+        const starGeometry = new THREE.SphereGeometry(1, 128, 128);
+        const starMaterial = new THREE.MeshStandardMaterial({ emissive: 0xffffff, emissiveIntensity: 1, roughness: 0.3, transparent: true, opacity: 1.0 });
+        const starMesh = new THREE.Mesh(starGeometry, starMaterial);
+        scene.add(starMesh);
+
+        const glowMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, side: THREE.BackSide });
+        const glowMesh = new THREE.Mesh(new THREE.SphereGeometry(1.04, 64, 64), glowMaterial);
+        starMesh.add(glowMesh);
+
+        // --- 💥 초신성 파티클 시스템 ---
+        const snCount = 25000;
+        const snGeo = new THREE.BufferGeometry();
+        const snPos = new Float32Array(snCount * 3);
+        const snVels = new Float32Array(snCount * 3); 
+        const snColors = new Float32Array(snCount * 3);
+        
+        for(let i=0; i<snCount; i++) {
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos((Math.random() * 2) - 1);
+            snPos[i*3] = 0; snPos[i*3+1] = 0; snPos[i*3+2] = 0;
+
+            const speed = 3 + Math.random() * 18;
+            snVels[i*3] = Math.sin(phi) * Math.cos(theta) * speed;
+            snVels[i*3+1] = Math.sin(phi) * Math.sin(theta) * speed;
+            snVels[i*3+2] = Math.cos(phi) * speed;
+
+            const c = new THREE.Color().setHSL(0.02 + Math.random()*0.1, 1.0, 0.5 + Math.random()*0.5);
+            snColors[i*3] = c.r; snColors[i*3+1] = c.g; snColors[i*3+2] = c.b;
+        }
+        snGeo.setAttribute('position', new THREE.BufferAttribute(snPos, 3));
+        snGeo.setAttribute('color', new THREE.BufferAttribute(snColors, 3));
+        const snMat = new THREE.PointsMaterial({ size: 1.2, vertexColors: true, blending: THREE.AdditiveBlending, transparent: true, opacity: 0 });
+        const snParticles = new THREE.Points(snGeo, snMat);
+        scene.add(snParticles);
+
+        // --- 🌀 정지된 블랙홀 구조 ---
+        const bhGroup = new THREE.Group();
+        bhGroup.visible = false;
+        scene.add(bhGroup);
+
+        const eventHorizon = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 64), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+        bhGroup.add(eventHorizon);
+
+        const edgeGlowMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, side: THREE.BackSide });
+        bhGroup.add(new THREE.Mesh(new THREE.SphereGeometry(1.05, 64, 64), edgeGlowMat));
+
+        const photonSphereMat = new THREE.MeshBasicMaterial({ color: 0xff4400, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, side: THREE.BackSide });
+        bhGroup.add(new THREE.Mesh(new THREE.SphereGeometry(1.3, 64, 64), photonSphereMat));
+
+        // 강착원반 (Y축 기준 실제 3D 회전을 위해 구조 개선)
+        const diskCount = 45000;
+        const diskGeo = new THREE.BufferGeometry();
+        const diskPos = new Float32Array(diskCount * 3);
+        const diskColors = new Float32Array(diskCount * 3);
+        const dColor = new THREE.Color();
+
+        for(let i=0; i<diskCount; i++) {
+            const radius = 1.4 + Math.pow(Math.random(), 3) * 18; 
+            const theta = Math.random() * Math.PI * 2;
+            
+            // XZ 평면을 기준으로 원반 생성 (올바른 3D 자전축)
+            let x = Math.cos(theta) * radius;
+            let z = Math.sin(theta) * radius;
+            let y = (Math.random() - 0.5) * (0.3 / radius); // 원반 두께
+
+            diskPos[i*3] = x; diskPos[i*3+1] = y; diskPos[i*3+2] = z;
+            
+            if(radius < 2.5) dColor.setRGB(3.0, 2.0, 4.0); // 안쪽은 푸른/보라 엑스레이광
+            else if(radius < 6.0) dColor.setHSL(0.05 + Math.random()*0.03, 1.0, 0.7); 
+            else dColor.setHSL(0.01, 1.0, 0.4); 
+
+            diskColors[i*3] = dColor.r; diskColors[i*3+1] = dColor.g; diskColors[i*3+2] = dColor.b;
+        }
+        diskGeo.setAttribute('position', new THREE.BufferAttribute(diskPos, 3));
+        diskGeo.setAttribute('color', new THREE.BufferAttribute(diskColors, 3));
+        const diskMat = new THREE.PointsMaterial({ size: 0.05, vertexColors: true, blending: THREE.AdditiveBlending, transparent: true, opacity: 0, depthWrite: false });
+        const accretionDisk = new THREE.Points(diskGeo, diskMat);
+        bhGroup.add(accretionDisk);
+
+        // 성간 배경
+        const bgGeo = new THREE.BufferGeometry();
+        const bgPos = new Float32Array(4000 * 3);
+        for(let i=0; i<bgPos.length; i++) bgPos[i] = (Math.random() - 0.5) * 50000;
+        bgGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
+        scene.add(new THREE.Points(bgGeo, new THREE.PointsMaterial({ color: 0x94a3b8, size: 2.5, transparent: true, opacity: 0.4 })));
+
+        const pointLight = new THREE.PointLight(0xffffff, 2, 0);
+        scene.add(pointLight);
+
+        // --- 상태 변수 ---
+        let isPlaying = false;
+        let progress = 0;
+        let mass = 100; 
+        let simulationSpeed = 1.0; 
+        let bhHorizonScale = 0.001; 
+
+        function calculatePhysics(m, p) {
+            let data = { stage: '', temp: 0, radius: 1, status: '', color: new THREE.Color(), stateCode: 0 }; 
+            const maxRadius = Math.pow(m, 0.8) * 10;
+
+            if (p < 70) {
+                data.stage = '주계열성 -> 초거성';
+                data.radius = maxRadius * (1 + (p/70)*20);
+                data.temp = 5800 * Math.pow(m, 0.3);
+                data.status = '안정적인 껍질 다중 연소';
+                data.stateCode = 0;
+            } else if (p < 98) {
+                data.stage = '적색 초거성 후기';
+                data.radius = maxRadius * 150;
+                data.temp = 3300;
+                data.status = '규소 핵융합 및 철(Fe) 핵 축적';
+                data.stateCode = 0;
+            } else if (p < 99.1) {
+                data.stage = '💥 초신성 폭발 대발생';
+                data.radius = maxRadius * 150 * (1 + (p-98)*0.6); 
+                data.temp = 1500000;
+                data.status = '광폭화하는 감마선 에너지 방출';
+                data.stateCode = 1;
+            } else if (p < 99.5) {
+                data.stage = '중심핵 초중력 붕괴 (Core-Collapse)';
+                data.radius = maxRadius * 25 * (1 - (p-99.1)/0.4); 
+                data.temp = 5000000;
+                data.status = '철 원자핵 파괴 및 중력 특이점 압축';
+                data.stateCode = 2;
+            } else if (p < 99.8) {
+                data.stage = '사건의 지평선 생성 (Event Horizon Genesis)';
+                data.radius = m * 0.45;
+                data.temp = 0;
+                data.status = '암흑 구체 팽창 및 무한 시공간 왜곡 돌입';
+                data.stateCode = 3;
+            } else {
+                data.stage = '고정형 블랙홀 (Black Hole)';
+                data.radius = m * 0.45;
+                data.temp = 0;
+                data.status = '정지형 지평선 안정화 및 주변 잔재 지속 흡수';
+                data.stateCode = 4;
+            }
+
+            if (data.stateCode >= 3) data.color.setHex(0x000000);
+            else if (data.stateCode === 2) {
+                const fadeRatio = (p - 99.1) / 0.4;
+                data.color.setRGB(1.0 - fadeRatio, 0.2 * (1.0 - fadeRatio), 1.0 - fadeRatio);
+            }
+            else if (data.stateCode === 1) data.color.setRGB(10, 10, 10); 
+            else data.color.setHex(0xff4400);
+
+            return data;
+        }
+
+        function updateVisuals(data) {
+            const sCode = data.stateCode;
+
+            // 시각 메쉬 및 프록시 크기 실시간 동기화
+            surfaceProxy.scale.set(data.radius, data.radius, data.radius);
+            mantleProxy.scale.set(data.radius * 0.6, data.radius * 0.6, data.radius * 0.6);
+            coreProxy.scale.set(data.radius * 0.2, data.radius * 0.2, data.radius * 0.2);
+
+            if (sCode === 2) {
+                starMesh.visible = true; bhGroup.visible = true; 
+                starMesh.scale.set(Math.max(0.01, data.radius), Math.max(0.01, data.radius), Math.max(0.01, data.radius));
+                starMaterial.emissive = data.color; starMaterial.color = data.color;
+                
+                const fadeRatio = (progress - 99.1) / 0.4;
+                starMaterial.opacity = 1.0 - fadeRatio;
+                glowMaterial.opacity = 0.5 * (1.0 - fadeRatio);
+
+                bhHorizonScale = fadeRatio * 0.2; 
+                const currentScale = (mass * 0.45) * bhHorizonScale;
+                bhGroup.scale.set(currentScale, currentScale, currentScale);
+                bhProxy.scale.set(currentScale, currentScale, currentScale);
+                diskProxy.scale.set(currentScale*4, currentScale*4, currentScale*4);
+                
+                edgeGlowMat.opacity = fadeRatio * 0.4;
+                photonSphereMat.opacity = fadeRatio * 0.3;
+                diskMat.opacity = fadeRatio * 0.3;
+
+                pointLight.color.setHex(0xffffff);
+                pointLight.intensity = 30 * (1.0 - fadeRatio) + 1.0;
+                
+                surfaceProxy.position.y = 9999; // 붕괴시엔 프록시 회피
+
+            } else if (sCode >= 3) {
+                starMesh.visible = false; bhGroup.visible = true;
+                surfaceProxy.position.y = 9999; mantleProxy.position.y = 9999; coreProxy.position.y = 9999;
+                bhProxy.position.y = 0; diskProxy.position.y = 0;
+
+                pointLight.color.setHex(0xffaa44);
+                pointLight.intensity = 1.0;
+
+                if(sCode === 3) {
+                    const growthRatio = (progress - 99.5) / 0.3;
+                    bhHorizonScale = 0.2 + (growthRatio * 0.8);
+                    edgeGlowMat.opacity = 0.4 + (growthRatio * 0.6);
+                    photonSphereMat.opacity = 0.3 + (growthRatio * 0.5);
+                    diskMat.opacity = 0.3 + (growthRatio * 0.7);
+                } else {
+                    bhHorizonScale = 1.0;
+                    edgeGlowMat.opacity = 1.0;
+                    photonSphereMat.opacity = 0.8;
+                    diskMat.opacity = 1.0;
+                }
+                const currentScale = data.radius * bhHorizonScale;
+                bhGroup.scale.set(currentScale, currentScale, currentScale);
+                bhProxy.scale.set(currentScale, currentScale, currentScale);
+                diskProxy.scale.set(currentScale*4, currentScale*4, currentScale*4);
+
+            } else {
+                starMesh.visible = true; bhGroup.visible = false;
+                surfaceProxy.position.y = 0; mantleProxy.position.y = 0; coreProxy.position.y = 0;
+                bhProxy.position.y = 9999; diskProxy.position.y = 9999;
+
+                starMesh.scale.set(data.radius, data.radius, data.radius);
+                starMaterial.emissive = data.color; starMaterial.color = data.color;
+                starMaterial.opacity = 1.0; glowMaterial.color = data.color; glowMaterial.opacity = 0.5;
+                pointLight.color = data.color; pointLight.intensity = (sCode === 1) ? 40 : 2.5;
+                if(sCode === 0) snMat.opacity = 0;
+            }
+
+            document.getElementById('stage-text').innerText = data.stage;
+            document.getElementById('temp-text').innerText = data.temp === 0 ? '측정 불가(사건의 지평선)' : Math.floor(data.temp).toLocaleString() + ' K';
+            document.getElementById('radius-text').innerText = data.radius.toFixed(1) + ' R☉';
+            document.getElementById('status-text').innerText = data.status;
+        }
+
+        // --- 🎯 깊이 기반 실시간 성분 스캐닝 로직 ---
+        function updateElementAnalysis() {
+            const container = document.getElementById('element-dynamic-content');
+            const zoneDisplay = document.getElementById('target-zone-display');
+            const crosshair = document.getElementById('crosshair');
+            
+            // 중앙 조준선 애니메이션
+            if(targetZone !== "우주 공간" && targetZone !== "관측 대기 중...") crosshair.classList.add('active');
+            else crosshair.classList.remove('active');
+
+            if (targetZone === "우주 공간") {
+                zoneDisplay.innerText = "스캔 영역: [우주 공간]";
+                zoneDisplay.style.color = "#64748b"; zoneDisplay.style.borderColor = "#334155";
+                container.innerHTML = `<p style="color: #64748b; font-size:0.9em; text-align:center;">항성이나 원반을 조준하세요.</p>`;
+                return;
+            }
+
+            zoneDisplay.innerText = `스캔 영역: [${targetZone}]`;
+            zoneDisplay.style.color = "#22d3ee"; zoneDisplay.style.borderColor = "rgba(34, 211, 238, 0.4)";
+
+            let elements = [];
+            
+            // 위치(Zone)와 시간(Progress)에 따른 정교한 화학 조성 변화 연산
+            if (targetZone.includes("표면")) {
+                elements = [
+                    { name: '수소 (H)', ratio: Math.max(0, 74 - (progress * 0.1)), color: '#38bdf8' },
+                    { name: '헬륨 (He)', ratio: Math.min(95, 24 + (progress * 0.1)), color: '#a855f7' },
+                    { name: '미량 원소', ratio: 2, color: '#94a3b8' }
+                ];
+            } else if (targetZone.includes("내부")) {
+                const subP = progress / 98; // 0 ~ 1
+                elements = [
+                    { name: '수소 (H)', ratio: Math.max(0, 40 * (1 - subP)), color: '#38bdf8' },
+                    { name: '헬륨 (He)', ratio: 40 + (20 * subP), color: '#a855f7' },
+                    { name: '탄소/산소 (C/O)', ratio: 15 + (30 * subP), color: '#facc15' },
+                    { name: '네온/규소 (Ne/Si)', ratio: 5 + (10 * subP), color: '#f97316' }
+                ];
+            } else if (targetZone.includes("중심핵")) {
+                const subP = Math.min(1.0, progress / 98);
+                elements = [
+                    { name: '헬륨 잔재 (He)', ratio: Math.max(0, 20 * (1 - subP)), color: '#a855f7' },
+                    { name: '탄소/산소 (C/O)', ratio: Math.max(0, 40 * (1 - subP)), color: '#facc15' },
+                    { name: '규소 (Si) 융합물', ratio: 30 * subP, color: '#f97316' },
+                    { name: '철 (Fe) 축적핵', ratio: 10 + (60 * subP), color: '#ef4444', shadow: '0 0 10px #ef4444' }
+                ];
+            } else if (targetZone.includes("강착원반")) {
+                elements = [
+                    { name: '초고온 붕괴 플라즈마', ratio: 40, color: '#f97316' },
+                    { name: '이온화 철 (Fe+)', ratio: 35, color: '#ef4444' },
+                    { name: '양자 축퇴 가스', ratio: 25, color: '#ec4899', shadow: '0 0 10px #ec4899' }
+                ];
+            } else if (targetZone.includes("사건의 지평선")) {
+                zoneDisplay.style.color = "#ef4444"; zoneDisplay.style.borderColor = "#ef4444";
+                elements = [
+                    { name: '시공간 곡률 (특이점)', ratio: 99.9, color: '#000000', border: '1px solid #ef4444', shadow: '0 0 15px #ef4444' },
+                    { name: '정보 (Hawking Rad.)', ratio: 0.1, color: '#ffffff' }
+                ];
+            } else if (targetZone.includes("초신성")) {
+                elements = [
+                    { name: '방출된 외곽 수소/헬륨', ratio: 60, color: '#38bdf8' },
+                    { name: '합성된 중원소 분출물', ratio: 40, color: '#facc15' }
+                ];
+            }
+
+            let htmlString = '';
+            elements.forEach(el => {
+                htmlString += `
+                    <div class="element-bar-container">
+                        <div class="element-label">
+                            <span>${el.name}</span>
+                            <span class="highlight">${el.ratio.toFixed(1)}%</span>
+                        </div>
+                        <div class="element-bar-bg">
+                            <div class="element-bar-fill" style="width: ${el.ratio}%; background-color: ${el.color}; ${el.border ? 'border:'+el.border+';' : ''} ${el.shadow ? 'box-shadow:'+el.shadow+';' : ''}"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = htmlString;
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            
+            // 프록시 배열과 교차 판정 (가장 안쪽/가장 먼저 부딪히는 것부터 정렬됨)
+            const intersects = raycaster.intersectObjects(hitTargets);
+            
+            if (intersects.length > 0) {
+                // 광선이 여러 겹의 프록시를 뚫고 지나가므로, 가장 '안쪽(작은)' 영역을 우선순위로 잡습니다.
+                // intersect.distance가 아니라, 교차된 객체의 층위를 확인
+                let hitName = intersects[0].object.name;
+                
+                // 표면을 뚫고 중심핵을 맞췄다면 중심핵을 반환하도록 로직 강화
+                const hitNames = intersects.map(hit => hit.object.name);
+                if(hitNames.includes("항성 중심핵 (Core)")) targetZone = "항성 중심핵 (Core)";
+                else if(hitNames.includes("항성 내부 (복사층/맨틀)")) targetZone = "항성 내부 (맨틀/복사층)";
+                else targetZone = hitName;
+            } else {
+                if (progress >= 99.1 && progress < 99.8 && Math.abs(mouse.x) < 0.2 && Math.abs(mouse.y) < 0.2) {
+                    targetZone = "초신성 분출물 (Ejecta)";
+                } else {
+                    targetZone = "우주 공간";
+                }
+            }
+        });
+
+        // --- 컨트롤 바인딩 ---
+        document.getElementById('mass-slider').addEventListener('input', (e) => {
+            mass = parseFloat(e.target.value); document.getElementById('mass-val').innerText = mass;
+            resetSupernovaParticles(); updateVisuals(calculatePhysics(mass, progress));
+        });
+        document.getElementById('time-slider').addEventListener('input', (e) => {
+            progress = parseFloat(e.target.value); document.getElementById('time-val').innerText = progress.toFixed(1);
+            if(progress < 98) resetSupernovaParticles(); updateVisuals(calculatePhysics(mass, progress));
+        });
+        document.getElementById('btn-play').onclick = () => isPlaying = true;
+        document.getElementById('btn-pause').onclick = () => isPlaying = false;
+        document.getElementById('btn-reset').onclick = () => { 
+            isPlaying = false; progress = 0; document.getElementById('time-slider').value = 0; document.getElementById('time-val').innerText = '0';
+            resetSupernovaParticles(); updateVisuals(calculatePhysics(mass, progress)); 
+        };
+        document.querySelectorAll('.speed-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active')); e.target.classList.add('active');
+                simulationSpeed = parseFloat(e.target.getAttribute('data-speed'));
+            };
+        });
+
+        function resetSupernovaParticles() {
+            const positions = snParticles.geometry.attributes.position.array;
+            for(let i=0; i<snCount; i++) { positions[i*3] = 0; positions[i*3+1] = 0; positions[i*3+2] = 0; }
+            snParticles.geometry.attributes.position.needsUpdate = true; snMat.opacity = 0; bhHorizonScale = 0.001; targetZone = "우주 공간";
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- 메인 루프 ---
+        updateVisuals(calculatePhysics(mass, progress));
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (isPlaying && progress < 100) {
+                progress += (0.025 + (mass * 0.0006)) * simulationSpeed;
+                if (progress > 100) progress = 100;
+                document.getElementById('time-slider').value = progress;
+                document.getElementById('time-val').innerText = progress.toFixed(1);
+                updateVisuals(calculatePhysics(mass, progress));
+            }
+
+            const physics = calculatePhysics(mass, progress);
+            updateElementAnalysis();
+
+            // 파티클 물리 동력학
+            if (physics.stateCode === 1 || physics.stateCode === 2) {
+                snMat.opacity = 1.0;
+                const positions = snParticles.geometry.attributes.position.array;
+                const vels = snVels;
+                const brakeFactor = (physics.stateCode === 2) ? Math.max(0.02, 1.0 - (progress - 99.1) / 0.4) : 1.0;
+
+                for(let i=0; i<snCount; i++) {
+                    positions[i*3] += vels[i*3] * 0.3 * simulationSpeed * brakeFactor;
+                    positions[i*3+1] += vels[i*3+1] * 0.3 * simulationSpeed * brakeFactor;
+                    positions[i*3+2] += vels[i*3+2] * 0.3 * simulationSpeed * brakeFactor;
+                }
+                snParticles.geometry.attributes.position.needsUpdate = true;
+            } 
+            else if (physics.stateCode >= 3) {
+                const positions = snParticles.geometry.attributes.position.array;
+                let activeCount = 0;
+                const currentHorizonRadius = (mass * 0.45) * bhHorizonScale;
+
+                for(let i=0; i<snCount; i++) {
+                    let x = positions[i*3], y = positions[i*3+1], z = positions[i*3+2];
+                    let dist = Math.sqrt(x*x + y*y + z*z);
+                    
+                    if (dist < currentHorizonRadius) {
+                        positions[i*3] = 0; positions[i*3+1] = 0; positions[i*3+2] = 0;
+                    } else if (x !== 0 || y !== 0 || z !== 0) {
+                        activeCount++;
+                        const gravity = (18.0 / Math.max(1.0, dist * 0.03)) * simulationSpeed;
+                        positions[i*3] -= (x / dist) * gravity;
+                        positions[i*3+1] -= (y / dist) * gravity;
+                        positions[i*3+2] -= (z / dist) * gravity;
+
+                        // 3D 회전에 맞춘 나선형 빨려들어감 (Y축 회전으로 교정)
+                        const spin = 0.05 * simulationSpeed;
+                        positions[i*3] += -z * spin;
+                        positions[i*3+2] += x * spin;
+                    }
+                }
+                if(activeCount > 0) snParticles.geometry.attributes.position.needsUpdate = true;
+            }
+
+            // 고정 정지 블랙홀 렌더 회전 (원반을 실제 Y축을 기준으로 회전)
+            if (physics.stateCode >= 2) {
+                accretionDisk.rotation.y -= 0.025 * (simulationSpeed < 1 ? simulationSpeed : 1);
+            } else {
+                starMesh.rotation.y += 0.003;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
