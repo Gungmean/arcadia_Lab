@@ -125,7 +125,7 @@
     </a>
 
     <h2>🌬️ 비가역 현상: 기체 확산 실험</h2>
-    <p class="desc">분자들이 무작위로 충돌하며 평형 상태로 나아가는 과정을 관찰하세요.</p>
+    <p class="desc">동일 질량 분자의 탄성 충돌과 무작위 운동으로 농도 차가 완화되는 과정을 관찰하세요.</p>
 
     <canvas id="gasCanvas" width="800" height="400"></canvas>
 
@@ -135,7 +135,7 @@
             <input type="range" id="count" min="20" max="300" value="100">
         </div>
         <div class="control-group">
-            <label>온도 (에너지) <span id="tempVal">3</span></label>
+            <label>상대 온도 <span id="tempVal">3</span></label>
             <input type="range" id="temp" min="1" max="10" step="0.5" value="3">
         </div>
 
@@ -206,14 +206,15 @@
                 const y = Math.random() * (canvas.height - 20) + 10;
                 // 속도는 온도에 비례
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * temp + 1;
+                // 평균 운동 에너지는 온도에 비례하므로, 속도 크기는 √T에 비례한다.
+                const speed = (Math.random() + 0.6) * Math.sqrt(temp / 3) * 2.2;
                 const vX = Math.cos(angle) * speed;
                 const vY = Math.sin(angle) * speed;
 
                 particles.push(new Particle(x, y, vX, vY, 3));
             }
 
-            document.getElementById('stats').innerText = "비가역 확산 진행 중... 다시 원래대로 뭉치지 않습니다.";
+            document.getElementById('stats').innerText = "확산 진행 중... 거시적으로는 균일해지며, 우연한 재집중은 매우 드문 열역학적 요동입니다.";
             animate();
         }
 
@@ -237,6 +238,24 @@
                 p.update();
                 p.draw();
             });
+            // 동일 질량·동일 반지름 분자의 2차원 탄성 충돌 근사
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const a = particles[i], b = particles[j];
+                    const dx = b.x - a.x, dy = b.y - a.y;
+                    const distance = Math.hypot(dx, dy);
+                    const minDistance = a.radius + b.radius;
+                    if (distance === 0 || distance >= minDistance) continue;
+                    const nx = dx / distance, ny = dy / distance;
+                    const relativeNormalSpeed = (a.vX - b.vX) * nx + (a.vY - b.vY) * ny;
+                    if (relativeNormalSpeed <= 0) continue;
+                    a.vX -= relativeNormalSpeed * nx; a.vY -= relativeNormalSpeed * ny;
+                    b.vX += relativeNormalSpeed * nx; b.vY += relativeNormalSpeed * ny;
+                    const overlap = (minDistance - distance) / 2;
+                    a.x -= nx * overlap; a.y -= ny * overlap;
+                    b.x += nx * overlap; b.y += ny * overlap;
+                }
+            }
 
             animId = requestAnimationFrame(animate);
         }

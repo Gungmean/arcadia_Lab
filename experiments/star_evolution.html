@@ -91,20 +91,20 @@
     <div id="info-panel" class="panel">
         <h3>📊 물리 데이터</h3>
         <div class="stat-row"><span>진화 단계</span> <span id="stage-text" class="highlight">주계열성</span></div>
-        <div class="stat-row"><span>표면 온도</span> <span id="temp-text">5,800 K</span></div>
-        <div class="stat-row"><span>반지름</span> <span id="radius-text">1.0 R☉</span></div>
+        <div class="stat-row"><span>근사 표면 온도</span> <span id="temp-text">5,800 K</span></div>
+        <div class="stat-row"><span>근사 반지름</span> <span id="radius-text">1.0 R☉</span></div>
         <div class="stat-row"><span>현상 상태</span> <span id="status-text" style="color: #38bdf8;">안정적인 핵융합</span></div>
     </div>
 
     <div id="element-panel" class="panel">
-        <h3>🎯 정밀 관측 스캐너</h3>
+        <h3>🎯 개념 관측 스캐너</h3>
         <div id="target-zone-display" class="target-zone">관측 대기 중...</div>
         <div id="element-dynamic-content"></div>
     </div>
 
     <div id="instructions">
         [조작] 좌클릭 드래그: 시점 회전 | 스크롤: 줌<br>
-        * 시야 정중앙(크로스헤어) 또는 마우스 커서가 가리키는 <b>깊이(표면/내부/중심핵)</b>에 따라 원소 비율이 다르게 스캔됩니다.
+        * 시야 정중앙(크로스헤어) 또는 마우스 커서가 가리키는 <b>깊이(표면/내부/중심핵)</b>를 탐색합니다. 원소 막대와 크기는 질적 개념도이며 축척 모형이 아닙니다.
     </div>
 
     <script>
@@ -244,48 +244,63 @@
         let bhHorizonScale = 0.001; 
 
         function calculatePhysics(m, p) {
-            let data = { stage: '', temp: 0, radius: 1, status: '', color: new THREE.Color(), stateCode: 0 }; 
-            const maxRadius = Math.pow(m, 0.8) * 10;
+            let data = { stage: '', temp: 0, radius: 1, status: '', color: new THREE.Color(), stateCode: 0 };
+            const mainSequenceRadius = m < 1 ? Math.pow(m, 0.8) : Math.pow(m, 0.57);
+            const mainSequenceTemp = Math.min(45000, 5772 * Math.pow(m, m < 1 ? 0.4 : 0.52));
+            const isLowMass = m < 8;
+            const becomesNeutronStar = m >= 8 && m < 20;
 
-            if (p < 70) {
-                data.stage = '주계열성 -> 초거성';
-                data.radius = maxRadius * (1 + (p/70)*20);
-                data.temp = 5800 * Math.pow(m, 0.3);
-                data.status = '안정적인 껍질 다중 연소';
-                data.stateCode = 0;
+            if (isLowMass) {
+                if (p < 70) {
+                    data.stage = '주계열성'; data.radius = mainSequenceRadius; data.temp = mainSequenceTemp;
+                    data.status = '중심 수소 핵융합과 정역학적 평형';
+                } else if (p < 93) {
+                    data.stage = '적색거성 / AGB성'; data.radius = Math.max(10, mainSequenceRadius * 60); data.temp = 3400;
+                    data.status = '수소·헬륨 껍질 연소와 외층 팽창';
+                } else if (p < 97) {
+                    data.stage = '행성상 성운'; data.radius = Math.max(3, mainSequenceRadius * 12); data.temp = 30000;
+                    data.status = '외층 방출, 중심핵 노출';
+                } else {
+                    data.stage = '백색왜성'; data.radius = 0.012; data.temp = 100000;
+                    data.status = '전자 축퇴압으로 지지되는 냉각 잔해'; data.stateCode = 5;
+                }
+            } else if (becomesNeutronStar) {
+                if (p < 70) {
+                    data.stage = '주계열성'; data.radius = mainSequenceRadius; data.temp = mainSequenceTemp;
+                    data.status = '중심 수소 핵융합';
+                } else if (p < 98) {
+                    data.stage = '적색초거성'; data.radius = mainSequenceRadius * 100; data.temp = 3500;
+                    data.status = '고온 핵융합 단계와 철핵 형성';
+                } else if (p < 99.2) {
+                    data.stage = '💥 핵붕괴 초신성'; data.radius = mainSequenceRadius * 110; data.temp = 1500000;
+                    data.status = '철핵 붕괴와 충격파에 의한 외층 방출'; data.stateCode = 1;
+                } else {
+                    data.stage = '중성자별'; data.radius = 0.000014; data.temp = 1000000;
+                    data.status = '중성자 축퇴압으로 지지되는 초고밀도 잔해'; data.stateCode = 6;
+                }
+            } else if (p < 70) {
+                data.stage = '거대질량 주계열성'; data.radius = mainSequenceRadius; data.temp = mainSequenceTemp;
+                data.status = '중심 수소 핵융합';
             } else if (p < 98) {
-                data.stage = '적색 초거성 후기';
-                data.radius = maxRadius * 150;
-                data.temp = 3300;
-                data.status = '규소 핵융합 및 철(Fe) 핵 축적';
-                data.stateCode = 0;
+                data.stage = '적색초거성 후기'; data.radius = mainSequenceRadius * 100; data.temp = 3500;
+                data.status = '규소 연소와 철핵 형성';
             } else if (p < 99.1) {
-                data.stage = '💥 초신성 폭발 대발생';
-                data.radius = maxRadius * 150 * (1 + (p-98)*0.6); 
-                data.temp = 1500000;
-                data.status = '광폭화하는 감마선 에너지 방출';
-                data.stateCode = 1;
+                data.stage = '💥 핵붕괴 초신성'; data.radius = mainSequenceRadius * 110; data.temp = 1500000;
+                data.status = '철핵 붕괴와 초신성 분출물'; data.stateCode = 1;
             } else if (p < 99.5) {
-                data.stage = '중심핵 초중력 붕괴 (Core-Collapse)';
-                data.radius = maxRadius * 25 * (1 - (p-99.1)/0.4); 
-                data.temp = 5000000;
-                data.status = '철 원자핵 파괴 및 중력 특이점 압축';
-                data.stateCode = 2;
+                data.stage = '중심핵 붕괴'; data.radius = mainSequenceRadius * 15 * (1 - (p - 99.1) / 0.4); data.temp = 5000000;
+                data.status = '광분해·전자 포획이 붕괴를 가속'; data.stateCode = 2;
             } else if (p < 99.8) {
-                data.stage = '사건의 지평선 생성 (Event Horizon Genesis)';
-                data.radius = m * 0.45;
-                data.temp = 0;
-                data.status = '암흑 구체 팽창 및 무한 시공간 왜곡 돌입';
-                data.stateCode = 3;
+                data.stage = '사건의 지평선 형성'; data.radius = m * 4.24e-6; data.temp = 0;
+                data.status = '항성질량 블랙홀 형성'; data.stateCode = 3;
             } else {
-                data.stage = '고정형 블랙홀 (Black Hole)';
-                data.radius = m * 0.45;
-                data.temp = 0;
-                data.status = '정지형 지평선 안정화 및 주변 잔재 지속 흡수';
-                data.stateCode = 4;
+                data.stage = '항성질량 블랙홀'; data.radius = m * 4.24e-6; data.temp = 0;
+                data.status = '사건의 지평선 바깥 강착 물질 관측'; data.stateCode = 4;
             }
 
-            if (data.stateCode >= 3) data.color.setHex(0x000000);
+            if (data.stateCode === 3 || data.stateCode === 4) data.color.setHex(0x000000);
+            else if (data.stateCode === 5) data.color.setHex(0xdbeafe);
+            else if (data.stateCode === 6) data.color.setHex(0x60a5fa);
             else if (data.stateCode === 2) {
                 const fadeRatio = (p - 99.1) / 0.4;
                 data.color.setRGB(1.0 - fadeRatio, 0.2 * (1.0 - fadeRatio), 1.0 - fadeRatio);
@@ -328,7 +343,7 @@
                 
                 surfaceProxy.position.y = 9999; // 붕괴시엔 프록시 회피
 
-            } else if (sCode >= 3) {
+            } else if (sCode === 3 || sCode === 4) {
                 starMesh.visible = false; bhGroup.visible = true;
                 surfaceProxy.position.y = 9999; mantleProxy.position.y = 9999; coreProxy.position.y = 9999;
                 bhProxy.position.y = 0; diskProxy.position.y = 0;
@@ -348,7 +363,8 @@
                     photonSphereMat.opacity = 0.8;
                     diskMat.opacity = 1.0;
                 }
-                const currentScale = data.radius * bhHorizonScale;
+                // 실제 사건지평선 반지름은 매우 작으므로, 여기의 크기는 관측용 비축척 표시이다.
+                const currentScale = Math.max(0.7, Math.pow(mass, 0.35) * 0.35) * bhHorizonScale;
                 bhGroup.scale.set(currentScale, currentScale, currentScale);
                 bhProxy.scale.set(currentScale, currentScale, currentScale);
                 diskProxy.scale.set(currentScale*4, currentScale*4, currentScale*4);
@@ -358,7 +374,8 @@
                 surfaceProxy.position.y = 0; mantleProxy.position.y = 0; coreProxy.position.y = 0;
                 bhProxy.position.y = 9999; diskProxy.position.y = 9999;
 
-                starMesh.scale.set(data.radius, data.radius, data.radius);
+                const visualRadius = sCode >= 5 ? 0.45 : data.radius;
+                starMesh.scale.set(visualRadius, visualRadius, visualRadius);
                 starMaterial.emissive = data.color; starMaterial.color = data.color;
                 starMaterial.opacity = 1.0; glowMaterial.color = data.color; glowMaterial.opacity = 0.5;
                 pointLight.color = data.color; pointLight.intensity = (sCode === 1) ? 40 : 2.5;
@@ -571,7 +588,7 @@
             }
 
             // 고정 정지 블랙홀 렌더 회전 (원반을 실제 Y축을 기준으로 회전)
-            if (physics.stateCode >= 2) {
+            if (physics.stateCode === 3 || physics.stateCode === 4) {
                 accretionDisk.rotation.y -= 0.025 * (simulationSpeed < 1 ? simulationSpeed : 1);
             } else {
                 starMesh.rotation.y += 0.003;

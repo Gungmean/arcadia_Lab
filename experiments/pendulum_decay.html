@@ -124,8 +124,8 @@
       ← 2D 실험실 목록
     </a>
 
-    <h2>🕰️ 분자 충돌 및 에너지 감쇠 실험</h2>
-    <p class="desc">진자가 공기 분자들과 충돌하며 운동 에너지를 전달하고 멈추는 과정을 관찰하세요.</p>
+    <h2>🕰️ 공기 저항과 진자 감쇠 실험</h2>
+    <p class="desc">공기 밀도에 따른 항력으로 진자의 진폭이 줄어드는 정성 모델을 관찰하세요.</p>
 
     <canvas id="collisionCanvas" width="800" height="450"></canvas>
 
@@ -141,7 +141,7 @@
 
         <button onclick="resetSim()">실험 시작</button>
 
-        <div class="stats" id="stats">진자가 공기 분자에 부딪히면 속도가 줄어듭니다.</div>
+        <div class="stats" id="stats">공기 밀도가 클수록 항력에 의해 진폭이 감쇠하는 정성 모델입니다.</div>
     </div>
 
     <script>
@@ -151,7 +151,8 @@
         let particles = [];
         let pendulum = { a: 0, aV: 0, aA: 0, r: 220, x: 0, y: 0, mass: 30 };
         let animId;
-        const g = 0.4;
+        const g = 9.8;
+        let lastTime = performance.now();
 
         class Particle {
             constructor() { this.reset(); }
@@ -178,17 +179,22 @@
             pendulum.a = startAngle * Math.PI / 180;
             pendulum.aV = 0;
 
-            animate();
+            lastTime = performance.now();
+            animate(lastTime);
         }
 
-        function animate() {
+        function animate(now) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const ox = canvas.width / 2, oy = 50;
+            const dt = Math.min((now - lastTime) / 1000, 0.02);
+            lastTime = now;
+            const density = Number(document.getElementById('density').value);
 
             // 1. 진자 물리 업데이트
-            pendulum.aA = (-1 * g / (pendulum.r / 10)) * Math.sin(pendulum.a);
-            pendulum.aV += pendulum.aA;
-            pendulum.a += pendulum.aV;
+            pendulum.aA = (-g / (pendulum.r / 100)) * Math.sin(pendulum.a);
+            pendulum.aV += pendulum.aA * dt;
+            pendulum.aV *= Math.exp(-(density / 2000) * dt);
+            pendulum.a += pendulum.aV * dt;
 
             pendulum.x = ox + pendulum.r * Math.sin(pendulum.a);
             pendulum.y = oy + pendulum.r * Math.cos(pendulum.a);
@@ -203,11 +209,9 @@
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
                 if (dist < pendulum.mass) {
-                    // 충돌 발생: 진자의 속도 감소 (에너지 전달)
-                    pendulum.aV *= 0.985;
-                    // 분자는 튕겨나감
-                    p.vx += pendulum.aV * 10 * Math.cos(pendulum.a);
-                    p.vy += Math.abs(pendulum.aV) * 5;
+                    // 분자는 시각적 충돌 효과만 담당하고, 감쇠는 위의 연속 항력식으로 계산한다.
+                    p.vx += pendulum.aV * 0.2 * Math.cos(pendulum.a);
+                    p.vy += Math.abs(pendulum.aV) * 0.1;
                 }
 
                 ctx.beginPath();

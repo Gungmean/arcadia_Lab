@@ -76,11 +76,12 @@
         </div>
 
         <div class="control-row">
-            <label>행성 공전 위치 각도: <span id="val-orbit" class="highlight">45</span>°</label>
+            <label>행성 상대 위치 각도: <span id="val-orbit" class="highlight">45</span>°</label>
             <input type="range" id="slide-orbit" min="0" max="360" step="1" value="45">
             <div class="btn-group">
-                <button id="play-orbit" class="toggle-play">행성공전 자동 재생 🔄</button>
+                <button id="play-orbit" class="toggle-play">상대 위치 자동 이동 🔄</button>
             </div>
+            <div style="font-size:0.75em; color:#94a3b8; margin-top:6px;">* 원형·동일 평면 궤도와 춘분 조건을 가정한 기하학 모형입니다. 자동 이동은 실제 공전 주기 재현이 아닙니다.</div>
         </div>
         
         <div class="btn-group">
@@ -94,7 +95,7 @@
     </div>
 
     <div id="status-panel" class="panel">
-        <h3>실시간 천문 기하학 정보</h3>
+        <h3>천문 기하학 정보 (단순 모형)</h3>
         <div class="stat-row"><span>관측 행성</span> <span id="txt-planet" class="highlight">금성 (Inner)</span></div>
         <div class="stat-row"><span>태양-지구-행성 사잇각</span> <span id="txt-angle">0.0°</span></div>
         <div class="stat-row"><span>이각 상태</span> <span id="txt-elongation">-</span></div>

@@ -82,7 +82,7 @@
     </a>
 
     <h2>🌊 물결파 및 매질 진동 실험실</h2>
-    <p class="desc">아래 업로드 박스를 통해 이미지를 추가하고 파동의 연직 진동을 관찰하세요.</p>
+    <p class="desc">수면 입자의 타원 운동을 단순화해 관찰하는 심해파 개념 모델입니다.</p>
     
     <canvas id="waveCanvas" width="800" height="400"></canvas>
 
@@ -164,17 +164,19 @@
                     const originX = c * spacingX;
                     const originY = midY + r * spacingY;
                     const phase = (originX / waveLen) * Math.PI * 2 - time;
+                    // 심해파 입자는 깊이에 따라 작아지는 타원 궤적을 그린다.
+                    const currentX = originX + Math.cos(phase) * amp * 0.35 * depthFactor;
                     const currentY = originY + Math.sin(phase) * amp * depthFactor;
 
                     // 매질의 연직 진동 가이드라인용 마커 입자 (빨간색)
                     if (c % 8 === 4 && r === 0) {
                         ctx.strokeStyle = "rgba(239, 68, 68, 0.15)";
                         ctx.beginPath(); ctx.moveTo(originX, midY - amp - 10); ctx.lineTo(originX, midY + (rows * spacingY)); ctx.stroke();
-                        ctx.beginPath(); ctx.arc(originX, currentY, 4, 0, Math.PI * 2);
+                        ctx.beginPath(); ctx.arc(currentX, currentY, 4, 0, Math.PI * 2);
                         ctx.fillStyle = "#ef4444";
                         ctx.fill();
                     } else {
-                        ctx.beginPath(); ctx.arc(originX, currentY, 1.5, 0, Math.PI * 2);
+                        ctx.beginPath(); ctx.arc(currentX, currentY, 1.5, 0, Math.PI * 2);
                         ctx.fillStyle = `rgba(34, 211, 238, ${0.8 - (r * 0.06)})`;
                         ctx.fill();
                     }

@@ -160,9 +160,8 @@
                 // 각 진자는 totalTime 동안 (baseCycles + index)번 왕복하도록 길이를 설정
                 this.cycles = baseCycles + index;
                 this.totalTime = totalTime;
-                this.length = 400 * Math.pow((totalTime / (2 * Math.PI * this.cycles)), 2) * 9.8 * 50;
-                // 시뮬레이션 가시성을 위해 길이 조정
-                this.actualLength = 150 + (index * 12);
+                this.lengthMeters = 9.8 * Math.pow(totalTime / (2 * Math.PI * this.cycles), 2);
+                this.actualLength = 0; // 아래에서 실제 길이에 비례하도록 화면 길이를 정한다.
                 this.maxAngle = Math.PI / 6; // 30도
             }
 
@@ -171,7 +170,8 @@
                 const period = this.totalTime / this.cycles;
                 const angle = this.maxAngle * Math.cos((2 * Math.PI * elapsed) / period);
 
-                const x0 = canvas.width / 2;
+                // 실제 진자 웨이브처럼 각 진자의 축을 가로 방향으로 나란히 배치한다.
+                const x0 = 90 + (this.index / (numPendulums - 1)) * (canvas.width - 180);
                 const y0 = 20;
                 const x = x0 + this.actualLength * Math.sin(angle);
                 const y = y0 + this.actualLength * Math.cos(angle);
@@ -204,6 +204,13 @@
             for (let i = 0; i < numPendulums; i++) {
                 pendulums.push(new Pendulum(i, totalTime, baseCycles));
             }
+            const lengths = pendulums.map(p => p.lengthMeters);
+            const shortest = Math.min(...lengths);
+            const longest = Math.max(...lengths);
+            pendulums.forEach(p => {
+                const ratio = (p.lengthMeters - shortest) / Math.max(longest - shortest, 0.0001);
+                p.actualLength = 80 + ratio * 180;
+            });
 
             startTime = Date.now();
             animate();
@@ -214,7 +221,7 @@
 
             // 지지대
             ctx.fillStyle = "#334155";
-            ctx.fillRect(canvas.width / 2 - 100, 15, 200, 5);
+            ctx.fillRect(70, 15, canvas.width - 140, 5);
 
             const elapsed = (Date.now() - startTime) / 1000;
 

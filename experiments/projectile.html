@@ -162,12 +162,20 @@
             const vx = v0 * Math.cos(angleRad);
             const vy0 = v0 * Math.sin(angleRad);
 
+            const flightTime = (2 * vy0) / g;
+            const maxRange = vx * flightTime;
+            const maxHeight = (vy0 * vy0) / (2 * g);
+            const scale = Math.min(
+                (canvas.width - 60) / Math.max(maxRange, 1),
+                (canvas.height - 40) / Math.max(maxHeight, 1),
+                2
+            );
             t = 0;
             path = []; // 경로 초기화
-            draw(vx, vy0, g);
+            draw(vx, vy0, g, flightTime, maxRange, scale);
         }
 
-        function draw(vx, vy0, g) {
+        function draw(vx, vy0, g, flightTime, maxRange, scale) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // 1. 지면 그리기
@@ -180,8 +188,8 @@
             // 2. 물리 계산
             let x = vx * t;
             let y = (vy0 * t) - (0.5 * g * t * t);
-            let drawX = x + 30;
-            let drawY = canvas.height - 10 - y;
+            let drawX = x * scale + 30;
+            let drawY = canvas.height - 10 - y * scale;
 
             // 3. 경로 데이터 저장 (실시간 추가)
             if (drawY <= canvas.height - 10) {
@@ -211,15 +219,12 @@
             ctx.fill();
             ctx.shadowBlur = 0;
 
-            t += 0.12; // 시간 증분 (속도감 조절)
+            t += Math.min(0.04, flightTime / 100); // 항상 착지점까지 보이도록 시간 증분 조절
 
             // 땅에 닿기 전까지 애니메이션 지속
-            if (drawY <= canvas.height - 10 && drawX <= canvas.width) {
-                animationId = requestAnimationFrame(() => draw(vx, vy0, g));
+            if (t <= flightTime) {
+                animationId = requestAnimationFrame(() => draw(vx, vy0, g, flightTime, maxRange, scale));
             } else {
-                // 종료 시 최종 통계 업데이트
-                const flightTime = (2 * vy0) / g;
-                const maxRange = vx * flightTime;
                 document.getElementById('stats').innerText = `최종 도달 거리: ${maxRange.toFixed(2)}m | 비행 시간: ${flightTime.toFixed(2)}s`;
             }
         }

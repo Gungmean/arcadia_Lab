@@ -566,7 +566,7 @@
                     <span>2️⃣ 미션: 가열 vs 냉각 시 평형 상수(K) 비교</span>
                 </div>
                 <div class="mission-step-desc">
-                    `[🔥 가열 (380K)]`을 누르면 계측기의 <b>K값이 1.60에서 약 9.15로 급상승</b>하며 정반응이 일어나 챔버가 짙은 붉은색으로 바뀝니다. 반대로 `[❄️ 냉각 (260K)]` 시 K값이 0.49로 급감하며 투명해지는 과정을 확인하세요.
+                    `[🔥 가열 (380K)]`을 누르면 계측기의 <b>K값이 크게 증가</b>하며 정반응이 일어나 챔버가 짙은 붉은색으로 바뀝니다. 반대로 `[❄️ 냉각 (260K)]` 시 K값이 감소하며 투명해지는 과정을 확인하세요.
                 </div>
             </div>
 
@@ -600,7 +600,7 @@
         // 평형 상수 K 계산 (반트호프 식: ΔH° = +57.2 kJ/mol 흡열 반응)
         // 298K(25℃) 기준 K = 1.60
         function getEquilibriumConstant(T) {
-            return 1.60 * Math.exp((57200 / 8.314) * (1/298 - 1/T) * 0.35);
+            return 1.60 * Math.exp((57200 / 8.314) * (1/298 - 1/T));
         }
 
         // 반응 입자 객체 배열
@@ -629,8 +629,8 @@
             }
 
             update(pistonY) {
-                this.x += this.vx * Math.sqrt(temperature / 298);
-                this.y += this.vy * Math.sqrt(temperature / 298);
+                this.x += this.vx;
+                this.y += this.vy;
 
                 // 벽 충돌
                 if (this.x - this.radius < 20) { this.x = 20 + this.radius; this.vx *= -1; }
@@ -698,7 +698,7 @@
         let graphHistory = [];
         const MAX_HISTORY = 250;
 
-        // 화학 반응 평형 이동 계산 (정밀 물리화학 반응 속도 모델)
+        // 화학 반응 평형 이동 계산 (교육용 농도-시간 근사 모델)
         function stepChemicalEquilibrium() {
             const K = getEquilibriumConstant(temperature);
             
@@ -707,7 +707,7 @@
             const conc_N2O4 = (n_N2O4 * MOL_SCALE) / volume;
 
             // 반응 지수 Q = [NO2]^2 / [N2O4]
-            const Q = (conc_NO2 * conc_NO2) / Math.max(0.01, conc_N2O4);
+            const Q = (conc_NO2 * conc_NO2) / Math.max(0.000001, conc_N2O4);
 
             const statusEl = document.getElementById('equilibriumStatus');
             const tipEl = document.getElementById('theoryTip');
@@ -718,22 +718,24 @@
 
             if (diff > 0.08) {
                 // Q < K: 정반응 진행 (N2O4 -> 2 NO2)
-                if (n_N2O4 > 2) {
-                    n_N2O4 -= rate;
-                    n_NO2 += rate * 2;
+                if (n_N2O4 > 0.001) {
+                    const extent = Math.min(rate, n_N2O4);
+                    n_N2O4 -= extent;
+                    n_NO2 += extent * 2;
                 }
                 statusEl.className = 'status-pill forward';
                 statusEl.innerText = '👉 정반응 우세 (N₂O₄ → 2NO₂)';
                 tipEl.innerHTML = '🔥 <b>정반응 진행 중 (Q < K)</b>: 열을 흡수하거나 기체 분자수를 늘리는 방향으로 평형이 이동하여 적갈색이 짙어집니다.';
             } else if (diff < -0.08) {
                 // Q > K: 역반응 진행 (2 NO2 -> N2O4)
-                if (n_NO2 > 3) {
-                    n_NO2 -= rate * 2;
-                    n_N2O4 += rate;
+                if (n_NO2 > 0.002) {
+                    const extent = Math.min(rate, n_NO2 / 2);
+                    n_NO2 -= extent * 2;
+                    n_N2O4 += extent;
                 }
                 statusEl.className = 'status-pill reverse';
                 statusEl.innerText = '👈 역반응 우세 (2NO₂ → N₂O₄)';
-                tipEl.innerHTML = '❄️ <b>역반응 진행 중 (Q > K)</b>: 압력을 낮추기 위해 기체 분자수가 감소하는 방향으로 평형이 이동하여 색이 옅어집니다.';
+                tipEl.innerHTML = '❄️ <b>역반응 진행 중 (Q > K)</b>: 압력 증가를 완화하거나 NO₂를 줄이기 위해 기체 분자 수가 감소하는 방향으로 평형이 이동하여 색이 옅어집니다.';
             } else {
                 statusEl.className = 'status-pill eq';
                 statusEl.innerText = '⚖️ 동적 평형 상태 (Q ≒ K)';
