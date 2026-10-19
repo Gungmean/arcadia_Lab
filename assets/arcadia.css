@@ -2,6 +2,100 @@
 @font-face { font-family: 'Gmarket Sans'; src: url('fonts/GmarketSansTTFMedium.ttf') format('truetype'); font-weight: 500; font-display: swap; }
 @font-face { font-family: 'Gmarket Sans'; src: url('fonts/GmarketSansTTFBold.ttf') format('truetype'); font-weight: 700; font-display: swap; }
 
+/* BUGWANG UI palette: UI chrome only. Canvas/WebGL experiment objects keep their scientific colors. */
+:root {
+  --bugwang-indigo: #1F1B8D;
+  --bugwang-sky: #60A5DF;
+  --bugwang-blue: #304E9C;
+  --bugwang-dark-blue: #142058;
+  --bugwang-violet: #BA67F3;
+  --bugwang-black: #191919;
+  --bugwang-white: #FFFFFF;
+  --bg-color: var(--bugwang-black) !important;
+  --card-bg: var(--bugwang-dark-blue) !important;
+  --accent-blue: var(--bugwang-sky) !important;
+  --text-main: var(--bugwang-white) !important;
+  --text-dim: var(--bugwang-sky) !important;
+  --canvas-bg: var(--bugwang-black) !important;
+  --paper: var(--bugwang-black) !important;
+  --ink: var(--bugwang-white) !important;
+  --quiet: var(--bugwang-sky) !important;
+  --line: var(--bugwang-blue) !important;
+  --accent: var(--bugwang-sky) !important;
+  --accent-soft: var(--bugwang-dark-blue) !important;
+  --soft: var(--bugwang-dark-blue) !important;
+}
+
+/* Panels, inputs and navigation are interface chrome—not experiment media. */
+body {
+  background: var(--bugwang-black) !important;
+  background-image: none !important;
+  color: var(--bugwang-white) !important;
+}
+
+.topbar, .lab-list, .directory, .category-nav,
+.card, .entry, .lab-link {
+  border-color: var(--bugwang-blue) !important;
+}
+
+.controls, .panel, .control-card, .control-group, .stats, .guide-card,
+.header, .bottom-bar, .sidebar, .file-upload-zone, .metric-item,
+.status-pill, .secretion-hud, #controls, #info-panel, #element-panel,
+#observer-view-panel, #status-panel, #instructions {
+  background-color: var(--bugwang-dark-blue) !important;
+  border-color: var(--bugwang-blue) !important;
+  color: var(--bugwang-white) !important;
+}
+
+button, .btn, .tab-btn, .action-btn, .ctrl-btn, .toggle-play,
+.speed-btn, .clear-btn, .back-btn, body > a[style*='position: fixed'] {
+  background: var(--bugwang-blue) !important;
+  border-color: var(--bugwang-sky) !important;
+  color: var(--bugwang-white) !important;
+  box-shadow: none !important;
+}
+
+button:hover, .btn:hover, .tab-btn:hover, .action-btn:hover, .ctrl-btn:hover,
+.toggle-play:hover, .speed-btn:hover, .clear-btn:hover, .back-btn:hover,
+body > a[style*='position: fixed']:hover {
+  background: var(--bugwang-violet) !important;
+  border-color: var(--bugwang-violet) !important;
+  color: var(--bugwang-white) !important;
+}
+
+button.active, .active, .tab-btn.active, .speed-btn.active, .toggle-play.playing,
+.state, .badge, .status-pill.eq {
+  background-color: var(--bugwang-indigo) !important;
+  border-color: var(--bugwang-sky) !important;
+  color: var(--bugwang-white) !important;
+}
+
+input, select, textarea {
+  background: var(--bugwang-black) !important;
+  border-color: var(--bugwang-blue) !important;
+  color: var(--bugwang-white) !important;
+  accent-color: var(--bugwang-sky) !important;
+}
+
+input[type='range'] { accent-color: var(--bugwang-sky) !important; }
+input[type='range']::-webkit-slider-runnable-track { background: var(--bugwang-blue) !important; }
+input[type='range']::-webkit-slider-thumb { background: var(--bugwang-sky) !important; border-color: var(--bugwang-white) !important; }
+
+a, .brand, .feedback, .actions a, .entry, .lab-link, .card, .card h2,
+.entry h2, h1, h2, h3, .title, .highlight, .lab-number, .entry-kind,
+.card-footer, .arrow, .entry-arrow, .eyebrow, .folio {
+  color: var(--bugwang-white) !important;
+}
+
+.description, .lead, .desc, .card p, .entry p, .lab-link p, .footnote,
+.guide-text, .mission-step-desc, .stats, label, .text-dim {
+  color: var(--bugwang-sky) !important;
+}
+
+:focus-visible {
+  outline-color: var(--bugwang-violet) !important;
+}
+
 /* Common safeguards for every standalone experiment page. */
 html {
   -webkit-text-size-adjust: 100%;
