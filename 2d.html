@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#003278">
   <title>2D 가상 실험실</title>
 
   <style>
@@ -283,7 +284,7 @@
     @media(max-width:620px) { .container { width:min(100% - 32px,1120px); }.topbar { min-height:64px; margin-bottom:44px; }.btn-group { gap:13px; }.btn { font-size:.75rem; }.btn.secondary { display:none; }.subtitle { font-size:.92rem; }.category-nav { flex-wrap:nowrap; overflow-x:auto; padding-bottom:6px; }.tab-btn { flex:0 0 auto; }.grid { grid-template-columns:1fr; }.card { min-height:205px; }.icon { margin-top:18px; } }
   </style>
   <style>
-    :root { --paper:#f4f2ed; --ink:#18201c; --quiet:#6b716c; --line:#cbd0c8; --accent:#b64c27; --physics:#315f90; --chem:#765c8e; --life:#2c7163; --earth:#9b692f; }
+    :root { --paper:#f4f2ed; --ink:#18201c; --quiet:#6b716c; --line:#cbd0c8; --accent:#003278; --physics:#315f90; --chem:#765c8e; --life:#2c7163; --earth:#9b692f; }
     * { font-family:'Gmarket Sans',sans-serif; }
     body { background:var(--paper); color:var(--ink); }.container { width:min(1040px,calc(100% - 40px)); padding-bottom:60px; }.topbar { min-height:72px; margin:0 0 64px; align-items:center; border-bottom:1px solid var(--line); }.title { color:var(--ink); font-family:'Gmarket Sans',sans-serif; font-size:1.65rem; font-weight:700; letter-spacing:-.05em; }.btn-group { gap:18px; }.btn,.btn.secondary { color:var(--quiet); font-size:.8rem; }.btn:last-child { color:var(--ink); }
     .subtitle { max-width:560px; color:#4d554e; font-size:.95rem; line-height:1.8; }.subtitle::before { content:'2D SIMULATION / INDEX'; color:var(--accent); font-family:ui-monospace,Consolas,monospace; font-size:.72rem; letter-spacing:.08em; }.category-nav { margin-bottom:30px; gap:0; border-bottom:1px solid var(--line); overflow-x:auto; }.tab-btn { flex:0 0 auto; padding:11px 15px; border:0; border-radius:0; border-bottom:2px solid transparent; background:transparent; color:var(--quiet); font-size:.8rem; }.tab-btn:hover { border-color:#a5aaa5; background:transparent; color:var(--ink); }.tab-btn.active,.tab-btn.active[data-target="physics"],.tab-btn.active[data-target="chem"],.tab-btn.active[data-target="life"],.tab-btn.active[data-target="earth"] { color:var(--ink); border-color:var(--accent); background:transparent; box-shadow:none; }
