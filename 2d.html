@@ -317,6 +317,12 @@
     원하는 과목을 선택하여 인터랙티브 실험을 진행해보세요 (2022 개정 교육과정 기반)
   </div>
 
+  <form class="experiment-search" role="search" onsubmit="return false">
+    <label for="search2d">실험 검색</label>
+    <input id="search2d" type="search" autocomplete="off" placeholder="예: 진자, 확산, 자기장" aria-controls="experimentGrid">
+  </form>
+  <p class="search-empty" id="empty2d" hidden>검색 결과가 없습니다.</p>
+
   <!-- 과목별 상단 필터 탭 (물·화·생·지) -->
   <div class="category-nav">
     <button class="tab-btn active" data-target="all" onclick="filterCategory('all', this)">
@@ -513,20 +519,28 @@
 
 <script>
   // 과목별 필터링 함수
+  let activeCategory = 'all';
+
+  function applyFilters() {
+    const keyword = document.querySelector('#search2d').value.trim().toLowerCase();
+    let matches = 0;
+    document.querySelectorAll('#experimentGrid .card').forEach(card => {
+      const categoryMatch = activeCategory === 'all' || card.dataset.category === activeCategory;
+      const searchMatch = !keyword || card.textContent.toLowerCase().includes(keyword);
+      const visible = categoryMatch && searchMatch;
+      card.classList.toggle('hidden', !visible);
+      if (visible) matches += 1;
+    });
+    document.querySelector('#empty2d').hidden = matches !== 0;
+  }
+
   function filterCategory(category, element) {
     // 탭 활성화 상태 변경
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     element.classList.add('active');
 
-    const cards = document.querySelectorAll('#experimentGrid .card');
-    cards.forEach(card => {
-      const cardCategory = card.getAttribute('data-category');
-      if (category === 'all' || cardCategory === category) {
-        card.classList.remove('hidden');
-      } else {
-        card.classList.add('hidden');
-      }
-    });
+    activeCategory = category;
+    applyFilters();
   }
 
   document.querySelectorAll('#experimentGrid .card[data-image]').forEach(card => {
@@ -537,6 +551,8 @@
     photo.querySelector('img').addEventListener('error', event => event.currentTarget.remove());
     card.querySelector('.badge').after(photo);
   });
+
+  document.querySelector('#search2d').addEventListener('input', applyFilters);
 </script>
 
 </body>

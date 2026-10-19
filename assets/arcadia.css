@@ -105,6 +105,36 @@ button.active, .active, .tab-btn.active, .speed-btn.active, .toggle-play.playing
   object-fit: contain;
 }
 
+.experiment-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 430px;
+  margin: 0 0 28px;
+}
+
+.experiment-search label {
+  flex: 0 0 auto;
+  color: var(--bugwang-sky);
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+.experiment-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--bugwang-blue) !important;
+  border-radius: 4px;
+  font: 500 .85rem/1.3 'Gmarket Sans', sans-serif;
+}
+
+.search-empty {
+  margin: 22px 0 0;
+  color: var(--bugwang-sky);
+  font-size: .9rem;
+}
+
 input, select, textarea {
   background: var(--bugwang-black) !important;
   border-color: var(--bugwang-blue) !important;
@@ -145,6 +175,8 @@ body, button, input, select, textarea, label, a, p, span, td, th {
   .club-logo { width: 34px; height: 34px; }
   .brand-lockup { gap: 8px; }
   .site-footer { width: min(100% - 32px, 1040px); padding-bottom: 30px; }
+  .experiment-search { gap: 9px; margin-bottom: 20px; }
+  .experiment-search label { font-size: .75rem; }
 }
 
 h1, h2 {
