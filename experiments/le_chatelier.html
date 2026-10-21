@@ -64,18 +64,6 @@
             margin-bottom: 20px;
         }
 
-        .badge-curriculum {
-            display: inline-block;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 4px 12px;
-            border-radius: 20px;
-            background: rgba(192, 132, 252, 0.15);
-            color: #c084fc;
-            border: 1px solid rgba(192, 132, 252, 0.3);
-            margin-bottom: 8px;
-        }
-
         h1 {
             font-size: 1.8rem;
             font-weight: 800;
@@ -280,105 +268,6 @@
             color: #cbd5e1;
         }
 
-        /* 하단 가이드 & 미션 섹션 */
-        .guide-section {
-            width: 92%;
-            max-width: 1200px;
-            margin-top: 24px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-
-        @media (max-width: 900px) {
-            .guide-section { grid-template-columns: 1fr; }
-        }
-
-        .guide-card {
-            background: var(--card-bg);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        }
-
-        .guide-title {
-            font-size: 1.15rem;
-            font-weight: 800;
-            color: #f8fafc;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .guide-text {
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: #cbd5e1;
-            margin-bottom: 14px;
-        }
-
-        .guide-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-            margin: 12px 0;
-        }
-
-        .guide-table th, .guide-table td {
-            padding: 9px 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: left;
-        }
-
-        .guide-table th {
-            background: rgba(255, 255, 255, 0.05);
-            color: #93c5fd;
-            font-weight: 700;
-        }
-
-        .guide-table td {
-            color: #e2e8f0;
-        }
-
-        .mission-step {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 12px;
-        }
-
-        .mission-step-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #38bdf8;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .mission-step-desc {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            line-height: 1.5;
-        }
-
-        .checkpoint-box {
-            background: rgba(244, 63, 94, 0.1);
-            border: 1px solid rgba(244, 63, 94, 0.3);
-            border-radius: 12px;
-            padding: 14px;
-            margin-top: 14px;
-            font-size: 0.85rem;
-            line-height: 1.5;
-            color: #fecdd3;
-        }
-        .checkpoint-box b {
-            color: #fda4af;
-        }
     </style>
 </head>
 <body>
@@ -388,7 +277,6 @@
     </a>
 
     <div class="header">
-        <div class="badge-curriculum">고등학교 화학 · 화학 평형</div>
         <h1>르 샤틀리에 원리와 화학 평형 이동</h1>
         
         <div class="equation-box">
@@ -489,96 +377,6 @@
                     </div>
                 </div>
 
-            </div>
-        </div>
-
-    </div>
-
-    <!-- 하단 핵심 개념 설명 & 탐구 체험 미션 가이드 -->
-    <div class="guide-section">
-        
-        <!-- 1. 핵심 화학 개념 노트 -->
-        <div class="guide-card">
-            <div class="guide-title">
-                <span>📘 르 샤틀리에 원리 (Le Chatelier's Principle) 핵심 요약</span>
-            </div>
-            <div class="guide-text">
-                화학 평형 상태에 있는 반응계에 <b>압력(부피), 온도</b>와 같은 외부 변화가 가해지면, 계는 <b>그 변화를 줄이거나 완화시키는 방향</b>으로 평형을 이동시킵니다. 농도는 [NO₂]²/[N₂O₄]로 계산한 반응 지수 Q에서 확인합니다.
-            </div>
-
-            <table class="guide-table">
-                <thead>
-                    <tr>
-                        <th>외력 변화</th>
-                        <th>평형 이동 방향</th>
-                        <th>결과 및 색상 변화</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><b>부피 압축 (압력↑)</b></td>
-                        <td>기체 분자수가 감소하는 방향 (역반응 ←)</td>
-                        <td>순간 짙어졌다가 서서히 옅어짐</td>
-                    </tr>
-                    <tr>
-                        <td><b>부피 팽창 (압력↓)</b></td>
-                        <td>기체 분자수가 증가하는 방향 (정반응 →)</td>
-                        <td>순간 옅어졌다가 서서히 짙어짐</td>
-                    </tr>
-                    <tr>
-                        <td><b>온도 상승 (가열↑)</b></td>
-                        <td>열을 흡수하는 흡열 반응 방향 (정반응 →)</td>
-                        <td>적갈색(NO₂) 급증, <b>K값 증가</b></td>
-                    </tr>
-                    <tr>
-                        <td><b>온도 하강 (냉각↓)</b></td>
-                        <td>열을 방출하는 발열 반응 방향 (역반응 ←)</td>
-                        <td>무색(N₂O₄) 급증, <b>K값 감소</b></td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="checkpoint-box">
-                ⚠️ <b>수능/내신 빈출 킬러 포인트</b><br>
-                1. <b>평형 상수(K)</b>는 농도나 부피를 아무리 바꿔도 절대 변하지 않으며, <b>오직 '온도'에 의해서만</b> 변합니다!<br>
-                2. 부피를 반으로 압축하면 역반응이 일어나 분자수가 줄어들지만, <b>새로운 평형에서의 NO₂ 농도는 압축 전보다 항상 높습니다.</b> (그래프의 불연속 점프 확인!)
-            </div>
-        </div>
-
-        <!-- 2. 단계별 추천 탐구 체험 미션 -->
-        <div class="guide-card">
-            <div class="guide-title">
-                <span>🎯 단계별 추천 실험 탐구 가이드</span>
-            </div>
-
-            <!-- 미션 1 -->
-            <div class="mission-step">
-                <div class="mission-step-title">
-                    <span>1️⃣ 미션: 부피 급압축 & 꺾은선 그래프 분석</span>
-                </div>
-                <div class="mission-step-desc">
-                    `[⚡ 급압축]` 버튼을 클릭해 보세요. 우측 그래프에서 NO₂ 농도가 순간적으로 <b>수직 급상승(진해짐)</b>했다가, 르 샤틀리에 원리에 의해 역반응이 진행되며 <b>완만한 하향 곡선</b>을 그리며 새 평형에 도달하는 모습을 관찰하세요.
-                </div>
-            </div>
-
-            <!-- 미션 2 -->
-            <div class="mission-step">
-                <div class="mission-step-title">
-                    <span>2️⃣ 미션: 가열 vs 냉각 시 평형 상수(K) 비교</span>
-                </div>
-                <div class="mission-step-desc">
-                    `[🔥 가열 (380K)]`을 누르면 계측기의 <b>K값이 크게 증가</b>하며 정반응이 일어나 챔버가 짙은 붉은색으로 바뀝니다. 반대로 `[❄️ 냉각 (260K)]` 시 K값이 감소하며 투명해지는 과정을 확인하세요.
-                </div>
-            </div>
-
-            <!-- 미션 3 -->
-            <div class="mission-step">
-                <div class="mission-step-title">
-                    <span>3️⃣ 미션: 천천히 기록되는 농도 변화 읽기</span>
-                </div>
-                <div class="mission-step-desc">
-                    그래프는 0.125초 간격으로 기록됩니다. 부피나 온도를 조금씩 조절하며 [NO₂]와 [N₂O₄]의 변화 방향, 그리고 평형에서 Q가 K<sub>c</sub>에 가까워지는 모습을 함께 읽어 보세요.
-                </div>
             </div>
         </div>
 

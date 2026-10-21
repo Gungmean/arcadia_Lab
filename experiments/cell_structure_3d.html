@@ -89,18 +89,6 @@
             margin-top: 10px;
         }
 
-        .badge-curriculum {
-            display: inline-block;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 4px 12px;
-            border-radius: 20px;
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            margin-bottom: 6px;
-        }
-
         h1 {
             font-size: 1.6rem;
             font-weight: 800;
@@ -386,7 +374,6 @@
             .header-bar { top: 12px; left: 12px; right: 12px; align-items: flex-start; }
             .back-btn { padding: 8px 10px; font-size: 12px; }
             .title-group { margin-top: 6px; }
-            .badge-curriculum { font-size: 10px; padding: 3px 8px; }
             h1 { max-width: 180px; font-size: 1rem; line-height: 1.25; }
             .mode-switch-group { padding: 3px; border-radius: 10px; gap: 2px; }
             .mode-btn { padding: 7px 8px; font-size: .72rem; }
@@ -417,7 +404,6 @@
                 ← 3D 실험실 목록
             </a>
             <div class="title-group">
-                <div class="badge-curriculum">2022 개정 생명과학 · 세포와 물질대사</div>
                 <h1 id="cellTitle">🧬 3D 인터랙티브 동물세포 모델</h1>
             </div>
         </div>
@@ -491,7 +477,7 @@
     </div>
 
     <script>
-        // --- 1. 세포소기관 데이터 정의 (2022 개정 생명과학 기준) ---
+        // --- 1. 세포소기관 데이터 정의 ---
         const ORGANELLE_DATA = {
             nucleus: {
                 name: "핵 (Nucleus & Nucleolus)",
