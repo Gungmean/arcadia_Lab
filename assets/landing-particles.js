@@ -11,13 +11,16 @@
   const violet = [186, 103, 243];    // BUGWANG VIOLET
   const white = [255, 255, 255];
   const interactionRadius = 168;
+  const frameInterval = 1000 / 30;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const pointer = { x: -1000, y: -1000, lastX: null, lastY: null, directionX: 1, directionY: 0 };
   let sourcePoints = [];
   let particles = [];
   let size = 0;
   let frameId = 0;
+  let timerId = 0;
   let running = false;
+  let stageVisible = true;
 
   // Deterministic order keeps the logo's density stable between visits and resizes.
   function randomGenerator(seed) {
@@ -117,7 +120,7 @@
   function resize() {
     size = stage.clientWidth;
     if (!size) return;
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
     canvas.width = Math.round(size * ratio);
     canvas.height = Math.round(size * ratio);
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -129,6 +132,9 @@
       alpha: 0.65 + random() * 0.35,
       magnetism: 0.8 + random() * 0.4,
       response: 0.12 + random() * 0.1,
+      phase: random() * Math.PI * 2,
+      driftSpeed: 0.7 + random() * 0.7,
+      driftAmount: 0.45 + random() * 0.45,
       reaction: 0,
       scale: 1,
       offsetX: 0,
@@ -141,13 +147,16 @@
   }
 
   function schedule() {
-    if (!reducedMotion && size && sourcePoints.length && !document.hidden && !running) {
+    if (!reducedMotion && size && sourcePoints.length && stageVisible && !document.hidden && !running) {
       running = true;
-      frameId = requestAnimationFrame(draw);
+      timerId = window.setTimeout(() => {
+        timerId = 0;
+        frameId = requestAnimationFrame(draw);
+      }, frameInterval);
     }
   }
 
-  function draw() {
+  function draw(time = performance.now()) {
     running = false;
     if (!size) return;
     context.clearRect(0, 0, size, size);
@@ -161,10 +170,10 @@
       const distance = Math.hypot(distanceX, distanceY);
       const proximity = Math.max(0, 1 - distance / interactionRadius);
       particle.reaction += (proximity - particle.reaction) * (reducedMotion ? 1 : particle.response);
-      const targetScale = 1 + proximity * 1.7;
+      const targetScale = 1 + proximity * 0.65;
       particle.scale += (targetScale - particle.scale) * (reducedMotion ? 1 : particle.response);
       const pull = !reducedMotion && distance > 0
-        ? proximity * Math.min(24, distance * 0.36) * particle.magnetism / distance : 0;
+        ? proximity * Math.min(14, distance * 0.28) * particle.magnetism / distance : 0;
       const targetX = -distanceX * pull;
       const targetY = -distanceY * pull;
       particle.velocityX = (particle.velocityX + (targetX - particle.offsetX) * 0.085) * 0.8;
@@ -193,13 +202,17 @@
       } else context.fillStyle = stationaryColor;
 
       context.globalAlpha = Math.min(1, particle.alpha + particle.reaction * 0.2);
+      const driftX = reducedMotion ? 0 : Math.sin(time * 0.00055 * particle.driftSpeed + particle.phase) * particle.driftAmount;
+      const driftY = reducedMotion ? 0 : Math.cos(time * 0.00048 * particle.driftSpeed + particle.phase) * particle.driftAmount;
+      const shimmer = reducedMotion ? 1 : 0.9 + Math.sin(time * 0.0012 * particle.driftSpeed + particle.phase) * 0.1;
+      context.globalAlpha *= shimmer;
       context.beginPath();
-      context.arc(particle.x + particle.offsetX,
-        particle.y + particle.offsetY, particle.radius * particle.scale, 0, Math.PI * 2);
+      context.arc(particle.x + particle.offsetX + driftX,
+        particle.y + particle.offsetY + driftY, particle.radius * particle.scale, 0, Math.PI * 2);
       context.fill();
     }
     context.globalAlpha = 1;
-    if (unsettled) schedule();
+    if (unsettled || !reducedMotion) schedule();
   }
 
   function start(points) {
@@ -236,10 +249,24 @@
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
+      clearTimeout(timerId);
       cancelAnimationFrame(frameId);
+      timerId = 0;
       running = false;
     } else schedule();
   });
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([entry]) => {
+      stageVisible = entry.isIntersecting;
+      if (stageVisible) schedule();
+      else {
+        clearTimeout(timerId);
+        cancelAnimationFrame(frameId);
+        timerId = 0;
+        running = false;
+      }
+    }).observe(stage);
+  }
   if ('ResizeObserver' in window) new ResizeObserver(resize).observe(stage);
   else window.addEventListener('resize', resize, { passive: true });
 
