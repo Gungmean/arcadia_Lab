@@ -4,13 +4,13 @@
   const context = canvas?.getContext('2d');
   if (!stage || !context) return;
 
-  const COUNT = 900;
+  const COUNT = 1200;
   const SOURCE_SIZE = 440;
   const SOURCE_SPAN = 350;
   const baseColor = [96, 165, 223];  // BUGWANG SKY BLUE
   const violet = [186, 103, 243];    // BUGWANG VIOLET
   const white = [255, 255, 255];
-  const interactionRadius = 142;
+  const interactionRadius = 168;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const pointer = { x: -1000, y: -1000, lastX: null, lastY: null, directionX: 1, directionY: 0 };
   let sourcePoints = [];
@@ -37,8 +37,8 @@
     const candidates = [];
 
     // Keep the dark atom inside the badge; exclude the blue outer ring and lettering.
-    for (let y = 57; y < 383; y += 3) {
-      for (let x = 57; x < 383; x += 3) {
+    for (let y = 57; y < 383; y += 2) {
+      for (let x = 57; x < 383; x += 2) {
         if (Math.hypot(x - 220, y - 220) > 164) continue;
         const index = (y * SOURCE_SIZE + x) * 4;
         const red = pixels[index];
@@ -57,7 +57,32 @@
       const j = Math.floor(random() * (i + 1));
       [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
     }
-    return candidates.slice(0, COUNT);
+    const selected = [];
+    const cells = new Map();
+    const spacing = 4;
+    for (const candidate of candidates) {
+      const cellX = Math.floor(candidate.x / spacing);
+      const cellY = Math.floor(candidate.y / spacing);
+      let overlaps = false;
+      for (let y = cellY - 1; y <= cellY + 1 && !overlaps; y++) {
+        for (let x = cellX - 1; x <= cellX + 1 && !overlaps; x++) {
+          for (const neighbor of cells.get(`${x},${y}`) || []) {
+            if ((candidate.x - neighbor.x) ** 2 + (candidate.y - neighbor.y) ** 2 < spacing ** 2) {
+              overlaps = true;
+              break;
+            }
+          }
+        }
+      }
+      if (overlaps) continue;
+      selected.push(candidate);
+      const key = `${cellX},${cellY}`;
+      if (!cells.has(key)) cells.set(key, []);
+      cells.get(key).push(candidate);
+      if (selected.length === COUNT) break;
+    }
+    if (selected.length < COUNT) throw new Error('Logo mask cannot fit enough separated points');
+    return selected;
   }
 
   function fallbackPoints() {
@@ -100,9 +125,9 @@
     particles = sourcePoints.map(point => ({
       x: size / 2 + point.x * size / SOURCE_SPAN,
       y: size / 2 + point.y * size / SOURCE_SPAN,
-      radius: (0.8 + random() * 0.8) * Math.max(0.75, size / 470),
+      radius: (0.85 + random() * 0.45) * Math.max(0.75, size / 470),
       alpha: 0.65 + random() * 0.35,
-      phase: random() * Math.PI * 2,
+      magnetism: 0.8 + random() * 0.4,
       response: 0.12 + random() * 0.1,
       reaction: 0,
       scale: 1,
@@ -122,12 +147,13 @@
     }
   }
 
-  function draw(time) {
+  function draw() {
     running = false;
     if (!size) return;
     context.clearRect(0, 0, size, size);
     const stationaryColor = `rgb(${baseColor.join(',')})`;
     context.fillStyle = stationaryColor;
+    let unsettled = false;
 
     for (const particle of particles) {
       const distanceX = particle.x - pointer.x;
@@ -135,15 +161,23 @@
       const distance = Math.hypot(distanceX, distanceY);
       const proximity = Math.max(0, 1 - distance / interactionRadius);
       particle.reaction += (proximity - particle.reaction) * (reducedMotion ? 1 : particle.response);
-      const targetScale = 1 + proximity * 3;
+      const targetScale = 1 + proximity * 1.7;
       particle.scale += (targetScale - particle.scale) * (reducedMotion ? 1 : particle.response);
-      const displacement = !reducedMotion && distance > 0 ? proximity * 18 / distance : 0;
-      const targetX = distanceX * displacement;
-      const targetY = distanceY * displacement;
-      particle.velocityX = (particle.velocityX + (targetX - particle.offsetX) * 0.075) * 0.76;
-      particle.velocityY = (particle.velocityY + (targetY - particle.offsetY) * 0.075) * 0.76;
+      const pull = !reducedMotion && distance > 0
+        ? proximity * Math.min(24, distance * 0.36) * particle.magnetism / distance : 0;
+      const targetX = -distanceX * pull;
+      const targetY = -distanceY * pull;
+      particle.velocityX = (particle.velocityX + (targetX - particle.offsetX) * 0.085) * 0.8;
+      particle.velocityY = (particle.velocityY + (targetY - particle.offsetY) * 0.085) * 0.8;
       particle.offsetX += particle.velocityX;
       particle.offsetY += particle.velocityY;
+      if (Math.abs(proximity - particle.reaction) > 0.005 ||
+          Math.abs(targetScale - particle.scale) > 0.01 ||
+          Math.abs(targetX - particle.offsetX) > 0.08 ||
+          Math.abs(targetY - particle.offsetY) > 0.08 ||
+          Math.abs(particle.velocityX) > 0.02 || Math.abs(particle.velocityY) > 0.02) {
+        unsettled = true;
+      }
 
       if (particle.reaction > 0.005) {
         // Neighbors react separately: the cursor's leading and trailing sides tint differently.
@@ -158,16 +192,14 @@
         context.fillStyle = `rgb(${channels.join(',')})`;
       } else context.fillStyle = stationaryColor;
 
-      const driftX = reducedMotion ? 0 : Math.sin(time * 0.0008 + particle.phase) * 0.65;
-      const driftY = reducedMotion ? 0 : Math.cos(time * 0.0007 + particle.phase) * 0.65;
       context.globalAlpha = Math.min(1, particle.alpha + particle.reaction * 0.2);
       context.beginPath();
-      context.arc(particle.x + particle.offsetX + driftX,
-        particle.y + particle.offsetY + driftY, particle.radius * particle.scale, 0, Math.PI * 2);
+      context.arc(particle.x + particle.offsetX,
+        particle.y + particle.offsetY, particle.radius * particle.scale, 0, Math.PI * 2);
       context.fill();
     }
     context.globalAlpha = 1;
-    schedule();
+    if (unsettled) schedule();
   }
 
   function start(points) {
@@ -193,11 +225,13 @@
     pointer.x = event.clientX - bounds.left;
     pointer.y = event.clientY - bounds.top;
     if (reducedMotion && size) draw(0);
+    else schedule();
   }, { passive: true });
 
   window.addEventListener('blur', () => {
     pointer.x = pointer.y = -1000;
     pointer.lastX = pointer.lastY = null;
+    schedule();
   });
 
   document.addEventListener('visibilitychange', () => {
