@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../assets/arcadia.css">
-    <title>화학 평형과 르 샤틀리에 원리 실험실</title>
+    <title>르 샤틀리에 원리와 화학 평형 이동</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -99,6 +99,7 @@
         .eq-n2o4 { color: #38bdf8; font-weight: bold; }
         .eq-no2 { color: #fb923c; font-weight: bold; }
         .eq-heat { color: #f43f5e; font-weight: bold; font-size: 0.95rem; }
+        .formula-note { margin-top: 8px; color: var(--text-dim); font-size: 0.82rem; }
 
         .main-layout {
             display: grid;
@@ -387,8 +388,8 @@
     </a>
 
     <div class="header">
-        <div class="badge-curriculum">2022 개정 진로선택 · 화학 반응의 세계 (화학 II)</div>
-        <h1>⚖️ 르 샤틀리에 원리와 화학 평형 이동</h1>
+        <div class="badge-curriculum">고등학교 화학 · 화학 평형</div>
+        <h1>르 샤틀리에 원리와 화학 평형 이동</h1>
         
         <div class="equation-box">
             <span class="eq-n2o4">N₂O₄ (무색 기체)</span>
@@ -397,6 +398,7 @@
             <span>⇄</span>
             <span class="eq-no2">2NO₂ (적갈색 기체)</span>
         </div>
+        <p class="formula-note">K<sub>c</sub> = [NO₂]² / [N₂O₄] · 온도가 일정할 때 평형에서 Q = K<sub>c</sub></p>
     </div>
 
     <div class="main-layout">
@@ -416,11 +418,11 @@
 
             <div class="metrics-bar">
                 <div class="metric-item">
-                    <span class="title">N₂O₄ 분자수</span>
+                    <span class="title">N₂O₄ (시각화 입자)</span>
                     <span class="val" style="color:#38bdf8;" id="countN2O4">20</span>
                 </div>
                 <div class="metric-item">
-                    <span class="title">NO₂ 분자수</span>
+                    <span class="title">NO₂ (시각화 입자)</span>
                     <span class="val" style="color:#fb923c;" id="countNO2">40</span>
                 </div>
                 <div class="metric-item">
@@ -434,15 +436,15 @@
             </div>
 
             <div class="theory-tip" id="theoryTip">
-                💡 <b>현재 상태</b>: 정반응 속도와 역반응 속도가 같은 <b>동적 평형</b> 상태입니다. 온도를 높이거나 부피를 압축하여 평형을 깨뜨려보세요!
+                💡 <b>현재 상태</b>: 정반응 속도와 역반응 속도가 같은 <b>동적 평형</b>입니다. 이 화면에서 입자 1개는 0.020 mol을 나타내는 시각화 단위입니다. 온도 또는 부피를 바꾸어 Q와 K<sub>c</sub>의 변화를 확인해 보세요.
             </div>
         </div>
 
         <!-- 우측: 실시간 농도-시간 그래프 및 조작 패널 -->
         <div class="panel">
             <div class="panel-title">
-                <span>📈 실시간 농도-시간 그래프 ([C] vs Time)</span>
-                <span style="font-size: 0.8rem; color: #94a3b8;">수능 킬러 그래프 실시간 추적</span>
+                <span>📈 농도-시간 그래프</span>
+                <span style="font-size: 0.8rem; color: #94a3b8;">반응식 계수비 1 : 2</span>
             </div>
 
             <div class="chamber-container" style="height: 220px;">
@@ -460,8 +462,8 @@
                     </label>
                     <input type="range" id="volSlider" min="0.4" max="1.8" step="0.05" value="1.0">
                     <div class="btn-action-group">
-                        <button class="action-btn" onclick="quickVolume(0.5)">⚡ 급압축</button>
-                        <button class="action-btn" onclick="quickVolume(1.6)">💨 급팽창</button>
+                        <button class="action-btn" onclick="adjustVolume(-0.10)">− 0.10 L</button>
+                        <button class="action-btn" onclick="adjustVolume(0.10)">+ 0.10 L</button>
                     </div>
                 </div>
 
@@ -473,18 +475,17 @@
                     </label>
                     <input type="range" id="tempSlider" min="250" max="400" step="5" value="298">
                     <div class="btn-action-group">
-                        <button class="action-btn" onclick="setTemp(380)">🔥 가열</button>
-                        <button class="action-btn" onclick="setTemp(260)">❄️ 냉각</button>
+                        <button class="action-btn" onclick="adjustTemperature(-10)">− 10 K</button>
+                        <button class="action-btn" onclick="adjustTemperature(10)">+ 10 K</button>
                     </div>
                 </div>
 
-                <!-- 3. 농도 물질 주입 -->
+                <!-- 3. 실험 재생 및 초기화 -->
                 <div class="control-card full-width">
-                    <label><span>분자 직접 주입/제거 (농도 변화)</span></label>
+                    <label><span>실험 제어</span></label>
                     <div class="btn-action-group">
-                        <button class="action-btn" onclick="injectMolecule('NO2', 15)">➕ NO₂ (적갈색) 주입</button>
-                        <button class="action-btn" onclick="injectMolecule('N2O4', 10)">➕ N₂O₄ (무색) 주입</button>
-                        <button class="action-btn" style="background: rgba(239, 68, 68, 0.2); border-color:#f87171;" onclick="resetEquilibrium()">🔄 평형 리셋</button>
+                        <button class="action-btn" id="pauseBtn" onclick="togglePause()">⏸ 일시정지</button>
+                        <button class="action-btn" onclick="resetEquilibrium()">↺ 초기 상태</button>
                     </div>
                 </div>
 
@@ -502,7 +503,7 @@
                 <span>📘 르 샤틀리에 원리 (Le Chatelier's Principle) 핵심 요약</span>
             </div>
             <div class="guide-text">
-                화학 평형 상태에 있는 반응계에 <b>농도, 압력(부피), 온도</b> 등의 외부 변화(스트레스)가 가해지면, 계는 <b>그 변화를 줄이거나 완화시키는 방향</b>으로 스스로 평형을 이동시킵니다.
+                화학 평형 상태에 있는 반응계에 <b>압력(부피), 온도</b>와 같은 외부 변화가 가해지면, 계는 <b>그 변화를 줄이거나 완화시키는 방향</b>으로 평형을 이동시킵니다. 농도는 [NO₂]²/[N₂O₄]로 계산한 반응 지수 Q에서 확인합니다.
             </div>
 
             <table class="guide-table">
@@ -573,10 +574,10 @@
             <!-- 미션 3 -->
             <div class="mission-step">
                 <div class="mission-step-title">
-                    <span>3️⃣ 미션: NO₂ 분자 주입과 동적 평형 복원</span>
+                    <span>3️⃣ 미션: 천천히 기록되는 농도 변화 읽기</span>
                 </div>
                 <div class="mission-step-desc">
-                    `[➕ NO₂ 주입]`을 여러 번 누르면 NO₂ 농도만 올렸음에도 불구하고, 르 샤틀리에 원리에 의해 역반응이 진행되어 <b>N₂O₄ 분자수도 함께 증가</b>하는 '동적 복원' 현상을 수치로 검증해 보세요.
+                    그래프는 0.125초 간격으로 기록됩니다. 부피나 온도를 조금씩 조절하며 [NO₂]와 [N₂O₄]의 변화 방향, 그리고 평형에서 Q가 K<sub>c</sub>에 가까워지는 모습을 함께 읽어 보세요.
                 </div>
             </div>
         </div>
@@ -596,6 +597,8 @@
         let n_N2O4 = 20; // 분자 개수 (1개 = 0.02 mol)
         let n_NO2 = 40;  // 분자 개수 (1개 = 0.02 mol)
         const MOL_SCALE = 0.02; // 분자 개수 -> 몰 수(mol) 변환비
+        let isPaused = false;
+        let lastChemicalStep = 0;
 
         // 평형 상수 K 계산 (반트호프 식: ΔH° = +57.2 kJ/mol 흡열 반응)
         // 298K(25℃) 기준 K = 1.60
@@ -696,7 +699,7 @@
 
         // 실시간 농도 기록 데이터 (그래프용)
         let graphHistory = [];
-        const MAX_HISTORY = 250;
+        const MAX_HISTORY = 240;
 
         // 화학 반응 평형 이동 계산 (교육용 농도-시간 근사 모델)
         function stepChemicalEquilibrium() {
@@ -712,11 +715,11 @@
             const statusEl = document.getElementById('equilibriumStatus');
             const tipEl = document.getElementById('theoryTip');
 
-            // 르 샤틀리에 복원력 (Q와 K의 차이에 비례한 반응 속도)
+            // 0.125초마다 갱신하는 교육용 근사 모델: 평형 근처까지 Q와 K를 수렴시킨다.
             const diff = K - Q;
-            const rate = Math.min(0.12, Math.max(0.005, Math.abs(diff) * 0.03));
+            const rate = Math.min(0.04, Math.max(0.0005, Math.abs(diff) * 0.008));
 
-            if (diff > 0.08) {
+            if (diff > 0.002) {
                 // Q < K: 정반응 진행 (N2O4 -> 2 NO2)
                 if (n_N2O4 > 0.001) {
                     const extent = Math.min(rate, n_N2O4);
@@ -726,7 +729,7 @@
                 statusEl.className = 'status-pill forward';
                 statusEl.innerText = '👉 정반응 우세 (N₂O₄ → 2NO₂)';
                 tipEl.innerHTML = '🔥 <b>정반응 진행 중 (Q < K)</b>: 열을 흡수하거나 기체 분자수를 늘리는 방향으로 평형이 이동하여 적갈색이 짙어집니다.';
-            } else if (diff < -0.08) {
+            } else if (diff < -0.002) {
                 // Q > K: 역반응 진행 (2 NO2 -> N2O4)
                 if (n_NO2 > 0.002) {
                     const extent = Math.min(rate, n_NO2 / 2);
@@ -760,8 +763,8 @@
             }
 
             // UI 수치 업데이트
-            document.getElementById('countN2O4').innerText = `${targetN2O4}개 (${conc_N2O4.toFixed(2)}M)`;
-            document.getElementById('countNO2').innerText = `${targetNO2}개 (${conc_NO2.toFixed(2)}M)`;
+            document.getElementById('countN2O4').innerText = `${targetN2O4}개 · ${conc_N2O4.toFixed(2)} M`;
+            document.getElementById('countNO2').innerText = `${targetNO2}개 · ${conc_NO2.toFixed(2)} M`;
             document.getElementById('valQ').innerText = Q.toFixed(2);
             document.getElementById('valK').innerText = K.toFixed(2);
 
@@ -774,7 +777,7 @@
         }
 
         // 챔버 그리기 루프
-        function drawChamber() {
+        function drawChamber(shouldMove) {
             const w = chamberCanvas.width;
             const h = chamberCanvas.height;
             const pistonY = getPistonY();
@@ -800,7 +803,7 @@
 
             // 4. 입자들 업데이트 및 렌더링
             particles.forEach(p => {
-                p.update(pistonY);
+                if (shouldMove) p.update(pistonY);
                 p.draw(ctxChamber);
             });
         }
@@ -833,8 +836,8 @@
             // 축 라벨
             ctxGraph.fillStyle = '#94a3b8';
             ctxGraph.font = '11px sans-serif';
-            ctxGraph.fillText('농도[M]', 4, 18);
-            ctxGraph.fillText('시간 (t) →', w - 55, h - 8);
+            ctxGraph.fillText('농도 (mol/L)', 4, 18);
+            ctxGraph.fillText('시간 →', w - 45, h - 8);
 
             if (graphHistory.length < 2) return;
 
@@ -871,9 +874,12 @@
             ctxGraph.fillText('● [N₂O₄]', w - 70, 20);
         }
 
-        function mainLoop() {
-            stepChemicalEquilibrium();
-            drawChamber();
+        function mainLoop(now) {
+            if (!isPaused && now - lastChemicalStep >= 125) {
+                stepChemicalEquilibrium();
+                lastChemicalStep = now;
+            }
+            drawChamber(!isPaused);
             drawGraph();
             requestAnimationFrame(mainLoop);
         }
@@ -892,21 +898,21 @@
             document.getElementById('tempVal').innerText = `${temperature} K (${temperature - 273}℃)`;
         });
 
-        function quickVolume(v) {
-            volume = v;
-            volSlider.value = v;
+        function adjustVolume(delta) {
+            volume = Math.min(1.8, Math.max(0.4, volume + delta));
+            volSlider.value = volume.toFixed(2);
             document.getElementById('volVal').innerText = volume.toFixed(2) + ' L';
         }
 
-        function setTemp(t) {
-            temperature = t;
-            tempSlider.value = t;
+        function adjustTemperature(delta) {
+            temperature = Math.min(400, Math.max(250, temperature + delta));
+            tempSlider.value = temperature;
             document.getElementById('tempVal').innerText = `${temperature} K (${temperature - 273}℃)`;
         }
 
-        function injectMolecule(type, count) {
-            if (type === 'NO2') n_NO2 += count;
-            else n_N2O4 += count;
+        function togglePause() {
+            isPaused = !isPaused;
+            document.getElementById('pauseBtn').innerText = isPaused ? '▶ 다시 재생' : '⏸ 일시정지';
         }
 
         function resetEquilibrium() {
@@ -920,6 +926,9 @@
             document.getElementById('tempVal').innerText = '298 K (25℃)';
             createParticles();
             graphHistory = [];
+            isPaused = false;
+            lastChemicalStep = 0;
+            document.getElementById('pauseBtn').innerText = '⏸ 일시정지';
         }
     </script>
 </body>
