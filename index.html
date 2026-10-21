@@ -15,9 +15,9 @@
     main { width:min(1100px,calc(100% - 40px)); min-height:calc(100vh - 72px); margin:auto; display:flex; align-items:center; padding:clamp(56px,10vw,130px) 0 58px; }
     .folio { padding-top:6px; color:var(--accent); font:700 .72rem/1.5 ui-monospace,Consolas,monospace; letter-spacing:.08em; }.folio::after { content:''; display:block; width:34px; height:1px; margin-top:15px; background:currentColor; }
     .intro { max-width:730px; }.eyebrow { margin:0 0 20px; color:var(--quiet); font-size:.75rem; font-weight:700; letter-spacing:.08em; }.eyebrow span { color:var(--accent); }
-    h1 { margin:0; font-family:'Gmarket Sans',sans-serif; font-size:clamp(2.2rem,5vw,4.35rem); font-weight:700; line-height:1.12; letter-spacing:-.06em; }.description { max-width:520px; margin:28px 0 0; color:#4d554e; font-size:1rem; line-height:1.85; }
+    h1 { margin:0; font-family:'Gmarket Sans',sans-serif; font-size:clamp(2.2rem,5vw,4.35rem); font-weight:700; line-height:1.12; letter-spacing:-.06em; }
     .enter-button { display:flex; align-items:center; justify-content:space-between; width:min(100%,520px); margin-top:38px; padding:18px 20px; border:1px solid var(--accent); color:var(--ink); font-size:1rem; font-weight:700; text-decoration:none; transition:background .16s,color .16s; will-change:transform; }.enter-button:hover { background:var(--accent); color:#fff; }.enter-button span { font-size:1.35rem; }.footnote { margin:29px 0 0; color:var(--quiet); font-size:.76rem; }
-    @media(max-width:650px) { .topbar { width:min(100% - 32px,1360px); min-height:62px; } main { width:min(100% - 32px,1100px); min-height:auto; padding:62px 0 42px; }.feedback { font-size:.74rem; }.description { font-size:.93rem; } }
+    @media(max-width:650px) { .topbar { width:min(100% - 32px,1360px); min-height:62px; } main { width:min(100% - 32px,1100px); min-height:auto; padding:62px 0 42px; }.feedback { font-size:.74rem; } }
   </style>
 </head>
 <body>
@@ -26,7 +26,6 @@
     <section class="intro">
       <p class="eyebrow"><span>ARCADIA</span> VIRTUAL SCIENCE LAB</p>
       <h1>아르카디아<br>가상 실험실</h1>
-      <p class="description">교과서 속 현상을 직접 바꾸어 보며 관찰하는 가상 실험실입니다. 변수를 조절하고 결과의 차이를 확인해 보세요.</p>
       <a class="enter-button" href="2d.html">실험실 입장 <span aria-hidden="true">→</span></a>
       <p class="footnote">ARCADIA SCIENCE CLUB</p>
     </section>
@@ -40,7 +39,6 @@
         .from('.topbar', { opacity: 0, y: -12, duration: 0.45 })
         .from('.entry-main .eyebrow', { opacity: 0, y: 12, duration: 0.35 }, '-=0.12')
         .from('.entry-main h1', { opacity: 0, y: 18, duration: 0.5 }, '-=0.1')
-        .from('.entry-main .description', { opacity: 0, y: 12, duration: 0.35 }, '-=0.22')
         .from('.enter-button', { opacity: 0, y: 12, duration: 0.35 }, '-=0.14')
         .from('.site-footer', { opacity: 0, duration: 0.35 }, '-=0.1');
 
