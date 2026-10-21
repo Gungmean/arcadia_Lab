@@ -81,13 +81,19 @@ button.active, .active, .tab-btn.active, .speed-btn.active, .toggle-play.playing
   display: inline-flex;
   align-items: center;
   gap: 12px;
-}
-
-.brand-lockup span {
+  font-family: 'Gmarket Sans', sans-serif !important;
   font-size: 1rem;
   font-weight: 700;
   line-height: 1;
   letter-spacing: .105em;
+}
+
+.brand-lockup span {
+  font-family: inherit !important;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
 }
 
 .club-logo {
