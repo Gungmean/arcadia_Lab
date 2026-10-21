@@ -7,16 +7,12 @@
   const COUNT = 900;
   const SOURCE_SIZE = 440;
   const SOURCE_SPAN = 350;
-  const colors = {
-    right: [96, 165, 223],  // BUGWANG SKY BLUE
-    down: [48, 78, 156],   // BUGWANG BLUE
-    left: [186, 103, 243], // BUGWANG VIOLET
-    up: [255, 255, 255]    // white
-  };
+  const baseColor = [96, 165, 223];  // BUGWANG SKY BLUE
+  const violet = [186, 103, 243];    // BUGWANG VIOLET
+  const white = [255, 255, 255];
+  const interactionRadius = 142;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const pointer = { x: -1000, y: -1000, lastX: null, lastY: null };
-  const color = [...colors.right];
-  let targetColor = colors.right;
+  const pointer = { x: -1000, y: -1000, lastX: null, lastY: null, directionX: 1, directionY: 0 };
   let sourcePoints = [];
   let particles = [];
   let size = 0;
@@ -107,8 +103,13 @@
       radius: (0.8 + random() * 0.8) * Math.max(0.75, size / 470),
       alpha: 0.65 + random() * 0.35,
       phase: random() * Math.PI * 2,
+      response: 0.12 + random() * 0.1,
+      reaction: 0,
+      scale: 1,
       offsetX: 0,
-      offsetY: 0
+      offsetY: 0,
+      velocityX: 0,
+      velocityY: 0
     }));
     if (reducedMotion) draw(0);
     else schedule();
@@ -125,25 +126,44 @@
     running = false;
     if (!size) return;
     context.clearRect(0, 0, size, size);
-    for (let i = 0; i < 3; i++) {
-      color[i] += (targetColor[i] - color[i]) * (reducedMotion ? 1 : 0.075);
-    }
-    context.fillStyle = `rgb(${color.map(Math.round).join(',')})`;
+    const stationaryColor = `rgb(${baseColor.join(',')})`;
+    context.fillStyle = stationaryColor;
 
     for (const particle of particles) {
       const distanceX = particle.x - pointer.x;
       const distanceY = particle.y - pointer.y;
       const distance = Math.hypot(distanceX, distanceY);
-      const force = !reducedMotion && distance > 0 && distance < 92
-        ? (1 - distance / 92) * 13 / distance : 0;
-      particle.offsetX += (distanceX * force - particle.offsetX) * 0.12;
-      particle.offsetY += (distanceY * force - particle.offsetY) * 0.12;
+      const proximity = Math.max(0, 1 - distance / interactionRadius);
+      particle.reaction += (proximity - particle.reaction) * (reducedMotion ? 1 : particle.response);
+      const targetScale = 1 + proximity * 3;
+      particle.scale += (targetScale - particle.scale) * (reducedMotion ? 1 : particle.response);
+      const displacement = !reducedMotion && distance > 0 ? proximity * 18 / distance : 0;
+      const targetX = distanceX * displacement;
+      const targetY = distanceY * displacement;
+      particle.velocityX = (particle.velocityX + (targetX - particle.offsetX) * 0.075) * 0.76;
+      particle.velocityY = (particle.velocityY + (targetY - particle.offsetY) * 0.075) * 0.76;
+      particle.offsetX += particle.velocityX;
+      particle.offsetY += particle.velocityY;
+
+      if (particle.reaction > 0.005) {
+        // Neighbors react separately: the cursor's leading and trailing sides tint differently.
+        const ahead = distance > 0
+          ? (distanceX * pointer.directionX + distanceY * pointer.directionY) / distance : 0;
+        const violetWeight = (ahead + 1) / 2;
+        const colorMix = particle.reaction * 0.95;
+        const channels = baseColor.map((base, index) => {
+          const highlight = white[index] * (1 - violetWeight) + violet[index] * violetWeight;
+          return Math.round(base + (highlight - base) * colorMix);
+        });
+        context.fillStyle = `rgb(${channels.join(',')})`;
+      } else context.fillStyle = stationaryColor;
+
       const driftX = reducedMotion ? 0 : Math.sin(time * 0.0008 + particle.phase) * 0.65;
       const driftY = reducedMotion ? 0 : Math.cos(time * 0.0007 + particle.phase) * 0.65;
-      context.globalAlpha = particle.alpha;
+      context.globalAlpha = Math.min(1, particle.alpha + particle.reaction * 0.2);
       context.beginPath();
       context.arc(particle.x + particle.offsetX + driftX,
-        particle.y + particle.offsetY + driftY, particle.radius, 0, Math.PI * 2);
+        particle.y + particle.offsetY + driftY, particle.radius * particle.scale, 0, Math.PI * 2);
       context.fill();
     }
     context.globalAlpha = 1;
@@ -161,10 +181,10 @@
     if (pointer.lastX !== null) {
       const dx = event.clientX - pointer.lastX;
       const dy = event.clientY - pointer.lastY;
-      if (Math.hypot(dx, dy) > 2) {
-        targetColor = Math.abs(dx) > Math.abs(dy)
-          ? colors[dx > 0 ? 'right' : 'left']
-          : colors[dy > 0 ? 'down' : 'up'];
+      const distance = Math.hypot(dx, dy);
+      if (distance > 2) {
+        pointer.directionX = dx / distance;
+        pointer.directionY = dy / distance;
       }
     }
     pointer.lastX = event.clientX;
@@ -174,6 +194,11 @@
     pointer.y = event.clientY - bounds.top;
     if (reducedMotion && size) draw(0);
   }, { passive: true });
+
+  window.addEventListener('blur', () => {
+    pointer.x = pointer.y = -1000;
+    pointer.lastX = pointer.lastY = null;
+  });
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
