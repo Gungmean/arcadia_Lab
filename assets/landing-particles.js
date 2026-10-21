@@ -125,7 +125,7 @@
     particles = sourcePoints.map(point => ({
       x: size / 2 + point.x * size / SOURCE_SPAN,
       y: size / 2 + point.y * size / SOURCE_SPAN,
-      radius: (0.85 + random() * 0.45) * Math.max(0.75, size / 470),
+      radius: (1.55 + random() * 0.45) * Math.max(0.75, size / 470),
       alpha: 0.65 + random() * 0.35,
       magnetism: 0.8 + random() * 0.4,
       response: 0.12 + random() * 0.1,
