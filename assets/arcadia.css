@@ -80,12 +80,19 @@ button.active, .active, .tab-btn.active, .speed-btn.active, .toggle-play.playing
 .brand-lockup {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.brand-lockup span {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .105em;
 }
 
 .club-logo {
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   flex: 0 0 auto;
   object-fit: contain;
 }
@@ -172,8 +179,9 @@ body, button, input, select, textarea, label, a, p, span, td, th {
 }
 
 @media (max-width: 560px) {
-  .club-logo { width: 34px; height: 34px; }
+  .club-logo { width: 36px; height: 36px; }
   .brand-lockup { gap: 8px; }
+  .brand-lockup span { font-size: .84rem; letter-spacing: .09em; }
   .site-footer { width: min(100% - 32px, 1040px); padding-bottom: 30px; }
   .experiment-search { gap: 9px; margin-bottom: 20px; }
   .experiment-search label { font-size: .75rem; }
