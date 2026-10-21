@@ -12,26 +12,22 @@
     * { box-sizing:border-box; } body { margin:0; min-width:320px; background:var(--paper); color:var(--ink); font-family:'Gmarket Sans',sans-serif; }
     .topbar { width:min(1100px,calc(100% - 40px)); min-height:72px; margin:auto; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
     .brand { color:var(--ink); font:700 .76rem/1 ui-monospace,Consolas,monospace; letter-spacing:.11em; text-decoration:none; }.feedback { color:var(--quiet); font-size:.82rem; text-decoration:none; }.feedback:hover { color:var(--accent); text-decoration:underline; text-underline-offset:4px; }
-    main { width:min(1100px,calc(100% - 40px)); min-height:calc(100vh - 72px); margin:auto; display:grid; grid-template-columns:180px 1fr; padding:clamp(56px,10vw,130px) 0 58px; }
+    main { width:min(1100px,calc(100% - 40px)); min-height:calc(100vh - 72px); margin:auto; display:flex; align-items:center; padding:clamp(56px,10vw,130px) 0 58px; }
     .folio { padding-top:6px; color:var(--accent); font:700 .72rem/1.5 ui-monospace,Consolas,monospace; letter-spacing:.08em; }.folio::after { content:''; display:block; width:34px; height:1px; margin-top:15px; background:currentColor; }
     .intro { max-width:730px; }.eyebrow { margin:0 0 20px; color:var(--quiet); font-size:.75rem; font-weight:700; letter-spacing:.08em; }.eyebrow span { color:var(--accent); }
     h1 { margin:0; font-family:'Gmarket Sans',sans-serif; font-size:clamp(2.2rem,5vw,4.35rem); font-weight:700; line-height:1.12; letter-spacing:-.06em; }.description { max-width:520px; margin:28px 0 0; color:#4d554e; font-size:1rem; line-height:1.85; }
-    .lab-list { margin-top:62px; border-top:2px solid var(--ink); }.lab-link { display:grid; grid-template-columns:82px 1fr auto; align-items:center; gap:20px; min-height:135px; border-bottom:1px solid var(--line); color:var(--ink); text-decoration:none; transition:padding .16s,background .16s; }.lab-link:hover { padding-left:14px; background:rgba(255,255,255,.28); }.lab-number { color:var(--accent); font:700 .78rem/1 ui-monospace,Consolas,monospace; }.lab-link h2 { margin:0 0 8px; font-size:1.35rem; letter-spacing:-.04em; }.lab-link p { margin:0; color:var(--quiet); font-size:.9rem; line-height:1.6; }.arrow { color:var(--accent); font-size:1.35rem; padding-right:6px; }.footnote { margin:29px 0 0; color:var(--quiet); font-size:.76rem; }
-    @media(max-width:650px) { .topbar,main { width:min(100% - 32px,1100px); }.topbar { min-height:62px; }.feedback { font-size:.74rem; } main { grid-template-columns:1fr; min-height:auto; padding:62px 0 42px; }.folio { margin-bottom:28px; }.description { font-size:.93rem; }.lab-list { margin-top:43px; }.lab-link { grid-template-columns:54px 1fr auto; gap:11px; min-height:116px; }.lab-link h2 { font-size:1.15rem; }.lab-link p { font-size:.82rem; }.arrow { font-size:1.15rem; } }
+    .enter-button { display:inline-flex; align-items:center; gap:18px; margin-top:38px; padding:13px 16px; border:1px solid var(--accent); color:var(--ink); font-size:.92rem; font-weight:700; text-decoration:none; transition:background .16s,color .16s; }.enter-button:hover { background:var(--accent); color:#fff; }.enter-button span { font-size:1.2rem; }.footnote { margin:29px 0 0; color:var(--quiet); font-size:.76rem; }
+    @media(max-width:650px) { .topbar,main { width:min(100% - 32px,1100px); }.topbar { min-height:62px; }.feedback { font-size:.74rem; } main { min-height:auto; padding:62px 0 42px; }.description { font-size:.93rem; } }
   </style>
 </head>
 <body>
   <header class="topbar"><a class="brand brand-lockup" href="index.html"><img class="club-logo" src="assets/images/arcadia-club-logo.png" alt="아르카디아 동아리 로고"><span>ARCADIA / LAB</span></a><a class="feedback" href="https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header" target="_blank" rel="noopener noreferrer">의견 남기기</a></header>
   <main>
-    <aside class="folio">SCIENCE<br>LAB / 01</aside>
     <section class="intro">
       <p class="eyebrow"><span>ARCADIA</span> VIRTUAL SCIENCE LAB</p>
       <h1>아르카디아<br>가상 실험실</h1>
       <p class="description">교과서 속 현상을 직접 바꾸어 보며 관찰하는 가상 실험실입니다. 변수를 조절하고 결과의 차이를 확인해 보세요.</p>
-      <nav class="lab-list" aria-label="실험실 선택">
-        <a class="lab-link" href="2d.html"><span class="lab-number">01 / 2D</span><span><h2>시뮬레이션 실험실</h2><p>파동, 역학, 전자기, 화학 현상을 조작하며 살펴봅니다.</p></span><span class="arrow" aria-hidden="true">→</span></a>
-        <a class="lab-link" href="3d.html"><span class="lab-number">02 / 3D</span><span><h2>입체 탐구 실험실</h2><p>세포처럼 내부 구조가 중요한 대상을 회전하고 확대합니다.</p></span><span class="arrow" aria-hidden="true">→</span></a>
-      </nav>
+      <a class="enter-button" href="2d.html">실험실 입장 <span aria-hidden="true">→</span></a>
       <p class="footnote">ARCADIA SCIENCE CLUB</p>
     </section>
   </main>

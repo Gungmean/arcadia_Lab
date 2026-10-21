@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#1F1B8D">
-  <title>2D 가상 실험실</title>
+  <title>실험 목록 | Arcadia Lab</title>
   <link rel="stylesheet" href="assets/arcadia.css">
 
   <style>
@@ -301,21 +301,21 @@
 <div class="container">
 
   <div class="topbar">
-    <div class="title brand-lockup"><img class="club-logo" src="assets/images/arcadia-club-logo.png" alt="아르카디아 동아리 로고"><span>2D 가상 실험실</span></div>
+    <div class="title brand-lockup"><img class="club-logo" src="assets/images/arcadia-club-logo.png" alt="아르카디아 동아리 로고"><span>실험 목록</span></div>
 
     <div class="btn-group">
       <a href="https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header" target="_blank" class="btn secondary">
         의견 남기기 ↗
       </a>
       <button class="btn" onclick="location.href='index.html'">
-        메인으로
+        처음으로
       </button>
     </div>
   </div>
 
   <form class="experiment-search" role="search" onsubmit="return false">
     <label for="search2d">실험 검색</label>
-    <input id="search2d" type="search" autocomplete="off" placeholder="예: 진자, 확산, 자기장" aria-controls="experimentGrid">
+    <input id="search2d" type="search" autocomplete="off" placeholder="예: 진자, 세포, 별" aria-controls="experimentGrid">
   </form>
   <p class="search-empty" id="empty2d" hidden>검색 결과가 없습니다.</p>
 
@@ -506,6 +506,30 @@
         <span style="color: #94a3b8;">개발 진행 중</span>
         <span style="color: #94a3b8;">⏳</span>
       </div>
+    </div>
+
+    <div class="card" data-category="life" data-image="cell-structure.png" onclick="location.href='experiments/cell_structure_3d.html'">
+      <span class="badge life">생명과학 · 3D</span>
+      <div class="icon">🧬</div>
+      <h2>3D 세포 구조 탐색기</h2>
+      <p>동물·식물 세포를 회전하고 확대하며 주요 소기관을 살펴봅니다.</p>
+      <div class="card-footer"><span>실험 시작하기</span><span>→</span></div>
+    </div>
+
+    <div class="card" data-category="earth" data-image="star-evolution.png" onclick="location.href='experiments/star_evolution.html'">
+      <span class="badge earth">지구 · 우주 · 3D</span>
+      <div class="icon">⭐</div>
+      <h2>별의 진화와 블랙홀 생성</h2>
+      <p>별의 초기 질량과 시간을 바꾸며 진화 과정을 관찰합니다.</p>
+      <div class="card-footer"><span>실험 시작하기</span><span>→</span></div>
+    </div>
+
+    <div class="card" data-category="earth" data-image="celestial-motion.png" onclick="location.href='experiments/celestial_motion.html'">
+      <span class="badge earth">지구 · 우주 · 3D</span>
+      <div class="icon">🌍</div>
+      <h2>천체의 일주 운동</h2>
+      <p>관측 위치와 지구의 운동에 따른 천체의 겉보기 운동을 확인합니다.</p>
+      <div class="card-footer"><span>실험 시작하기</span><span>→</span></div>
     </div>
 
   </div>
