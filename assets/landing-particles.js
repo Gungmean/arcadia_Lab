@@ -172,14 +172,22 @@
       particle.reaction += (proximity - particle.reaction) * (reducedMotion ? 1 : particle.response);
       const targetScale = 1 + proximity * 0.65;
       particle.scale += (targetScale - particle.scale) * (reducedMotion ? 1 : particle.response);
-      const pull = !reducedMotion && distance > 0
+      const pull = distance > 0
         ? proximity * Math.min(14, distance * 0.28) * particle.magnetism / distance : 0;
       const targetX = -distanceX * pull;
       const targetY = -distanceY * pull;
-      particle.velocityX = (particle.velocityX + (targetX - particle.offsetX) * 0.085) * 0.8;
-      particle.velocityY = (particle.velocityY + (targetY - particle.offsetY) * 0.085) * 0.8;
-      particle.offsetX += particle.velocityX;
-      particle.offsetY += particle.velocityY;
+      if (reducedMotion) {
+        // Keep direct, user-controlled attraction while avoiding spring animation.
+        particle.offsetX = targetX;
+        particle.offsetY = targetY;
+        particle.velocityX = 0;
+        particle.velocityY = 0;
+      } else {
+        particle.velocityX = (particle.velocityX + (targetX - particle.offsetX) * 0.085) * 0.8;
+        particle.velocityY = (particle.velocityY + (targetY - particle.offsetY) * 0.085) * 0.8;
+        particle.offsetX += particle.velocityX;
+        particle.offsetY += particle.velocityY;
+      }
       if (Math.abs(proximity - particle.reaction) > 0.005 ||
           Math.abs(targetScale - particle.scale) > 0.01 ||
           Math.abs(targetX - particle.offsetX) > 0.08 ||
@@ -244,7 +252,8 @@
   window.addEventListener('blur', () => {
     pointer.x = pointer.y = -1000;
     pointer.lastX = pointer.lastY = null;
-    schedule();
+    if (reducedMotion && size) draw(0);
+    else schedule();
   });
 
   document.addEventListener('visibilitychange', () => {
