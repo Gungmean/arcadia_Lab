@@ -80,7 +80,7 @@ const ball=(x,y,z,r,tone='mid')=>S(G.sphereOf([x,y,z],r,P,{steps:r<=3?14:24}),to
 const topLine=(pts,z,tone='lo')=>L(k.onTop(pts,z,P),tone,'both');
 const closedEllipse=(x,y,rx,ry,z,tone='mid',steps=56)=>L(k.onTop(ellipseRing(x,y,rx,ry,steps),z,P,true),tone);
 const ribbon=(x,y,length,z,phase=0)=>{const edge=Array.from({length:13},(_,i)=>{const t=i/12;return [x-length/2+length*t,y+Math.sin(t*2*Math.PI+phase)*4]});return [...edge.map(([a,b])=>[a,b-2.2]),...edge.slice().reverse().map(([a,b])=>[a,b+2.2])];};
-const membraneCell=(mode)=>part(mode,'membrane',solid(ellipseRing(0,0,143,86,64),0,8,'mid',1.1)+solid(ellipseRing(0,0,136,79,64),8,1,'hi',0));
+const membraneCell=(mode)=>part(mode,'membrane',solid(ellipseRing(0,0,143,86,64),-8,16,'mid',1.1)+solid(ellipseRing(0,0,139,82,64),7.5,.5,'mid',.2)+solid(ellipseRing(0,0,136,79,64),8,1,'hi',0));
 const phospholipidLayer=(mode)=>{const points=mode==='animal'?Array.from({length:36},(_,i)=>{const t=i*2*Math.PI/36;return [140*Math.cos(t),83*Math.sin(t),8.7]}):[
   ...Array.from({length:14},(_,i)=>[-122+i*18,-73,14.8]),...Array.from({length:14},(_,i)=>[122-i*18,73,14.8]),
   ...Array.from({length:4},(_,i)=>[-128,-48+i*32,14.8]),...Array.from({length:4},(_,i)=>[128,48-i*32,14.8])];
@@ -112,7 +112,7 @@ const animal = [
 ].join('');
 
 const plant = [
-  part('plant','wall',S(k.slabOf({x:-145,y:-91,w:290,d:182,r:14},0,14,P,8,1.2),'mid')+L(k.planOutline(k.insetPlan({x:-145,y:-91,w:290,d:182,r:14},5),14,P),'lo')),
+  part('plant','wall',S(k.slabOf({x:-145,y:-91,w:290,d:182,r:14},-8,22,P,8,1.2),'mid')+L(k.planOutline(k.insetPlan({x:-145,y:-91,w:290,d:182,r:14},5),14,P),'lo')),
   part('plant','membrane',S(k.slabOf({x:-135,y:-81,w:270,d:162,r:10},14,1.3,P,8,.35),'hi')),
   phospholipidLayer('plant'),
   part('plant','cytoplasm',S(k.slabOf({x:-129,y:-75,w:258,d:150,r:8},15.3,.8,P,8,0),'hi')),
@@ -132,7 +132,8 @@ const plant = [
     ...Array.from({length:5},(_,i)=>topLine([[-137,-66+i*6],[ -120,-63+i*6]],13.8,'lo')),
     ...Array.from({length:5},(_,i)=>topLine([[137,-66+i*6],[120,-63+i*6]],13.8,'lo')),
   ].join('')),
-  part('plant','mitochondrion',oval(38,56,21,10,17,6,'mid')+Array.from({length:5},(_,i)=>topLine([[25+i*6,51],[27+i*6,56],[25+i*6,61]],23,'lo')).join('')),
+  part('plant','mitochondrion',oval(38,56,21,10,17,6,'mid')+oval(38,56,17,7,23,1,'hi')),
+  part('plant','cristae',Array.from({length:5},(_,i)=>topLine([[25+i*6,51],[27+i*6,56],[25+i*6,61]],24,'lo')).join('')),
   part('plant','golgi',Array.from({length:5},(_,i)=>solid(ribbon(63,1+i*4,29,17,i*.1),16+i*1.5,2,'hi',.2)).join('')),
   part('plant','plasmodesmata',[-48,0,48].map(y=>solid([[-149,y-2],[-136,y-2],[-136,y+2],[-149,y+2]],14,8,'hi',.2)).join('')),
   part('plant','peroxisome',ball(38,-58,21,5,'mid')),
@@ -147,7 +148,7 @@ const svg = k.figureSvg({ width:WIDTH, height:HEIGHT,
 
 const plateHtml = k.plateHtml({ fig:'FIG 01', title:'세포 구조', hint:'소기관을 클릭하거나 목록에서 선택', readout:'동물세포 · 핵',
   caption:'교육용 모식도입니다. 소기관의 실제 크기·수·배치는 세포 종류와 상태에 따라 달라집니다.',
-  body:`<div class="cell-stage">${svg}</div>` });
+  body:`<div class="view-controls" role="group" aria-label="그림 확대 및 축소"><button type="button" data-view="out" aria-label="축소">−</button><span data-zoom-level aria-live="polite">100%</span><button type="button" data-view="in" aria-label="확대">+</button><button type="button" data-view="reset">초기화</button></div><div class="cell-stage">${svg}</div><p class="view-hint">휠 또는 두 손가락으로 확대 · 드래그로 이동</p>` });
 
 const lists = Object.entries(DATA).map(([mode,entries])=>`<div class="part-list" data-list="${mode}">${Object.entries(entries).map(([key,[name]])=>`<button type="button" data-select="${key}" data-mode="${mode}">${esc(name)}</button>`).join('')}</div>`).join('');
 const body = `<header class="cell-header"><div><span class="small-label">ARCADIA / CELL ATLAS</span><h1>세포 구조 탐색</h1><p>구조를 선택해 각 소기관의 역할을 살펴보세요.</p></div><span class="draft-label">독립 프로토타입</span></header>
@@ -156,6 +157,8 @@ const body = `<header class="cell-header"><div><span class="small-label">ARCADIA
 <p class="source-line">구조와 기능: <a href="https://openstax.org/books/biology-2e/pages/4-3-eukaryotic-cells" target="_blank" rel="noopener noreferrer">OpenStax Biology 2e · Eukaryotic Cells</a></p>`;
 
 const css = `
+.view-controls{display:flex;justify-content:flex-end;align-items:center;gap:6px;padding:0 8px}.view-controls button{min-width:38px;min-height:38px;padding:4px 10px;border:1px solid #617f96;background:#223649;color:#eef6fa;font:inherit;cursor:pointer}.view-controls button:focus-visible{outline:2px solid #b8def5;outline-offset:2px}.view-controls span{min-width:48px;text-align:center;color:#c9dce9;font-size:13px}.cell-stage{overflow:hidden}.cell-stage .iso-svg{overflow:hidden;touch-action:none;cursor:grab;user-select:none}.cell-stage .iso-svg.is-dragging{cursor:grabbing}.view-hint{margin:0 8px;color:#a8bbca;font-size:12px;text-align:right}
+.cell-mode .organelle:is([data-key="nucleus"],[data-key="mitochondrion"],[data-key="chloroplast"],[data-key="golgi"],[data-key="vacuole"]):not([data-selected="true"]):not(:hover){filter:drop-shadow(0 3px 2px #08121b80)}
 body.iso{--anatomy-page:#101720;--anatomy-card:#182331;--anatomy-paper:#314457;--anatomy-face:#3b5267;--anatomy-top:#40596e;--anatomy-shade-0:#111a24;--anatomy-shade-1:#1b2936;--anatomy-shade-2:#293b4c;--anatomy-shade-3:#344a5e;--anatomy-lit-top:#d9e9f0;--anatomy-lit-shade:#526b7e;--anatomy-text:#c8d1da;--anatomy-strong:#f1f5f7;--anatomy-muted:#9baab7;--anatomy-lit:#d9e9f0;--anatomy-hi:#c5d3da;--anatomy-mid:#8fa4b2;--anatomy-lo:#607889;--anatomy-faint:#40566a;--anatomy-halo:#07111d;--anatomy-halo-opacity:.2;}
 .cell-mode .organelle{--anatomy-paper:#8195a2;--anatomy-face:#a7bbc4;--anatomy-top:#b7c9cf;--anatomy-shade-0:#40515e;--anatomy-shade-1:#5a6d79;--anatomy-shade-2:#718590;--anatomy-shade-3:#91a4ad;--anatomy-lit-top:#e2edf0;--anatomy-lit-shade:#9eb3bd;--anatomy-hi:#d7e4e7;--anatomy-mid:#8199a7;--anatomy-lo:#405665;--anatomy-faint:#607986;}
 .cell-mode .organelle[data-key="membrane"],.cell-mode .organelle[data-key="wall"]{--anatomy-paper:#819aa2;--anatomy-top:#b3c9c9;--anatomy-shade-0:#3d5963;--anatomy-shade-1:#58717a;--anatomy-shade-2:#718a91;--anatomy-shade-3:#96aaad;}
@@ -177,6 +180,17 @@ const zoom=document.querySelector('[data-organ-zoom]');
 const zoomSlot=zoom.querySelector('[data-zoom-slot]');
 const readout=document.querySelector('[data-readout]');
 let mode='animal', selected='nucleus';
+const baseView={x:0,y:0,w:900,h:600};
+let view={...baseView}, moved=false, pointers=new Map();
+const level=document.querySelector('[data-zoom-level]');
+function renderView(){figure.setAttribute('viewBox',[view.x,view.y,view.w,view.h].join(' '));level.textContent=Math.round(900/view.w*100)+'%';}
+function changeZoom(factor,cx=.5,cy=.5){const width=Math.max(225,Math.min(900,view.w/factor)),height=width*2/3;view.x+=(view.w-width)*cx;view.y+=(view.h-height)*cy;view.w=width;view.h=height;view.x=Math.max(0,Math.min(900-width,view.x));view.y=Math.max(0,Math.min(600-height,view.y));renderView();}
+document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{if(button.dataset.view==='reset'){view={...baseView};renderView()}else changeZoom(button.dataset.view==='in'?1.25:.8)}));
+figure.addEventListener('wheel',event=>{event.preventDefault();const r=figure.getBoundingClientRect();changeZoom(event.deltaY<0?1.15:1/1.15,(event.clientX-r.left)/r.width,(event.clientY-r.top)/r.height)},{passive:false});
+figure.addEventListener('pointerdown',event=>{if(event.pointerType==='mouse'&&event.button!==0)return;pointers.set(event.pointerId,{x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY});if(pointers.size===1)moved=false;else moved=true;});
+window.addEventListener('pointermove',event=>{const old=pointers.get(event.pointerId);if(!old)return;const before=[...pointers.values()];const dx=event.clientX-old.x,dy=event.clientY-old.y;if(Math.hypot(event.clientX-old.startX,event.clientY-old.startY)>4)moved=true;old.x=event.clientX;old.y=event.clientY;const r=figure.getBoundingClientRect();if(pointers.size===1&&moved){view.x=Math.max(0,Math.min(900-view.w,view.x-dx*view.w/r.width));view.y=Math.max(0,Math.min(600-view.h,view.y-dy*view.h/r.height));renderView();figure.classList.add('is-dragging')}else if(pointers.size===2){const now=[...pointers.values()],other=before.find(p=>p!==old);const oldDistance=Math.hypot(event.clientX-dx-other.x,event.clientY-dy-other.y),newDistance=Math.hypot(event.clientX-other.x,event.clientY-other.y);if(oldDistance>0)changeZoom(newDistance/oldDistance,((now[0].x+now[1].x)/2-r.left)/r.width,((now[0].y+now[1].y)/2-r.top)/r.height)}});
+function endPointer(event){pointers.delete(event.pointerId);if(!pointers.size)figure.classList.remove('is-dragging')}
+window.addEventListener('pointerup',endPointer);window.addEventListener('pointercancel',endPointer);
 function updateZoom(key){
   const source=figure.querySelector('.organelle[data-mode="'+mode+'"][data-key="'+key+'"]');
   if(!source)return;
@@ -211,7 +225,7 @@ function switchMode(next){
 }
 document.querySelectorAll('[data-switch]').forEach(el=>el.addEventListener('click',()=>switchMode(el.dataset.switch)));
 document.querySelectorAll('[data-select]').forEach(el=>el.addEventListener('click',()=>select(el.dataset.select)));
-figure.addEventListener('click',event=>{const parts=[...new Set(document.elementsFromPoint(event.clientX,event.clientY).map(node=>node.closest?.('.organelle')).filter(el=>el&&el.dataset.mode===mode))];parts.sort((a,b)=>{const A=a.getBBox(),B=b.getBBox();return A.width*A.height-B.width*B.height});if(parts[0])select(parts[0].dataset.key)});
+figure.addEventListener('click',event=>{if(moved){moved=false;return}const parts=[...new Set(document.elementsFromPoint(event.clientX,event.clientY).map(node=>node.closest?.('.organelle')).filter(el=>el&&el.dataset.mode===mode))];parts.sort((a,b)=>{const A=a.getBBox(),B=b.getBBox();return A.width*A.height-B.width*B.height});if(parts[0])select(parts[0].dataset.key)});
 figure.addEventListener('keydown',event=>{if(event.key!=='Enter'&&event.key!==' ')return;const item=event.target.closest('.organelle');if(item&&item.dataset.mode===mode){event.preventDefault();select(item.dataset.key)}});
 switchMode('animal');
 `;
