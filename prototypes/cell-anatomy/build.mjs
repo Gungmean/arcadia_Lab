@@ -2,14 +2,15 @@ import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as k from './kit/iso-kit.mjs';
+import * as G from './kit/lathe.mjs';
 import { kitScript } from './scripts/inline-kit.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WIDTH = 900, HEIGHT = 600;
-const P = k.fitProjection(k.boxCorners({ x:-245, y:-160, w:490, d:320, r:16 }, -16, 8), WIDTH, HEIGHT, { pad:55, azimuth:43, elevation:42 });
+const P = k.fitProjection(k.boxCorners({ x:-185, y:-125, w:370, d:250, r:16 }, -16, 8), WIDTH, HEIGHT, { pad:40, azimuth:43, elevation:42 });
 const S = (paths, tone) => k.solidSvg(paths, { tone, crease:'faint' });
-const L = (path, tone='lo') => k.lineSvg(path, { tone });
-const plate = { x:-245, y:-160, w:490, d:320, r:16 };
+const L = (path, tone='lo', free) => k.lineSvg(path, { tone, free });
+const plate = { x:-185, y:-125, w:370, d:250, r:16 };
 
 // One microscope specimen stage; the biological cutaway remains the subject.
 const stageParts = [
@@ -61,70 +62,55 @@ const DATA = {
 
 const esc = value => String(value).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const part = (mode,key,markup) => `<g class="organelle" data-key="${key}" data-mode="${mode}" tabindex="0" role="button" aria-label="${esc(DATA[mode][key][0])}"><title>${esc(DATA[mode][key][0])}</title>${markup}</g>`;
-const ellipse = (cx,cy,rx,ry,fill,stroke='none',sw=1)=>`<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
-const path = (d,fill='none',stroke='none',sw=1)=>`<path d="${d}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`;
-
-function mito(x,y,angle=0) {
-  const crests = Array.from({length:6},(_,i)=>path(`M${-34+i*12} -12 Q${-28+i*12} -2 ${-34+i*12} 12`,'none','#974e4b',2.7)).join('');
-  return `<g transform="translate(${x} ${y}) rotate(${angle})">${ellipse(0,0,48,25,'#d9887c','#a05d58',3)}${ellipse(0,0,40,18,'#f5b5a1','#b96f67',1.5)}${crests}</g>`;
-}
-function chloroplast(x,y,angle=0) {
-  const stacks = [-28,0,28].map(cx=>`<g>${[-7,-3,1,5].map(dy=>ellipse(cx,dy,11,2.8,'#3e8a68','#276c52',.7)).join('')}</g>`).join('');
-  return `<g transform="translate(${x} ${y}) rotate(${angle})">${ellipse(0,0,62,28,'#70b58b','#348061',3)}${ellipse(0,0,54,21,'#c0ddaa','#5da077',1.5)}${stacks}</g>`;
-}
-function nucleus(x,y,r=74) {
-  return `${ellipse(x,y,r+6,r-5,'#aa86b6','#704f85',4)}${ellipse(x,y,r-2,r-13,'#d9c6dc','#805b92',2)}${Array.from({length:10},(_,i)=>{let a=i*Math.PI/5;return ellipse(x+Math.cos(a)*(r+2),y+Math.sin(a)*(r-10),2.4,2.4,'#f6e6ef','#704f85',.8)}).join('')}`;
-}
-function golgi(x,y) {
-  return Array.from({length:6},(_,i)=>path(`M${x-48+i*3} ${y+i*9} Q${x} ${y-13+i*9} ${x+53-i*2} ${y+i*9}`,'none',i%2?'#e2a96d':'#f0c492',6)).join('');
-}
-function roughER(x,y) {
-  const sheets=Array.from({length:5},(_,i)=>path(`M${x-68} ${y+i*13} C${x-30} ${y-16+i*13} ${x+23} ${y+16+i*13} ${x+70} ${y+i*13}`,'none','#8272af',8)).join('');
-  const dots=Array.from({length:30},(_,i)=>ellipse(x-61+(i%10)*13,y+Math.floor(i/10)*20+((i%3)-1)*4,2.3,2.3,'#302a4c')).join('');
-  return sheets+dots;
-}
-function ribosomes(points) { return points.map(([x,y])=>ellipse(x,y,3,3,'#514269')).join(''); }
+const ellipseRing=(x,y,rx,ry,n=48,a=0)=>Array.from({length:n},(_,i)=>{const t=i*2*Math.PI/n;return [x+rx*Math.cos(t)*Math.cos(a)-ry*Math.sin(t)*Math.sin(a),y+rx*Math.cos(t)*Math.sin(a)+ry*Math.sin(t)*Math.cos(a)]});
+const solid=(ring,z,h,tone='hi',bevel=.7)=>S(k.extrude(ring,z,h,P,{convex:true,bevel}),tone);
+const oval=(x,y,rx,ry,z,h,tone='hi',a=0)=>solid(ellipseRing(x,y,rx,ry,48,a),z,h,tone);
+const ball=(x,y,z,r,tone='mid')=>S(G.sphereOf([x,y,z],r,P,{steps:28}),tone);
+// These isolated strands encode open-ended fibres and internal folds, rather than loose construction strokes.
+const topLine=(pts,z,tone='lo')=>L(k.onTop(pts,z,P),tone,'both');
+const ribbon=(x,y,length,z,phase=0)=>{const edge=Array.from({length:13},(_,i)=>{const t=i/12;return [x-length/2+length*t,y+Math.sin(t*2*Math.PI+phase)*4]});return [...edge.map(([a,b])=>[a,b-2.2]),...edge.slice().reverse().map(([a,b])=>[a,b+2.2])];};
+const membraneCell=(mode)=>part(mode,'membrane',solid(ellipseRing(0,0,143,86,64),0,8,'mid',1.1)+solid(ellipseRing(0,0,136,79,64),8,1,'hi',0));
 
 const animal = [
-  part('animal','membrane',path('M121 293 C86 205 151 115 273 92 C369 56 439 105 526 81 C657 62 778 153 772 278 C779 407 662 488 530 476 C402 500 327 461 226 475 C121 471 83 382 121 293Z','#d2adbf','#815d7e',10)),
-  part('animal','cytoplasm',path('M139 291 C103 211 167 131 279 109 C372 77 442 121 531 101 C654 81 752 163 752 279 C757 394 651 467 526 456 C408 481 328 442 228 455 C136 449 105 375 139 291Z','#f2e3e8')),
-  part('animal','cytoskeleton',path('M171 322 Q299 351 375 438 M542 127 Q615 197 719 216 M522 433 Q626 375 696 345 M201 192 Q269 278 304 389','none','#c58dab',2)),
-  part('animal','smoothER',Array.from({length:5},(_,i)=>path(`M${520+i*5} ${139+i*10} C${554+i*3} ${119+i*10} ${600+i*2} ${151+i*10} ${652-i*3} ${133+i*10}`,'none','#8c7dae',5)).join('')),
-  part('animal','roughER',roughER(277,294)),
-  part('animal','nucleus',nucleus(399,259)),
-  part('animal','chromatin',path('M350 250 Q374 220 390 241 T438 245 M349 278 Q386 291 403 268 T447 277 M377 205 Q399 218 419 205','none','#a786b2',3)),
-  part('animal','nucleolus',ellipse(412,272,21,19,'#855a93','#613f71',2)),
-  part('animal','mitochondrion',mito(244,171,-24)+mito(596,375,27)),
-  part('animal','golgi',golgi(562,210)),
-  part('animal','lysosome',ellipse(654,272,18,18,'#c47587','#8d4d6f',2)+ellipse(648,267,4,4,'#f1d7d8')+ellipse(659,277,3,3,'#f1d7d8')),
-  part('animal','peroxisome',ellipse(224,388,15,15,'#e0be67','#ac8c4a',2)+ellipse(224,388,5,5,'#f7e6ab')),
-  part('animal','centrosome',`<g transform="translate(555 342) rotate(-24)"><rect x="-30" y="-9" width="54" height="18" rx="8" fill="#83a6bf" stroke="#4f7291" stroke-width="2"/>${Array.from({length:6},(_,i)=>path(`M${-23+i*8} -7v14`,'none','#d8e6e8',2)).join('')}<rect x="-8" y="-30" width="18" height="54" rx="8" fill="#6895b2" stroke="#4f7291" stroke-width="2"/></g>`),
-  part('animal','vesicle',[[638,183,9],[681,196,7],[620,242,8]].map(([x,y,r])=>ellipse(x,y,r,r,'#f0bf92','#b88768',2)).join('')),
-  part('animal','ribosome',ribosomes([[183,244],[202,263],[190,279],[264,425],[286,408],[645,337],[670,325],[590,150],[611,143]])),
+  membraneCell('animal'),
+  part('animal','cytoplasm',solid(ellipseRing(0,0,133,76,64),8.2,.8,'hi',0)),
+  part('animal','cytoskeleton',[-1,0,1].map(i=>topLine([[-115,-28+i*24],[-46,-15+i*19],[28,17+i*13],[110,36+i*7]],9,'faint')).join('')),
+  part('animal','roughER',Array.from({length:5},(_,i)=>solid(ribbon(-60,-18+i*10,64,9, i*.6),9,2,'mid',.2)+Array.from({length:7},(_,j)=>ball(-87+j*9,-18+i*10+Math.sin(j*.5+i)*3,12,1.3,'lo')).join('')).join('')),
+  part('animal','smoothER',Array.from({length:4},(_,i)=>solid(ribbon(65,-47+i*10,54,9,i*.7),9,2,'hi',.2)).join('')),
+  part('animal','nucleus',oval(-7,0,37,31,9,18,'hi')),
+  part('animal','chromatin',[-1,0,1].map(i=>topLine([[-34,-7+i*12],[-15,-14+i*10],[4,5+i*8],[27,1+i*10]],27,'mid')).join('')),
+  part('animal','nucleolus',ball(4,3,30,8,'mid')),
+  part('animal','mitochondrion',[[-91,48,-.4],[80,40,.35]].map(([x,y,a])=>oval(x,y,26,12,9,7,'mid',a)+oval(x,y,21,8,16,1,'hi',a)+Array.from({length:6},(_,i)=>topLine([[x-16+i*6,y-5],[x-13+i*6,y],[x-16+i*6,y+5]],17,'lo')).join('')).join('')),
+  part('animal','golgi',Array.from({length:6},(_,i)=>solid(ribbon(67,4+i*5,38,9,i*.1),9+i*1.5,2,'hi',.2)).join('')),
+  part('animal','lysosome',[[-47,53],[43,-53],[112,4]].map(([x,y])=>ball(x,y,14,5,'mid')).join('')),
+  part('animal','peroxisome',ball(-106,-54,14,5,'hi')),
+  part('animal','centrosome',oval(42,55,15,5,10,5,'mid',.55)+oval(45,56,5,15,15,4,'hi',-.8)+Array.from({length:8},(_,i)=>topLine([[45,56],[45+Math.cos(i*Math.PI/4)*17,56+Math.sin(i*Math.PI/4)*17]],10,'faint')).join('')),
+  part('animal','vesicle',[[18,-56],[26,-47],[34,-57],[42,-47]].map(([x,y])=>ball(x,y,14,3.5,'hi')).join('')),
+  part('animal','ribosome',Array.from({length:12},(_,i)=>ball(-116+(i*37)%232,-61+((i*23)%116),12,1.4,'lo')).join('')),
 ].join('');
 
 const plant = [
-  part('plant','wall',`<rect x="97" y="66" width="710" height="458" rx="46" fill="#c5d3a0" stroke="#718e65" stroke-width="13"/><rect x="111" y="80" width="682" height="430" rx="38" fill="none" stroke="#f0e8b5" stroke-width="4"/>`),
-  part('plant','membrane',`<rect x="126" y="95" width="652" height="400" rx="28" fill="#dce6b3" stroke="#638b76" stroke-width="6"/>`),
-  part('plant','cytoplasm',`<rect x="138" y="107" width="628" height="376" rx="22" fill="#eef2cf"/>`),
-  part('plant','plasmodesmata',[[138,175],[138,311],[766,230],[766,407]].map(([x,y])=>`<g>${path(`M${x-30} ${y}h60`,'none','#477f69',4)}${ellipse(x,y,5,5,'#dce8a4','#477f69',2)}</g>`).join('')),
-  part('plant','tonoplast',`<rect x="389" y="161" width="303" height="269" rx="53" fill="#94c7ce" stroke="#508f9a" stroke-width="7"/>`),
-  part('plant','vacuole',`<rect x="402" y="174" width="277" height="243" rx="46" fill="#c9e5e6"/>${[[488,241],[584,318],[521,362]].map(([x,y])=>ellipse(x,y,5,5,'#9fcbd2')).join('')}`),
-  part('plant','roughER',roughER(260,340)),
-  part('plant','nucleus',nucleus(286,230,63)),
-  part('plant','nucleolus',ellipse(300,244,17,16,'#855a93','#613f71',2)),
-  part('plant','chloroplast',chloroplast(254,137,13)+chloroplast(652,450,-8)),
-  part('plant','grana',`<g transform="translate(254 137) rotate(13)">${[-28,0,28].map(cx=>[-7,-3,1,5].map(dy=>ellipse(cx,dy,11,2.8,'#2c795a','#1b644c',.8)).join('')).join('')}</g>`),
-  part('plant','mitochondrion',mito(335,441,-12)),
-  part('plant','golgi',golgi(591,122)),
-  part('plant','peroxisome',ellipse(728,368,16,16,'#e0be67','#ac8c4a',2)+ellipse(728,368,5,5,'#f7e6ab')),
-  part('plant','ribosome',ribosomes([[179,363],[193,373],[214,402],[734,162],[717,182],[706,447],[347,151]])),
+  part('plant','wall',S(k.slabOf({x:-145,y:-91,w:290,d:182,r:14},0,14,P,8,1.2),'mid')+L(k.planOutline(k.insetPlan({x:-145,y:-91,w:290,d:182,r:14},5),14,P),'lo')),
+  part('plant','membrane',S(k.slabOf({x:-135,y:-81,w:270,d:162,r:10},14,1.3,P,8,.35),'hi')),
+  part('plant','cytoplasm',S(k.slabOf({x:-129,y:-75,w:258,d:150,r:8},15.3,.8,P,8,0),'hi')),
+  part('plant','vacuole',S(k.slabOf({x:-43,y:-54,w:108,d:108,r:18},16.1,5,P,8,.9),'hi')),
+  part('plant','tonoplast',L(k.planOutline(k.insetPlan({x:-43,y:-54,w:108,d:108,r:18},5),21.1,P),'mid')),
+  part('plant','nucleus',oval(-82,2,27,23,17,15,'hi')),
+  part('plant','nucleolus',ball(-77,3,34,6,'mid')),
+  part('plant','roughER',Array.from({length:4},(_,i)=>solid(ribbon(-48,-2+i*9,43,17,i*.6),16,2,'mid',.2)+Array.from({length:6},(_,j)=>ball(-69+j*7,-2+i*9,19,1.2,'lo')).join('')).join('')),
+  part('plant','chloroplast',[[91,-48,-.3],[97,55,.2],[-91,55,-.2]].map(([x,y,a])=>oval(x,y,25,12,17,7,'hi',a)).join('')),
+  part('plant','grana',[[91,-48],[97,55],[-91,55]].map(([x,y])=>Array.from({length:4},(_,i)=>oval(x,y-4+i*2,9,1.5,24+i*.6,.8,'mid')).join('')).join('')),
+  part('plant','mitochondrion',oval(38,56,21,10,17,6,'mid')+Array.from({length:5},(_,i)=>topLine([[25+i*6,51],[27+i*6,56],[25+i*6,61]],23,'lo')).join('')),
+  part('plant','golgi',Array.from({length:5},(_,i)=>solid(ribbon(63,1+i*4,29,17,i*.1),16+i*1.5,2,'hi',.2)).join('')),
+  part('plant','plasmodesmata',[-48,0,48].map(y=>solid([[-149,y-2],[-136,y-2],[-136,y+2],[-149,y+2]],14,8,'hi',.2)).join('')),
+  part('plant','peroxisome',ball(38,-58,21,5,'mid')),
+  part('plant','ribosome',Array.from({length:10},(_,i)=>ball(-119+(i*47)%238,-66+((i*31)%126),18,1.2,'lo')).join('')),
 ].join('');
 
 const svg = k.figureSvg({ width:WIDTH, height:HEIGHT,
   label:'동물세포와 식물세포의 구조를 선택하여 탐색하는 모식도',
   body:`<defs><filter id="soft-shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="13"/></filter></defs>
-    <g opacity=".55">${stageParts}</g><ellipse cx="450" cy="525" rx="315" ry="42" fill="#152437" opacity=".28" filter="url(#soft-shadow)"/>
+    <g opacity=".55">${stageParts}</g>
     <g class="cell-mode" data-mode="animal">${animal}</g><g class="cell-mode" data-mode="plant">${plant}</g>` });
 
 const plateHtml = k.plateHtml({ fig:'FIG 01', title:'세포 구조', hint:'소기관을 클릭하거나 목록에서 선택', readout:'동물세포 · 핵',
@@ -138,7 +124,15 @@ const body = `<header class="cell-header"><div><span class="small-label">ARCADIA
 <p class="source-line">구조와 기능: <a href="https://openstax.org/books/biology-2e/pages/4-3-eukaryotic-cells" target="_blank" rel="noopener noreferrer">OpenStax Biology 2e · Eukaryotic Cells</a></p>`;
 
 const css = `
-body.iso{--anatomy-page:#101720;--anatomy-card:#182331;--anatomy-paper:#182331;--anatomy-text:#c8d1da;--anatomy-strong:#f1f5f7;--anatomy-muted:#9baab7;--anatomy-lit:#b8dbf2;--anatomy-hi:#b6c6d0;--anatomy-mid:#758a9b;--anatomy-lo:#4d6071;--anatomy-faint:#354655;--anatomy-halo:#07111d;}
+body.iso{--anatomy-page:#101720;--anatomy-card:#182331;--anatomy-paper:#314457;--anatomy-face:#3b5267;--anatomy-top:#40596e;--anatomy-shade-0:#111a24;--anatomy-shade-1:#1b2936;--anatomy-shade-2:#293b4c;--anatomy-shade-3:#344a5e;--anatomy-lit-top:#d9e9f0;--anatomy-lit-shade:#526b7e;--anatomy-text:#c8d1da;--anatomy-strong:#f1f5f7;--anatomy-muted:#9baab7;--anatomy-lit:#d9e9f0;--anatomy-hi:#c5d3da;--anatomy-mid:#8fa4b2;--anatomy-lo:#607889;--anatomy-faint:#40566a;--anatomy-halo:#07111d;--anatomy-halo-opacity:.2;}
+.cell-mode .organelle{--anatomy-paper:#8195a2;--anatomy-face:#a7bbc4;--anatomy-top:#b7c9cf;--anatomy-shade-0:#40515e;--anatomy-shade-1:#5a6d79;--anatomy-shade-2:#718590;--anatomy-shade-3:#91a4ad;--anatomy-lit-top:#e2edf0;--anatomy-lit-shade:#9eb3bd;--anatomy-hi:#d7e4e7;--anatomy-mid:#8199a7;--anatomy-lo:#405665;--anatomy-faint:#607986;}
+.cell-mode .organelle[data-key="membrane"],.cell-mode .organelle[data-key="wall"]{--anatomy-paper:#819aa2;--anatomy-top:#b3c9c9;--anatomy-shade-0:#3d5963;--anatomy-shade-1:#58717a;--anatomy-shade-2:#718a91;--anatomy-shade-3:#96aaad;}
+.cell-mode .organelle[data-key="cytoplasm"]{--anatomy-paper:#82918c;--anatomy-top:#b6c2b6;--anatomy-shade-0:#45564f;--anatomy-shade-1:#5c6e65;--anatomy-shade-2:#72847a;--anatomy-shade-3:#93a198;}
+.cell-mode .organelle[data-key="nucleus"],.cell-mode .organelle[data-key="chromatin"],.cell-mode .organelle[data-key="nucleolus"]{--anatomy-paper:#71869a;--anatomy-top:#a8bfd0;--anatomy-shade-0:#354b61;--anatomy-shade-1:#4a6278;--anatomy-shade-2:#61798e;--anatomy-shade-3:#859aa9;}
+.cell-mode .organelle[data-key="roughER"],.cell-mode .organelle[data-key="smoothER"],.cell-mode .organelle[data-key="golgi"]{--anatomy-paper:#9a8c79;--anatomy-top:#c4b69f;--anatomy-shade-0:#5b4e43;--anatomy-shade-1:#746758;--anatomy-shade-2:#897b69;--anatomy-shade-3:#ac9d88;}
+.cell-mode .organelle[data-key="mitochondrion"],.cell-mode .organelle[data-key="chloroplast"],.cell-mode .organelle[data-key="grana"]{--anatomy-paper:#78947c;--anatomy-top:#b4c5a6;--anatomy-shade-0:#3d5746;--anatomy-shade-1:#526e58;--anatomy-shade-2:#68836d;--anatomy-shade-3:#8ba28a;}
+.cell-mode .organelle[data-key="vacuole"],.cell-mode .organelle[data-key="tonoplast"]{--anatomy-paper:#688d9a;--anatomy-top:#a7c5ce;--anatomy-shade-0:#2d4c59;--anatomy-shade-1:#436573;--anatomy-shade-2:#577a87;--anatomy-shade-3:#7899a1;}
+.cell-mode .organelle[data-key="lysosome"],.cell-mode .organelle[data-key="peroxisome"],.cell-mode .organelle[data-key="vesicle"]{--anatomy-paper:#a38c72;--anatomy-top:#d0b994;--anatomy-shade-0:#5e4e3e;--anatomy-shade-1:#78664f;--anatomy-shade-2:#927b60;--anatomy-shade-3:#b29b7a;}
 .iso-page{margin:32px auto 80px}.cell-header{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:22px}.cell-header h1{font-size:clamp(2rem,4vw,3.5rem);line-height:1.1;letter-spacing:-.04em;margin:8px 0}.cell-header p{margin:0;color:#a9b9c8}.small-label{font:700 11px/1.4 ui-monospace,monospace;letter-spacing:.14em;color:#93bce1}.draft-label{border:1px solid #4d6174;color:#b9c5d0;padding:7px 10px;font-size:12px;white-space:nowrap}.cell-switch{display:flex;gap:5px;margin:0 0 18px;border-bottom:1px solid #405366}.cell-switch button{background:transparent;border:0;color:#b8c8d5;padding:13px 24px;font:700 16px/1.3 ui-sans-serif,system-ui,sans-serif;cursor:pointer;border-bottom:3px solid transparent}.cell-switch button[aria-pressed=true]{color:#f5f8fa;border-color:#83b7e1}.cell-switch button:focus-visible,.part-list button:focus-visible,.organelle:focus-visible{outline:2px solid #a6d5f4;outline-offset:3px}.explorer-layout{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(285px,.75fr);gap:20px;align-items:start}.explorer-layout .iso-figure{margin:0;min-width:0}.explorer-layout .iso-plate{background:#182331;min-height:0}.cell-stage{padding:36px 8px 27px}.cell-stage .iso-svg{width:100%;height:auto;display:block}.cell-mode{display:none}body[data-cell=animal] .cell-mode[data-mode=animal],body[data-cell=plant] .cell-mode[data-mode=plant]{display:block}.organelle{cursor:pointer;transition:filter .18s ease,opacity .18s ease}.organelle:hover,.organelle[data-selected=true]{filter:drop-shadow(0 0 8px #a8ddfa)}.info-panel{min-height:635px;padding:26px;background:#182331;border:1px solid #405366}.info-panel h2{font-size:clamp(1.7rem,3vw,2.5rem);line-height:1.2;margin:20px 0 8px;color:#f4f7f8}.part-role{font-weight:700;color:#9ec6e8}.info-panel p{line-height:1.8}.observation{border-top:1px solid #405366;border-bottom:1px solid #405366;margin:23px 0;padding:15px 0}.observation span,.info-list-title{font-size:12px;font-weight:800;color:#94b7d4}.observation p{margin:6px 0 0}.part-list{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:12px}body[data-cell=animal] .part-list[data-list=animal],body[data-cell=plant] .part-list[data-list=plant]{display:grid}.part-list button{text-align:left;background:#202e3c;border:1px solid #405366;color:#d5e0e7;min-height:35px;padding:7px 9px;cursor:pointer}.part-list button[aria-pressed=true]{border-color:#a9d9f7;background:#2c4257;color:white}.source-line{font-size:12px;color:#aebdc8;margin-top:20px}.source-line a{color:#9dc8ea}@media(max-width:900px){.explorer-layout{grid-template-columns:1fr}.info-panel{min-height:0}.cell-stage{padding:28px 2px 16px}}@media(max-width:500px){.iso-page{width:calc(100% - 22px);margin-top:20px}.cell-header{align-items:start}.draft-label{font-size:10px}.cell-stage{padding:18px 0 10px}.info-panel{padding:20px}.part-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 `;
 
