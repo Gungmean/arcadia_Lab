@@ -1,0 +1,13 @@
+# 세포 구조 탐색 (독립 프로토타입)
+
+`index.html`을 열면 동물세포와 식물세포를 상단에서 전환하고, 그림의 구조 또는 오른쪽 목록을 눌러 설명을 볼 수 있습니다. 기존 실험 목록에는 연결하지 않았습니다.
+
+## 구성
+
+- `index.html`: 배포 가능한 독립 페이지. CSS·SVG·JavaScript가 한 파일에 들어 있습니다.
+- `build.mjs`: 그림과 설명 데이터를 생성하는 소스.
+- `kit/`, `scripts/`: Anatomy SVG 제작 도구의 필요한 부분만 포함했습니다. 라이선스는 `LICENSE`를 참고하세요.
+
+내용을 수정한 뒤 저장소 루트에서 `node prototypes/cell-anatomy/build.mjs`로 페이지를 다시 만드세요. 나중에 실험실에 편입할 때는 `index.html`의 경로를 실험 목록에 연결하면 됩니다.
+
+이 그림은 교육용 모식도입니다. 실제 세포의 소기관 크기와 수, 배치는 세포 종류 및 상태에 따라 다릅니다. 구조와 기능 설명은 [OpenStax Biology 2e 4.3](https://openstax.org/books/biology-2e/pages/4-3-eukaryotic-cells)을 기준으로 작성했습니다.
