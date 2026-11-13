@@ -1,0 +1,22 @@
+[
+ ["click","[data-case=expand]"],
+ ["until","pistonLab.progress>.99999",4000],
+ ["eval","if(document.querySelector('#law-Q').textContent!=='+100.0 J'||document.querySelector('#law-U').textContent!=='+60.0 J'||document.querySelector('#law-W').textContent!=='+40.0 J')throw Error('live equation expansion');'first law: +100 = +60 + +40'"],
+ ["shot","tmp/first-law-light.png",".wrap",1],
+ ["click","[data-case=fixed]"],
+ ["until","pistonLab.progress>.99999",4000],
+ ["eval","if(pistonLab.mode!=='locked'||document.querySelector('#law-U').textContent!=='+100.0 J'||document.querySelector('#law-W').textContent!=='0.0 J'||!document.querySelector('#law-story').textContent.includes('ΔU = Q'))throw Error('fixed gas explanation');'fixed gas: work zero, all heat raises internal energy'"],
+ ["click","[data-case=cool]"],
+ ["until","pistonLab.progress>.99999",4000],
+ ["eval","if(document.querySelector('#law-Q').textContent!=='-60.0 J'||document.querySelector('#law-U').textContent!=='-36.0 J'||document.querySelector('#law-W').textContent!=='-24.0 J'||!document.querySelector('#law-story').textContent.includes('외부로부터'))throw Error('cooling signs');'cooling: -60 = -36 + -24, compression work received'"],
+ ["click","#theme"],
+ ["shot","tmp/first-law-dark.png",".first-law",1],
+ ["click","#insulation"],
+ ["click","[data-case=expand]"],
+ ["until","pistonLab.progress>.99999",4000],
+ ["eval","if(pistonLab.state.Q!==100||document.querySelector('#insulation').getAttribute('aria-checked')!=='false')throw Error('preset must restore heat transfer');'preset restores non-insulated experiment'"],
+ ["key","ArrowLeft","#heat"],
+ ["eval","if(pistonLab.state.Q!==0||document.querySelector('#heat').value!=='95')throw Error('custom heat must reset path');'custom heat resets accumulated energy'"],
+ ["eval","if(document.documentElement.scrollWidth>innerWidth)throw Error('horizontal overflow');'no overflow'"]
+]
+

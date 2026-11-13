@@ -35,7 +35,11 @@ function draw(){
  if(document.activeElement!==$('#progress'))$('#progress').value=progress*100;
  text('heat-out',insulated?'차단 · 전달 열 0 J':heat+' J');
  for(const [key,v]of[['Q',s.Q],['U',s.dU],['W',s.W]]){text('energy-'+key,(v>1e-8?'+':'')+fmt(v)+' J');$('#bar-'+key).style.width=Math.min(100,Math.abs(v)/120*100)+'%';}
- text('balance',`${fmt(s.Q)} = ${fmt(s.dU)} + ${fmt(s.W)} J`);
+ const signed=v=>(v>1e-8?'+':'')+fmt(v)+' J';
+ for(const [key,v]of[['Q',s.Q],['U',s.dU],['W',s.W]])text('law-'+key,signed(v));
+ const term=v=>v< -1e-8?`(${fmt(v)})`:fmt(v);
+ text('balance',`Q = ΔU + W : ${fmt(s.Q)} = ${term(s.dU)} + ${term(s.W)} J`);
+ text('law-story',insulated?'열 교환이 차단되어 Q = 0입니다. 이 장비는 하중도 일정하므로 W = 0, ΔU = 0으로 상태가 유지됩니다.':Math.abs(s.Q)<1e-6?'아직 열을 주고받지 않았습니다. 아래 비교 실험을 선택하면 Q, ΔU, W가 피스톤의 움직임과 함께 바뀝니다.':s.Q>0?(mode==='locked'?`기체가 받은 ${fmt(s.Q)} J 전부가 내부 에너지를 늘립니다. 피스톤이 고정되어 W = 0이므로 ΔU = Q입니다.`:`기체가 받은 ${fmt(s.Q)} J 중 ${fmt(s.W)} J는 피스톤을 밀어 외부에 한 일이고, 내부 에너지는 ${fmt(s.dU)} J 증가합니다.`):(mode==='locked'?`기체가 열 ${fmt(-s.Q)} J를 내보냅니다. W = 0이므로 내부 에너지가 ${fmt(-s.dU)} J 감소합니다.`:`기체가 열 ${fmt(-s.Q)} J를 내보내는 동안 외부로부터 압축 일 ${fmt(-s.W)} J를 받습니다. ΔU = Q − W에 따라 내부 에너지는 ${fmt(-s.dU)} J 감소합니다.`));
  text('status',insulated?'단열 · 외부 하중 일정 · 상태 변화 없음':mode==='free'?'등압 · 피스톤 자유 이동':'등적 · 피스톤 고정');
  text('mode-hint',mode==='free'?'피스톤이 일정한 외부 압력에 맞서 움직입니다. 받은 열은 온도 변화와 외부에 한 일로 나뉩니다.':'피스톤이 움직이지 않아 부피 변화와 기체가 한 일이 0입니다. 받은 열은 모두 내부 에너지 변화가 됩니다.');
  $('#stage').classList.toggle('locked',mode==='locked');
@@ -73,10 +77,16 @@ $('#play').onclick=()=>{if(playing){stop();target=progress;}else{if(progress>.99
 $('#finish').onclick=()=>{stop();target=1;dirty=true;start();};
 $('#insulation').onclick=()=>{insulated=!insulated;$('#insulation').setAttribute('aria-checked',insulated);$('#insulation').textContent=insulated?'켜짐':'꺼짐';$('#heat').disabled=insulated;$('#cool').disabled=insulated;$('#heat100').disabled=insulated;resetPath();};
 $('#theme').onclick=()=>{document.body.dataset.theme=document.body.dataset.theme==='light'?'dark':'light';dirty=true;draw();};
+ $$('[data-case]').forEach(b=>b.onclick=()=>{
+  if(insulated)$('#insulation').click();
+  mode=b.dataset.case==='fixed'?'locked':'free';heat=b.dataset.case==='cool'?-60:100;
+  $$('[data-mode]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.mode===mode));
+  $('#heat').value=heat;resetPath();target=1;dirty=true;start();
+ });
 const descriptions={cylinder:['밀폐 실린더','기체의 양은 일정합니다. 앞쪽 절개는 내부 구조를 보여 주기 위한 것으로 실제 구멍이 아닙니다.'],piston:['피스톤·로드·하중','밀봉 링이 기체를 가두고, 피스톤이 올라가면 외부에 일을 합니다. 일정한 하중은 이 모형에서 일정한 외부 압력을 뜻합니다.'],heater:['이상적인 가열·냉각판','Q는 기체에 전달한 누적 열입니다. 양수는 가열, 음수는 냉각입니다. 실제 장치의 열용량과 열손실은 생략했습니다.'],lock:['이상적인 피스톤 고정 장치','고정 모드에서는 부피 변화가0이고 W=0입니다. 잠금 손잡이는 구속 조건의 표시이며 실제 잠금 접촉부를 모두 구현한 것은 아닙니다.'],frame:['프레임·높이 눈금','피스톤의 높이는 V/A로 계산합니다. 장치의 가로 비율은 가독성을 위해 조정했으며 눈금은 구조를 표현하는 모식 눈금입니다.']};
 function selectPart(group){const d=descriptions[group];if(!d)return;text('part-title',d[0]);text('part-text',d[1]);$$('[data-item]').forEach(n=>n.classList.toggle('selected',n.dataset.group===group));}
 $$('[data-part]').forEach(b=>b.onclick=()=>selectPart(b.dataset.part));$('#parts').onclick=e=>{const item=e.target.closest('[data-item]');if(item)selectPart(item.dataset.group);};
-new IntersectionObserver(entries=>{visible=entries.at(-1).isIntersecting;if(visible)start();else{cancelAnimationFrame(frame);frame=0;}},{rootMargin:'100px'}).observe($('#stage'));
+new IntersectionObserver(entries=>{visible=entries.at(-1).isIntersecting;if(visible)start();else{cancelAnimationFrame(frame);frame=0;}},{rootMargin:'100px'}).observe($('main'));
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(frame);frame=0;}else start();});
 reduced.addEventListener('change',()=>{stop();dirty=true;start();});
 window.pistonLab={get state(){return stateAt(mode,heat,progress,insulated);},get mode(){return mode;},get progress(){return progress;}};
