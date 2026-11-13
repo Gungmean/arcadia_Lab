@@ -1,0 +1,19 @@
+[
+  ["wait",200],
+  ["shot","prototypes/microscopy-lab/shots/mobile-optical.png",".app",1],
+  ["eval","if(document.documentElement.scrollWidth>innerWidth)throw Error('mobile sideways overflow');'mobile optical fits'"],
+  ["key","ArrowRight","#tab-optical"],
+  ["eval","if(microscopyLab.mode!=='tem'||document.activeElement.id!=='tab-tem')throw Error('keyboard tabs');'keyboard tabs work'"],
+  ["shot","prototypes/microscopy-lab/shots/mobile-tem.png",".app",1],
+  ["click","#tab-sem"],
+  ["click","#control-vacuum"],
+  ["wait",80],
+  ["eval","if(microscopyLab.measure().signal!==0)throw Error('SEM vacuum');'SEM vacuum interlock OK'"],
+  ["click","#reset"],
+  ["click","#next"],
+  ["eval","if(microscopyLab.step!==1)throw Error('next step');'touch next works'"],
+  ["shot","prototypes/microscopy-lab/shots/mobile-sem.png",".app",1],
+  ["eval","if(document.documentElement.scrollWidth>innerWidth)throw Error('mobile overflow');'all modes fit 390px'"],
+  ["click","#theme"],
+  ["shot","prototypes/microscopy-lab/shots/mobile-dark.png",".drawing-card",1]
+]

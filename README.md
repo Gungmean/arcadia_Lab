@@ -18,6 +18,19 @@
 
 ## 🔬 구현된 실험실 목록
 
+### 🔬 현미경 작동구조 실험실
+- `experiments/microscopy/index.html?mode=tem` — 광학·TEM·SEM 절개도와 빔 경로, 부품 설명, 단계별 과정.
+- TEM 절편 두께·조리개와 SEM SE/BSE·코팅·체류시간을 한 조건씩 비교합니다. 생명과학 실험 목록에서 입장할 수 있습니다.
+- 학습용 모식 시뮬레이터이며 실제 장비 성능의 정량 예측은 하지 않습니다. [과학 검토 기록](prototypes/microscopy-lab/SCIENCE-REVIEW.md).
+- 재생성: `node prototypes/microscopy-lab/build.mjs`. 과학 모델 검사: `node prototypes/microscopy-lab/qa-model.mjs`. 생성 시 정식 실험 경로와 독립 HTML이 함께 갱신됩니다.
+
+### 🌱 생명 에너지 실험실
+- `experiments/bio-energy/index.html` — 미토콘드리아·엽록체의 입체 절개도와 세포질 경로에서 세포호흡·광합성·알코올 발효·젖산 발효를 탐색합니다.
+- 단계별 반응 확대 장면, 장면별 생성물, 단계별·누적 물질 수지, 관찰 노트·CSV 내보내기, 개념 퀴즈를 제공합니다. 생명과학 탭에서 입장할 수 있습니다.
+- 로컬 실행: 저장소 루트에서 `python -m http.server 8765`, 브라우저에서 `http://localhost:8765/experiments/bio-energy/` 접속. 모듈과 SVG 로딩을 위해 HTTP 서버를 사용하세요.
+- 검증: `node --test experiments/bio-energy/lessons.test.mjs experiments/bio-energy/model.test.mjs`. 소기관 SVG 재생성: `node experiments/bio-energy/build-figure.mjs`.
+- 변수 슬라이더 없이 원하는 단계와 세부 장면을 직접 선택합니다. 순서 재생은 현재 단계 안에서만 진행하며, 실제 반응 시간을 뜻하지 않습니다. ATP 투자·생성·순생산, 운반체 생성 누계와 소비를 구분합니다.
+
 ### 🧪 2D 가상 실험실
 | 실험명 | 과목/분야 | 주요 내용 및 조작 요소 |
 | :--- | :--- | :--- |

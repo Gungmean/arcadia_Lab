@@ -1,0 +1,10 @@
+[
+ ["wait",400],
+ ["eval","window.savedImage=[...document.querySelector('#image').getContext('2d').getImageData(0,0,720,440).data];window.savedState=microscopyLab.state;'snapshot'"],
+ ["click","#defocus"],
+ ["wait",500],
+ ["click","#autofocus"],
+ ["wait",500],
+ ["eval","(()=>{const now=document.querySelector('#image').getContext('2d').getImageData(0,0,720,440).data;let max=0,count=0,total=0;for(let i=0;i<now.length;i++){const d=Math.abs(now[i]-savedImage[i]);max=Math.max(max,d);if(d)count++;total+=d;}return{old:savedState,current:microscopyLab.state,max,count,average:total/now.length,filters:document.querySelector('#image').getContext('2d').filter};})()"],
+ ["shot","prototypes/microscopy-lab/shots/science-optical.png",".workspace",1]
+]
