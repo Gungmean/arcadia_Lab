@@ -19,4 +19,3 @@
  ["eval","if(pistonLab.state.Q!==0||document.querySelector('#heat').value!=='95')throw Error('custom heat must reset path');'custom heat resets accumulated energy'"],
  ["eval","if(document.documentElement.scrollWidth>innerWidth)throw Error('horizontal overflow');'no overflow'"]
 ]
-
