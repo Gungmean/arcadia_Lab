@@ -53,10 +53,11 @@
 .arcadia-instrument :is(#quick-end,#heat100,#adopt) { background:var(--accent)!important; border-color:var(--accent)!important; color:#142058!important; font-weight:700; }
 .arcadia-instrument :is(#quick-end,#heat100,#adopt):hover:not(:disabled) { background:#8cc4ee!important; }
 .arcadia-instrument :is(button,input,select,a):focus-visible { outline:3px solid var(--bugwang-violet); outline-offset:4px; }
-.arcadia-instrument .tabs { gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
-.arcadia-instrument .tabs button { background:transparent!important; border:0; border-bottom:3px solid transparent!important; border-radius:0; padding:16px 20px; font-size:16px; }
+.arcadia-instrument .tabs { gap:0; border:1px solid var(--line); border-radius:0; overflow:hidden; }
+.arcadia-instrument .tabs button { position:relative; background:transparent!important; border:0; border-radius:0; padding:16px 20px 19px; font-size:16px; }
 .arcadia-instrument .tabs button+button { border-left:1px solid var(--line); }
-.arcadia-instrument .tabs button[aria-pressed='true'] { background:#142058!important; border-bottom-color:var(--accent)!important; }
+.arcadia-instrument .tabs button[aria-pressed='true'] { background:#142058!important; }
+.arcadia-instrument .tabs button[aria-pressed='true']::after { content:''; position:absolute; bottom:0; left:12px; right:12px; height:3px; background:var(--accent); }
 .arcadia-instrument .tabs small { font-family:'Gmarket Sans',sans-serif; font-size:11px; letter-spacing:0; color:var(--quiet); }
 .arcadia-instrument .principle { padding:24px 0; gap:14px 32px; }
 .arcadia-instrument .principle h2 { font-size:21px; }
