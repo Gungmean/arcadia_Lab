@@ -26,7 +26,13 @@ function draw(){
  set('principle-title',cal?'물만 데워지는 것은 아닙니다':'용액이 따뜻해지면, 반응은 열을 내보냅니다');
  if(!cal&&r.kind==='흡열')set('principle-title','용액이 차가워지면, 반응은 열을 받습니다');
  set('principle-caption',cal?'전기 에너지를 물과 장치가 함께 받습니다. 외부 열교환이 없으면 E = (mc + C열량계)ΔT입니다.':'용액의 온도 변화에서 반응이 주고받은 열을 추정합니다. 반응 1 mol 기준값과 한 회 실험의 열을 구별하세요.');
- set('main-formula',cal?'C열량계 = E/ΔT − mc':'q반응 = −(mc + C열량계)ΔT');
+ const formula=$('#main-formula');
+ if(formula.dataset.mode!==options.mode){
+  const capacity='<msub><mi>C</mi><mtext>열량계</mtext></msub>',deltaT='<mrow><mi mathvariant="normal">Δ</mi><mi>T</mi></mrow>';
+  const expression=cal?`${capacity}<mo>=</mo><mfrac><mi>E</mi>${deltaT}</mfrac><mo>−</mo><mi>m</mi><mi>c</mi>`:`<msub><mi>q</mi><mtext>반응</mtext></msub><mo>=</mo><mo>−</mo><mrow><mo>(</mo><mi>m</mi><mi>c</mi><mo>+</mo>${capacity}<mo>)</mo></mrow>${deltaT}`;
+  formula.innerHTML=`<math xmlns="http://www.w3.org/1998/Math/MathML" aria-label="${cal?'열량계 열용량은 전기 에너지를 온도 변화로 나눈 값에서 용액의 열용량을 뺀 값':'반응열은 용액과 열량계의 열용량 합에 온도 변화를 곱한 값의 반대 부호'}"><mrow>${expression}</mrow></math>`;
+  formula.dataset.mode=options.mode;
+ }
  set('reaction-equation',r.equation);set('reaction-note',r.note);
  set('source-end',cal?'가열 종료 · 60 s':'반응 완료 · 20 s');set('quick-end',cal?'60 s 가열 결과 보기':'20 s 반응 결과 보기');
  set('calculation-title',cal?'전기 가열로 열량계 보정':'온도로부터 반응열 계산');
