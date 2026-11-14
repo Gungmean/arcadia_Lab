@@ -392,17 +392,16 @@
             .step-arrow { flex: 0 0 auto; }
         }
     </style>
-</head>
-<body>
+<link rel="stylesheet" href="../assets/arcadia-experiments.css"><script src="../assets/arcadia-experiments.js" defer></script></head>
+<body class="arcadia-experiment" data-lab-kind="scene">
+<nav class="ar-lab-nav" aria-label="아르카디아 실험실"><a class="brand-lockup" href="../index.html"><img class="club-logo" src="../assets/images/arcadia-club-logo.png" alt="아르카디아 동아리 로고"><span>ARCADIA / LAB</span></a><a class="ar-return" href="../2d.html">실험 목록</a></nav>
 
-    <div id="webgl-container"></div>
+<div id="webgl-container"></div>
 
     <!-- 상단 바 -->
     <div class="header-bar">
         <div class="header-left">
-            <a href="../2d.html" class="back-btn">
-                ← 실험 목록
-            </a>
+
             <div class="title-group">
                 <h1 id="cellTitle">🧬 3D 인터랙티브 동물세포 모델</h1>
             </div>
@@ -577,11 +576,11 @@
             scene = new THREE.Scene();
             scene.fog = new THREE.FogExp2(0x020617, 0.005);
 
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera = new THREE.PerspectiveCamera(45, document.getElementById('webgl-container').clientWidth / document.getElementById('webgl-container').clientHeight, 0.1, 1000);
             camera.position.set(0, 15, 55);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setSize(document.getElementById('webgl-container').clientWidth, document.getElementById('webgl-container').clientHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -1217,12 +1216,11 @@
         // 마우스 클릭 시 레이캐스팅 (세포막/세포벽 제외하고 소기관 직접 타겟팅)
         function onClick(event) {
             // UI 영역 클릭 무시
-            if (event.clientY < 70 || event.clientY > window.innerHeight - 70) return;
-            if (event.clientX < 160) return;
-            if (event.clientX > window.innerWidth - 380 && document.getElementById('organelleCard').classList.contains('open')) return;
+            if (event.target !== renderer.domElement) return;
 
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            const sceneRect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - sceneRect.left) / sceneRect.width) * 2 - 1;
+            mouse.y = -((event.clientY - sceneRect.top) / sceneRect.height) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
             
@@ -1247,8 +1245,9 @@
         }
 
         function onPointerMove(event) {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            const sceneRect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - sceneRect.left) / sceneRect.width) * 2 - 1;
+            mouse.y = -((event.clientY - sceneRect.top) / sceneRect.height) * 2 + 1;
         }
 
         // --- 8. 단백질 분비 경로 애니메이션 (Protein Secretion Pathway) ---
@@ -1408,9 +1407,9 @@
         }
 
         function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.aspect = document.getElementById('webgl-container').clientWidth / document.getElementById('webgl-container').clientHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setSize(document.getElementById('webgl-container').clientWidth, document.getElementById('webgl-container').clientHeight);
         }
 
         function animate(time) {
@@ -1444,5 +1443,6 @@
 
         window.onload = init;
     </script>
+<footer class="ar-lab-footer"><span>ARCADIA SCIENCE CLUB</span><img src="../assets/images/overflow-team-logo.png" alt="OVERFLOW 팀 로고"></footer>
 </body>
 </html>
