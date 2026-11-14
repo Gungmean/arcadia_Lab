@@ -62,7 +62,9 @@
 .arcadia-instrument .principle { padding:24px 0; gap:14px 32px; }
 .arcadia-instrument .principle h2 { font-size:21px; }
 .arcadia-instrument .formula,
-.arcadia-instrument .law-reading strong { font-family:'Gmarket Sans',sans-serif; font-size:21px; color:var(--accent); }
+.arcadia-instrument .law-reading strong { font-family:Georgia,'Times New Roman',serif!important; font-size:21px; color:var(--accent); }
+.arcadia-instrument :is(.law-term strong,.law-operator) { font-family:Georgia,'Times New Roman',serif!important; }
+.arcadia-instrument .reaction-equation { font-family:Consolas,'Malgun Gothic',monospace!important; }
 .arcadia-instrument .principle .story { font-size:14px; }
 .arcadia-instrument .frame-head,
 .arcadia-instrument .frame-foot { background:#142058; font-size:11px; padding:15px 18px; color:var(--quiet); }
