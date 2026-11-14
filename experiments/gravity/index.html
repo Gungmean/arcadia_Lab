@@ -1,0 +1,3636 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1F1B8D">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%231F1B8D'/%3E%3Ccircle cx='32' cy='32' r='9' fill='%23fde047'/%3E%3Cellipse cx='32' cy='32' rx='22' ry='10' fill='none' stroke='%2360A5DF' stroke-width='3' transform='rotate(-24 32 32)'/%3E%3C/svg%3E">
+  <title>시공간 곡률 · 만유인력과 궤도 역학 실험실 | Arcadia Lab</title>
+  <link rel="stylesheet" href="../../assets/arcadia.css">
+  <link rel="stylesheet" href="../../assets/arcadia-instrument.css">
+  <style>.gravity-lab .tabs {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin-bottom: 18px;
+}
+
+.gravity-lab .tabs button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 13px 14px 16px;
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.gravity-lab .tabs button + button {
+  border-left: 1px solid var(--line);
+}
+
+.gravity-lab .tabs small {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+.gravity-lab .principle {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px 28px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 24px;
+}
+
+.gravity-lab .principle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gravity-lab .layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.48fr) minmax(330px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.gravity-lab .figure {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.gravity-lab .frame-head,
+.gravity-lab .frame-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.gravity-lab .stage {
+  position: relative;
+  height: 560px;
+  background: #070b18;
+}
+
+.gravity-lab[data-theme="light"] .stage {
+  background: #eff4fc;
+}
+
+.gravity-lab .stage canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.gravity-lab .stage[data-drag-mode="orbit"] canvas {
+  cursor: grab;
+}
+
+.gravity-lab .stage[data-drag-mode="orbit"] canvas:active {
+  cursor: grabbing;
+}
+
+.gravity-lab .stage-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.gravity-lab .stage-bar-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gravity-lab .stage-bar button {
+  font-size: 12px;
+  padding: 7px 11px;
+  min-height: 36px;
+}
+
+.gravity-lab .event-banner {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.gravity-lab .event-banner[hidden] {
+  display: none;
+}
+
+.gravity-lab .chart {
+  margin-top: 20px;
+  border: 1px solid var(--line);
+  padding: 18px;
+}
+
+.gravity-lab .chart-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.gravity-lab .chart-title span {
+  font-size: 11px;
+  color: var(--quiet);
+}
+
+.gravity-lab #energy-plot {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 900 / 280;
+  display: block;
+}
+
+.gravity-lab aside {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.gravity-lab .panel {
+  border: 1px solid var(--line);
+}
+
+.gravity-lab .panel h2 {
+  margin: 0 0 12px;
+}
+
+.gravity-lab .control {
+  margin: 15px 0;
+}
+
+.gravity-lab .control label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.gravity-lab .control output {
+  font-family: ui-monospace, Consolas, monospace;
+  color: var(--accent);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.gravity-lab input[type="range"] {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.gravity-lab .chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 14px;
+}
+
+.gravity-lab .chip-grid button {
+  font-size: 12px;
+  padding: 6px 10px;
+  min-height: 34px;
+}
+
+.gravity-lab .checks-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.gravity-lab .check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.gravity-lab .check-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+.gravity-lab .readouts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 10px;
+  margin: 14px 0;
+}
+
+.gravity-lab .readouts > div {
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+  min-width: 0;
+}
+
+.gravity-lab .readouts span {
+  display: block;
+}
+
+.gravity-lab .readouts strong {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 17px;
+  display: inline-block;
+}
+
+.gravity-lab .readouts small {
+  font-size: 10px;
+  color: var(--quiet);
+  margin-left: 3px;
+}
+
+.gravity-lab .energy-summary {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.gravity-lab .energy-row-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.gravity-lab .energy-row-line strong {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+}
+
+.gravity-lab .orbit-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+.gravity-lab .thrusters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.gravity-lab .thrusters button {
+  font-size: 12px;
+  padding: 7px 11px;
+  min-height: 36px;
+  flex: 1 1 auto;
+}
+
+.gravity-lab .table-section {
+  margin-top: 28px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.gravity-lab .table-scroll {
+  overflow-x: auto;
+  margin-top: 12px;
+}
+
+.gravity-lab table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.gravity-lab th,
+.gravity-lab td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.gravity-lab th {
+  color: var(--quiet);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.gravity-lab td.num {
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.gravity-lab .lower-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.gravity-lab .notebook-head,
+.gravity-lab .quiz-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.gravity-lab .records {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 12px;
+}
+
+.gravity-lab .record-item {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.gravity-lab .record-item strong {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.gravity-lab .quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.gravity-lab .quiz-options button {
+  text-align: left;
+  padding: 10px 13px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.gravity-lab .quiz-feedback {
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 10px 0;
+  color: var(--accent);
+}
+
+.gravity-lab details {
+  margin-top: 26px;
+  border-top: 1px solid var(--line);
+}
+
+.gravity-lab summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.gravity-lab .notes {
+  padding-bottom: 16px;
+  line-height: 1.9;
+  color: var(--quiet);
+  font-size: 13px;
+}
+
+.gravity-lab .notes p {
+  margin: 0 0 10px;
+}
+
+@media (max-width: 1120px) {
+  .gravity-lab .tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .gravity-lab .tabs button:nth-child(4) {
+    border-left: 0;
+  }
+  .gravity-lab .tabs button:nth-child(n+4) {
+    border-top: 1px solid var(--line);
+  }
+  .gravity-lab .principle {
+    grid-template-columns: 1fr;
+  }
+  .gravity-lab .layout {
+    grid-template-columns: 1fr;
+  }
+  .gravity-lab .lower-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 850px) {
+  .gravity-lab .tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .gravity-lab .tabs button {
+    border-left: 0 !important;
+    border-top: 1px solid var(--line);
+  }
+  .gravity-lab .tabs button:nth-child(-n+2) {
+    border-top: 0;
+  }
+  .gravity-lab .tabs button:nth-child(even) {
+    border-left: 1px solid var(--line) !important;
+  }
+  .gravity-lab .stage {
+    height: 390px;
+  }
+  .gravity-lab .readouts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .gravity-lab .checks-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body class="arcadia-instrument gravity-lab" data-theme="dark">
+  <div class="wrap">
+    <nav class="instrument-nav" aria-label="아르카디아 실험실">
+      <a class="brand brand-lockup" href="../../index.html">
+        <img class="club-logo" src="../../assets/images/arcadia-club-logo.png" alt="아르카디아 동아리 로고">
+        <span>ARCADIA / LAB</span>
+      </a>
+      <div class="nav-actions">
+        <a class="back-link" href="../../2d.html">실험 목록</a>
+        <a class="back-link" href="#kepler-table-section">궤도 비교표</a>
+        <a class="back-link" href="#notebook-section">관찰 노트</a>
+        <button id="theme" type="button" aria-label="밝은 테마로 전환">밝은 테마</button>
+      </div>
+    </nav>
+
+    <header>
+      <h1>시공간 곡률·만유인력과 궤도 역학은 어떻게 작동할까?</h1>
+      <p class="course">지구과학 II · 물리학 II · 만유인력과 케플러 법칙, 일반상대론 세차, 로슈 한계</p>
+      <p>질량이 시공간을 휘게 만드는 3D 중력 우물을 기울여 관찰하고, 직접 새 천체를 슬링샷 발사하거나 탐사선의 Δv를 분사해 궤도 역학을 실험해 보세요.</p>
+    </header>
+
+    <main>
+      <div class="tabs" role="group" aria-label="중력 시뮬레이션 실험 선택">
+        <button type="button" data-scenario="kepler" aria-pressed="true"><small>01</small>케플러 타원</button><button type="button" data-scenario="blackhole" aria-pressed="false"><small>02</small>블랙홀 세차</button><button type="button" data-scenario="binary" aria-pressed="false"><small>03</small>쌍성계·로슈 엽</button><button type="button" data-scenario="figure8" aria-pressed="false"><small>04</small>3체 8자 카오스</button><button type="button" data-scenario="roche" aria-pressed="false"><small>05</small>로슈 한계 고리</button><button type="button" data-scenario="hohmann" aria-pressed="false"><small>06</small>호만 전이·스윙바이</button>
+      </div>
+
+      <section class="principle" aria-live="polite">
+        <div>
+          <span class="eyebrow" id="principle-kicker"></span>
+          <h2 id="principle-title"></h2>
+          <p id="principle-caption"></p>
+        </div>
+        <div>
+          <div class="formula" id="main-formula"></div>
+          <p id="story" class="story"></p>
+        </div>
+        <div class="principle-actions">
+          <button id="special-action" type="button" hidden></button>
+        </div>
+      </section>
+
+      <div class="layout">
+        <section aria-label="3D 시공간 중력 시뮬레이터">
+          <div class="figure">
+            <div class="frame-head">
+              <span id="stage-title-bar">케플러 타원 · 천체 4개</span>
+              <output id="clock-out">t = 0.00 yr · ΔE/E = 0.0000%</output>
+            </div>
+            <div class="stage" id="stage" data-drag-mode="slingshot">
+              <canvas id="space-canvas" width="900" height="620" aria-label="시공간 곡률과 중력 궤도 실시간 시뮬레이션 캔버스"></canvas>
+            </div>
+            <div class="stage-bar">
+              <div class="stage-bar-group">
+                <button id="play-btn" type="button" aria-pressed="true">Ⅱ 일시정지</button>
+                <button id="step-btn" type="button">한 걸음</button>
+                <button id="reset-btn" type="button">초기 상태</button>
+              </div>
+              <div class="stage-bar-group">
+                <button id="zoom-in-btn" type="button" aria-label="화면 확대">＋ 확대</button>
+                <button id="zoom-out-btn" type="button" aria-label="화면 축소">－ 축소</button>
+                <button id="cam-reset-btn" type="button">시점 초기화</button>
+              </div>
+            </div>
+            <div class="frame-foot">
+              <span>드래그: 새 천체 슬링샷 발사 (우클릭 드래그 또는 시점 모드: 3D 회전)</span>
+              <span>천체 클릭: 추적 및 Δv 추진</span>
+            </div>
+          </div>
+
+          <div id="event-banner" class="event-banner" role="status" hidden></div>
+
+          <section class="chart" aria-label="역학적 에너지 보존 그래프">
+            <div class="chart-title">
+              <h2>실시간 역학적 에너지 변화 (K + U = E)</h2>
+              <span>E &lt; 0: 속박 궤도 · E ≥ 0: 중력 탈출</span>
+            </div>
+            <canvas id="energy-plot" width="900" height="280" aria-label="시간에 따른 운동에너지, 위치에너지, 총 역학적 에너지 변화 그래프"></canvas>
+          </section>
+        </section>
+
+        <aside>
+          <section class="panel" aria-label="시뮬레이션 조작 및 천체 발사">
+            <h2>시점·중력장 조작</h2>
+            <div>
+              <span class="caption">마우스·터치 드래그 동작</span>
+              <div class="chip-grid" role="group" aria-label="캔버스 드래그 모드">
+                <button id="mode-slingshot" type="button" aria-pressed="true">슬링샷 발사</button>
+                <button id="mode-orbit" type="button" aria-pressed="false">3D 시점 회전</button>
+              </div>
+            </div>
+
+            <div>
+              <span class="caption">슬링샷으로 던질 천체</span>
+              <div id="template-chips" class="chip-grid" role="group" aria-label="발사할 천체 종류">
+                <button type="button" data-template="probe" aria-pressed="false">탐사선</button><button type="button" data-template="asteroid" aria-pressed="false">혜성</button><button type="button" data-template="terrestrial" aria-pressed="true">지구형 행성</button><button type="button" data-template="gasGiant" aria-pressed="false">목성형 행성</button><button type="button" data-template="star" aria-pressed="false">항성</button><button type="button" data-template="blackHole" aria-pressed="false">블랙홀</button>
+              </div>
+            </div>
+
+            <div class="control">
+              <label for="pitch-slider">3D 시점 기울기 (피치) <output id="pitch-out">42°</output></label>
+              <input id="pitch-slider" type="range" min="0" max="76" step="1" value="42">
+            </div>
+
+            <div class="control">
+              <label for="well-slider">시공간 중력 우물 깊이 <output id="well-out">0.90×</output></label>
+              <input id="well-slider" type="range" min="0" max="1.6" step="0.05" value="0.9">
+            </div>
+
+            <div class="control">
+              <label for="mass-slider">중심 천체 질량 배율 <output id="mass-out">1.00×</output></label>
+              <input id="mass-slider" type="range" min="0.2" max="3.5" step="0.05" value="1">
+            </div>
+
+            <div class="control">
+              <label for="speed-slider">시간 배속 <output id="speed-out">1.00×</output></label>
+              <input id="speed-slider" type="range" min="0.25" max="4" step="0.25" value="1">
+            </div>
+
+            <div class="checks-grid">
+              <label class="check-item" for="opt-grid"><input id="opt-grid" type="checkbox" checked>시공간 곡률 격자</label>
+              <label class="check-item" for="opt-equi"><input id="opt-equi" type="checkbox">등퍼텐셜선(로슈 엽)</label>
+              <label class="check-item" for="opt-field"><input id="opt-field" type="checkbox">중력장 벡터</label>
+              <label class="check-item" for="opt-kepler"><input id="opt-kepler" type="checkbox" checked>케플러 면적 구간</label>
+              <label class="check-item" for="opt-gr"><input id="opt-gr" type="checkbox">일반상대론 세차(1PN)</label>
+              <label class="check-item" for="opt-collision"><input id="opt-collision" type="checkbox" checked>충돌 시 질량 병합</label>
+            </div>
+          </section>
+
+          <section class="panel" aria-label="선택 천체 궤도 요소 및 추력 제어">
+            <h2>선택 천체 궤도 측정기</h2>
+            <div id="body-chips" class="chip-grid" role="group" aria-label="관찰 천체 선택"></div>
+            <label class="check-item" for="follow-check"><input id="follow-check" type="checkbox">카메라가 선택 천체 따라가기</label>
+
+            <p class="caption" style="margin:10px 0 4px">대상: <strong id="sel-name"></strong></p>
+            <div class="readouts">
+              <div><span>공전 속력 v</span><strong id="val-speed">—</strong><small>km/s</small></div>
+              <div><span>중심 거리 r</span><strong id="val-dist">—</strong><small>AU</small></div>
+              <div><span>이심률 e</span><strong id="val-ecc">—</strong><small></small></div>
+              <div><span>반장축 a</span><strong id="val-a">—</strong><small>AU</small></div>
+              <div><span>공전 주기 T</span><strong id="val-period">—</strong><small>yr</small></div>
+              <div><span>탈출 속력 v_esc</span><strong id="val-vesc">—</strong><small>km/s</small></div>
+            </div>
+
+            <div class="energy-summary">
+              <div class="energy-row-line"><span>운동에너지 K</span><strong id="e-k">—</strong></div>
+              <div class="energy-row-line"><span>위치에너지 U</span><strong id="e-u">—</strong></div>
+              <div class="energy-row-line"><span>총 역학적 에너지 E</span><strong id="e-tot">—</strong></div>
+              <div class="energy-row-line"><span>궤도 판정</span><span id="orbit-state-badge" class="orbit-badge">—</span></div>
+            </div>
+
+            <div>
+              <span class="caption">추력기 분사 (선택 천체 Δv 조작)</span>
+              <div class="thrusters">
+                <button id="thrust-pro" type="button">＋Δv 순방향 가속</button>
+                <button id="thrust-retro" type="button">－Δv 역추진 감속</button>
+                <button id="thrust-circ" type="button">원궤도 속력 맞추기</button>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <section id="kepler-table-section" class="table-section" aria-label="케플러 제3법칙 검증표">
+        <h2>전체 천체 궤도 요소 &amp; 케플러 제3법칙(T² / a³)</h2>
+        <p class="caption">태양 질량(1.0 M☉) 중심의 속박 궤도에서는 반장축의 세제곱과 주기의 제곱의 비 T²/a³가 항상 1.000 yr²/AU³로 일정합니다.</p>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">천체</th>
+                <th scope="col">반장축 a</th>
+                <th scope="col">이심률 e</th>
+                <th scope="col">주기 T</th>
+                <th scope="col">T² / a³</th>
+                <th scope="col">현재 속력 v</th>
+                <th scope="col">상태</th>
+              </tr>
+            </thead>
+            <tbody id="kepler-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="notebook-section" class="lower-grid" aria-label="관찰 노트 및 개념 확인">
+        <div class="panel">
+          <div class="notebook-head">
+            <h2>탐구 관찰 노트</h2>
+            <div class="stage-bar-group">
+              <button id="record-btn" type="button">＋ 현재 궤도 기록</button>
+              <button id="csv-btn" type="button">CSV 저장 ↓</button>
+            </div>
+          </div>
+          <p class="caption">슬링샷 발사, Δv 전이, 세차 운동 관찰 순간을 스냅샷으로 저장하고 CSV로 내보낼 수 있습니다.</p>
+          <div id="records-list" class="records"></div>
+        </div>
+
+        <div class="panel">
+          <div class="quiz-head">
+            <h2>핵심 개념 확인 퀴즈</h2>
+            <span id="quiz-counter" class="caption">1 / 5</span>
+          </div>
+          <p id="quiz-question"></p>
+          <div id="quiz-options" class="quiz-options"></div>
+          <p id="quiz-feedback" class="quiz-feedback" role="status"></p>
+          <button id="quiz-next" type="button" hidden>다음 문제 →</button>
+        </div>
+      </section>
+
+      <details>
+        <summary>물리 모형, 수치 적분 및 근사 가정 안내</summary>
+        <div class="notes">
+          <p><strong>수치 적분 및 단위계:</strong> 궤도 계산은 에너지와 각운동량을 장시간 정밀하게 보존하는 4차 심플렉틱 요시다(Yoshida) 적분기를 사용합니다. 표준 천문 단위계(길이 AU, 질량 M☉, 시간 yr, G = 4π²)를 사용하여 1 AU 원궤도 주기 T = 1.000 yr, 속력 v = 29.78 km/s를 정확히 재현합니다.</p>
+          <p><strong>시공간 곡률 우물(3D 격자):</strong> 2차원 공전 평면 위의 중력 퍼텐셜 Φ(x,y)를 로그 척도 깊이 z = −k·ln(1 + |Φ|/14)로 변환하여 3차원 시공간 깔때기처럼 시각화한 교육용 표현입니다. 실제 일반상대론의 4차원 리만 계량 텐서 곡률을 1:1 축척으로 그린 것은 아닙니다.</p>
+          <p><strong>블랙홀 세차 및 로슈 한계:</strong> 일반상대론 근일점 세차는 유효 퍼텐셜 보정 V_GR(r) = −GML²/(c_eff² r³)을 적용하며, 수 분 안에 세차 꽃잎(Rosette) 무늬를 관찰할 수 있도록 블랙홀 프리셋에서는 유효 광속 c_eff를 과장된 상대론적 영역으로 설정했습니다. 로슈 한계 고리는 위성이 d &lt; d_R 진입 시 정성적 조석 전단 속도를 가진 72개의 고리 입자로 분열되는 교육용 모형입니다.</p>
+          <p>참고 자료: <span id="sources-links"></span></p>
+        </div>
+      </details>
+    </main>
+
+    <footer class="lab-footer">
+      <div class="footer-meta">
+        <span>ARCADIA LAB / 시공간 곡률·만유인력과 궤도 역학</span>
+        <a href="../star_evolution.html">별의 진화와 블랙홀 생성 →</a>
+      </div>
+      <img class="team-logo" src="../../assets/images/overflow-team-logo.png" alt="OVERFLOW 팀 로고">
+    </footer>
+  </div>
+  <script>const G0 = 4 * Math.PI * Math.PI; // AU^3 / (M_sun * yr^2)
+const AU_PER_YR_TO_KMS = 4.74047046; // 1 AU/yr in km/s
+
+const BODY_TEMPLATES = {
+  probe: {
+    idPrefix: 'probe',
+    label: '탐사선',
+    kind: 'probe',
+    mass: 1e-7,
+    radius: 0.06,
+    color: '#38bdf8',
+    trailColor: '#60a5df'
+  },
+  asteroid: {
+    idPrefix: 'comet',
+    label: '혜성·소행성',
+    kind: 'comet',
+    mass: 1e-6,
+    radius: 0.075,
+    color: '#e2e8f0',
+    trailColor: '#94a3b8'
+  },
+  terrestrial: {
+    idPrefix: 'planet',
+    label: '지구형 행성',
+    kind: 'planet',
+    mass: 3e-5,
+    radius: 0.11,
+    color: '#34d399',
+    trailColor: '#10b981'
+  },
+  gasGiant: {
+    idPrefix: 'giant',
+    label: '목성형 행성',
+    kind: 'giant',
+    mass: 0.025,
+    radius: 0.17,
+    color: '#fbbf24',
+    trailColor: '#f59e0b'
+  },
+  star: {
+    idPrefix: 'star',
+    label: '항성',
+    kind: 'star',
+    mass: 0.7,
+    radius: 0.24,
+    color: '#fde047',
+    trailColor: '#facc15'
+  },
+  blackHole: {
+    idPrefix: 'bh',
+    label: '블랙홀',
+    kind: 'blackhole',
+    mass: 2.2,
+    radius: 0.16,
+    color: '#a855f7',
+    trailColor: '#c084fc'
+  }
+};
+
+const SCENARIOS = {
+  kepler: {
+    id: 'kepler',
+    shortTitle: '케플러 타원',
+    title: '케플러 법칙과 타원 궤도',
+    subtitle: '근일점과 원일점에서 속력이 변해도 같은 시간 동안 쓸고 간 면적과 총 역학적 에너지 E는 보존됩니다.',
+    formula: 'T² / a³ = 4π² / GM   ·   dA / dt = L / (2m) = 일정',
+    worldExtent: 3.8,
+    baseDt: 0.004,
+    softening: 0.015,
+    defaultPitch: 42,
+    defaultWellDepth: 0.9,
+    defaults: {
+      grid: true,
+      equipotential: false,
+      field: false,
+      keplerSectors: true,
+      relativity: false,
+      collisions: true
+    },
+    selectedBodyId: 'comet',
+    createBodies() {
+      const mSun = 1.0;
+      const vEarth = Math.sqrt(G0 * mSun / 1.0);
+      // Eccentricity e = 0.60, rp = 0.72 AU, ra = 2.88 AU -> a = 1.80 AU
+      const rpComet = 0.72;
+      const aComet = 1.80;
+      const vComet = Math.sqrt(G0 * mSun * (2 / rpComet - 1 / aComet));
+      const rOuter = 2.35;
+      const vOuter = Math.sqrt(G0 * mSun / rOuter);
+      return [
+        {
+          id: 'sun',
+          name: '중심 항성 (1.0 M☉)',
+          kind: 'star',
+          isPrimary: true,
+          mass: mSun,
+          radius: 0.22,
+          x: 0, y: 0, vx: 0, vy: 0,
+          color: '#fde047',
+          trailColor: '#facc15'
+        },
+        {
+          id: 'earth',
+          name: '행성 A (원 궤도)',
+          kind: 'planet',
+          mass: 3e-6,
+          radius: 0.10,
+          x: 1.0, y: 0, vx: 0, vy: vEarth,
+          color: '#38bdf8',
+          trailColor: '#60a5df'
+        },
+        {
+          id: 'comet',
+          name: '혜성 B (이심률 0.60)',
+          kind: 'comet',
+          mass: 1e-6,
+          radius: 0.085,
+          x: rpComet, y: 0, vx: 0, vy: vComet,
+          color: '#f8fafc',
+          trailColor: '#bae6fd'
+        },
+        {
+          id: 'outer',
+          name: '외행성 C (a = 2.35 AU)',
+          kind: 'giant',
+          mass: 9e-4,
+          radius: 0.15,
+          x: -rOuter * 0.7, y: rOuter * Math.sqrt(1 - 0.49),
+          vx: -vOuter * Math.sqrt(1 - 0.49), vy: -vOuter * 0.7,
+          color: '#fbbf24',
+          trailColor: '#f59e0b'
+        }
+      ];
+    }
+  },
+
+  blackhole: {
+    id: 'blackhole',
+    shortTitle: '블랙홀 세차',
+    title: '블랙홀 강착과 일반상대론 근일점 세차',
+    subtitle: '강한 중력장에서는 뉴턴 역학의 닫힌 타원이 유지되지 않고 근일점이 공전 방향으로 서서히 회전(세차 운동)합니다.',
+    formula: 'Δω ≈ 6πGM / [a(1 − e²) c²]   ·   V_eff(r) = −GM/r − GML²/(c²r³)',
+    worldExtent: 3.4,
+    baseDt: 0.0032,
+    softening: 0.02,
+    cEff: 62.0,
+    defaultPitch: 56,
+    defaultWellDepth: 1.25,
+    defaults: {
+      grid: true,
+      equipotential: false,
+      field: false,
+      keplerSectors: false,
+      relativity: true,
+      collisions: true
+    },
+    selectedBodyId: 's2star',
+    createBodies() {
+      const mBH = 2.5;
+      const rp = 0.63;
+      const a = 1.50;
+      const vS2 = Math.sqrt(G0 * mBH * (2 / rp - 1 / a));
+      const rOuter = 2.35;
+      const vOuter = Math.sqrt(G0 * mBH / rOuter);
+      return [
+        {
+          id: 'bh',
+          name: '초대질량 블랙홀',
+          kind: 'blackhole',
+          isPrimary: true,
+          mass: mBH,
+          radius: 0.21,
+          x: 0, y: 0, vx: 0, vy: 0,
+          color: '#a855f7',
+          trailColor: '#c084fc'
+        },
+        {
+          id: 's2star',
+          name: '근접 항성 S2 (세차)',
+          kind: 'star',
+          mass: 4e-4,
+          radius: 0.105,
+          x: rp, y: 0, vx: 0, vy: vS2,
+          color: '#60a5df',
+          trailColor: '#60a5df'
+        },
+        {
+          id: 'outer_bh',
+          name: '외곽 항성',
+          kind: 'planet',
+          mass: 2e-4,
+          radius: 0.09,
+          x: -rOuter, y: 0, vx: 0, vy: -vOuter,
+          color: '#34d399',
+          trailColor: '#34d399'
+        }
+      ];
+    },
+    createInitialParticles() {
+      // Swirling accretion disk particles around central black hole
+      const parts = [];
+      const mBH = 2.5;
+      for (let i = 0; i < 68; i++) {
+        const frac = i / 68;
+        const r = 0.34 + 0.56 * Math.pow(frac, 0.85);
+        const ang = i * 2.399963; // golden angle spiral
+        const v = Math.sqrt(G0 * mBH / r);
+        parts.push({
+          x: Math.cos(ang) * r,
+          y: Math.sin(ang) * r,
+          vx: -Math.sin(ang) * v,
+          vy: Math.cos(ang) * v,
+          size: 1.6 + (1 - frac) * 1.4,
+          color: frac < 0.35 ? '#fef08a' : frac < 0.7 ? '#fb923c' : '#c084fc',
+          alpha: 0.55 + (1 - frac) * 0.35
+        });
+      }
+      return parts;
+    }
+  },
+
+  binary: {
+    id: 'binary',
+    shortTitle: '쌍성계·로슈 엽',
+    title: '쌍성계 질량 중심 공전과 등퍼텐셜 로슈 엽',
+    subtitle: '두 별은 공통 질량 중심(Barycenter)을 중심으로 서로 끌어당기며 돌고, 등퍼텐셜선은 라그랑주 점과 로슈 엽을 드러냅니다.',
+    formula: 'm₁r₁ = m₂r₂   ·   Φ(r) = −G(m₁/r₁ + m₂/r₂)',
+    worldExtent: 4.0,
+    baseDt: 0.0035,
+    softening: 0.02,
+    defaultPitch: 44,
+    defaultWellDepth: 0.95,
+    defaults: {
+      grid: true,
+      equipotential: true,
+      field: false,
+      keplerSectors: false,
+      relativity: false,
+      collisions: true
+    },
+    selectedBodyId: 'starB',
+    createBodies() {
+      const m1 = 1.2;
+      const m2 = 0.6;
+      const mt = m1 + m2;
+      const sep = 1.15;
+      const vRel = Math.sqrt(G0 * mt / sep);
+      const x1 = -sep * (m2 / mt);
+      const x2 = sep * (m1 / mt);
+      const vy1 = -vRel * (m2 / mt);
+      const vy2 = vRel * (m1 / mt);
+      const rCircumbinary = 2.65;
+      const vPlanet = Math.sqrt(G0 * mt / rCircumbinary);
+      return [
+        {
+          id: 'starA',
+          name: '주성 A (1.2 M☉)',
+          kind: 'star',
+          isPrimary: true,
+          mass: m1,
+          radius: 0.20,
+          x: x1, y: 0, vx: 0, vy: vy1,
+          color: '#fde047',
+          trailColor: '#facc15'
+        },
+        {
+          id: 'starB',
+          name: '반성 B (0.6 M☉)',
+          kind: 'star',
+          mass: m2,
+          radius: 0.155,
+          x: x2, y: 0, vx: 0, vy: vy2,
+          color: '#fb923c',
+          trailColor: '#fb7185'
+        },
+        {
+          id: 'circumbinary',
+          name: '쌍성 주위 행성',
+          kind: 'planet',
+          mass: 2e-5,
+          radius: 0.105,
+          x: 0, y: rCircumbinary, vx: -vPlanet, vy: 0,
+          color: '#38bdf8',
+          trailColor: '#60a5df'
+        }
+      ];
+    }
+  },
+
+  figure8: {
+    id: 'figure8',
+    shortTitle: '3체 8자 카오스',
+    title: '삼체 문제: 8자 주기 궤도와 결정론적 카오스',
+    subtitle: '동일 질량의 세 별이 완벽한 8자(Figure-8) 궤도를 추다가, 초기 속력을 0.5%만 섭동해도 혼돈 산란으로 붕괴합니다.',
+    formula: 'aᵢ = Σⱼ≠ᵢ G mⱼ (rⱼ − rᵢ) / |rⱼ − rᵢ|³   (초기 조건에 극도로 민감)',
+    worldExtent: 2.8,
+    baseDt: 0.002,
+    softening: 1e-5,
+    defaultPitch: 36,
+    defaultWellDepth: 0.72,
+    defaults: {
+      grid: true,
+      equipotential: false,
+      field: false,
+      keplerSectors: false,
+      relativity: false,
+      collisions: false
+    },
+    selectedBodyId: 'body1',
+    createBodies() {
+      // Chenciner & Montgomery (2000) scaled to S = 1.45 AU, m = 1.0 M_sun, G = 4pi^2
+      const S = 1.45;
+      const vScale = Math.sqrt(G0 / S);
+      const x1 = 0.97000436 * S;
+      const y1 = -0.24308753 * S;
+      const vx3 = -0.93240737 * vScale;
+      const vy3 = -0.86473146 * vScale;
+      return [
+        {
+          id: 'body1',
+          name: '천체 1 (1.0 M☉)',
+          kind: 'star',
+          mass: 1.0,
+          radius: 0.145,
+          x: x1, y: y1, vx: -vx3 / 2, vy: -vy3 / 2,
+          color: '#60a5df',
+          trailColor: '#60a5df'
+        },
+        {
+          id: 'body2',
+          name: '천체 2 (1.0 M☉)',
+          kind: 'star',
+          mass: 1.0,
+          radius: 0.145,
+          x: -x1, y: -y1, vx: -vx3 / 2, vy: -vy3 / 2,
+          color: '#fde047',
+          trailColor: '#facc15'
+        },
+        {
+          id: 'body3',
+          name: '천체 3 (1.0 M☉)',
+          kind: 'star',
+          mass: 1.0,
+          radius: 0.145,
+          x: 0, y: 0, vx: vx3, vy: vy3,
+          color: '#f472b6',
+          trailColor: '#ba67f3'
+        }
+      ];
+    }
+  },
+
+  roche: {
+    id: 'roche',
+    shortTitle: '로슈 한계 고리',
+    title: '로슈 한계와 조석력에 의한 행성 고리 형성',
+    subtitle: '연약한 위성이 행성의 로슈 한계(d < d_R) 안으로 들어가면 조석력이 자체 중력을 이겨 산산조각 나며 고리를 형성합니다.',
+    formula: 'd_R ≈ 2.44 R_M (ρ_M / ρ_m)^(1/3)   ·   Δg_조석 ≈ 2GMR_m / d³',
+    worldExtent: 3.4,
+    baseDt: 0.003,
+    softening: 0.01,
+    rocheRadius: 1.48,
+    defaultPitch: 54,
+    defaultWellDepth: 0.9,
+    defaults: {
+      grid: true,
+      equipotential: false,
+      field: false,
+      keplerSectors: false,
+      relativity: false,
+      collisions: true
+    },
+    selectedBodyId: 'moon_fragile',
+    createBodies() {
+      const mGiant = 1.2;
+      // Start fragile icy moon approaching perihelion below d_R = 1.48 AU so it enters Roche zone within ~0.6 yr
+      const r0 = 1.85;
+      const mu = G0 * mGiant;
+      // Tangential + slight inward velocity placing periapsis at ~1.10 AU (< 1.48 AU)
+      const vCirc = Math.sqrt(mu / r0);
+      const vx0 = -vCirc * 0.42;
+      const vy0 = vCirc * 0.74;
+      const rOuter = 2.65;
+      const vOuter = Math.sqrt(mu / rOuter);
+      return [
+        {
+          id: 'giant',
+          name: '모행성 (거대 가스 행성)',
+          kind: 'giant',
+          isPrimary: true,
+          mass: mGiant,
+          radius: 0.44,
+          x: 0, y: 0, vx: 0, vy: 0,
+          color: '#fbbf24',
+          trailColor: '#f59e0b'
+        },
+        {
+          id: 'moon_fragile',
+          name: '얼음 위성 (로슈 한계 접근)',
+          kind: 'comet',
+          fragile: true,
+          rocheTargetId: 'giant',
+          rocheLimit: 1.48,
+          mass: 1e-5,
+          radius: 0.115,
+          x: r0, y: 0, vx: vx0, vy: vy0,
+          color: '#7dd3fc',
+          trailColor: '#38bdf8'
+        },
+        {
+          id: 'shepherd',
+          name: '안정 외곽 위성',
+          kind: 'planet',
+          mass: 2e-5,
+          radius: 0.095,
+          x: 0, y: -rOuter, vx: vOuter, vy: 0,
+          color: '#a7f3d0',
+          trailColor: '#34d399'
+        }
+      ];
+    }
+  },
+
+  hohmann: {
+    id: 'hohmann',
+    shortTitle: '호만 전이·스윙바이',
+    title: '호만 전이 궤도와 중력 도움(스윙바이)',
+    subtitle: '탐사선의 Δv 분사 버튼을 눌러 근지점에서 순방향 가속(타원 팽창) 또는 원궤도 진입을 직접 조종해 보세요.',
+    formula: 'Δv₁ = √(μ/r₁)[√(2r₂/(r₁+r₂)) − 1]   ·   E = K + U = −GMm/(2a)',
+    worldExtent: 3.6,
+    baseDt: 0.0035,
+    softening: 0.015,
+    defaultPitch: 32,
+    defaultWellDepth: 0.85,
+    defaults: {
+      grid: true,
+      equipotential: false,
+      field: true,
+      keplerSectors: false,
+      relativity: false,
+      collisions: true
+    },
+    selectedBodyId: 'spacecraft',
+    createBodies() {
+      const mSun = 1.0;
+      const r1 = 0.95;
+      const r2 = 2.40;
+      const v1 = Math.sqrt(G0 * mSun / r1);
+      const v2 = Math.sqrt(G0 * mSun / r2);
+      return [
+        {
+          id: 'sun',
+          name: '중심 항성 (1.0 M☉)',
+          kind: 'star',
+          isPrimary: true,
+          mass: mSun,
+          radius: 0.21,
+          x: 0, y: 0, vx: 0, vy: 0,
+          color: '#fde047',
+          trailColor: '#facc15'
+        },
+        {
+          id: 'inner_planet',
+          name: '출발 행성 (r₁ = 0.95 AU)',
+          kind: 'planet',
+          mass: 3e-5,
+          radius: 0.10,
+          x: r1, y: 0, vx: 0, vy: v1,
+          color: '#34d399',
+          trailColor: '#10b981'
+        },
+        {
+          id: 'spacecraft',
+          name: '아르카디아 탐사선',
+          kind: 'probe',
+          mass: 1e-8,
+          radius: 0.085,
+          x: r1 * 0.96, y: 0.28, vx: -v1 * 0.28, vy: v1 * 0.96,
+          color: '#38bdf8',
+          trailColor: '#60a5df'
+        },
+        {
+          id: 'target_giant',
+          name: '목표 거대행성 (r₂ = 2.40 AU)',
+          kind: 'giant',
+          mass: 0.035,
+          radius: 0.185,
+          x: -r2 * 0.65, y: r2 * Math.sqrt(1 - 0.65 * 0.65),
+          vx: -v2 * Math.sqrt(1 - 0.65 * 0.65), vy: -v2 * 0.65,
+          color: '#fbbf24',
+          trailColor: '#f59e0b'
+        }
+      ];
+    }
+  }
+};
+
+function createSimulation(scenarioId = 'kepler', overrides = {}) {
+  const scenario = SCENARIOS[scenarioId] || SCENARIOS.kepler;
+  const bodies = scenario.createBodies().map((b, index) => ({
+    ...b,
+    baseMass: b.mass,
+    trail: [{ x: b.x, y: b.y }],
+    burnTimer: 0,
+    order: index
+  }));
+  const particles = scenario.createInitialParticles ? scenario.createInitialParticles() : [];
+
+  const sim = {
+    scenarioId: scenario.id,
+    scenario,
+    t: 0,
+    dt: scenario.baseDt,
+    softening: scenario.softening ?? 0.015,
+    cEff: scenario.cEff ?? 80.0,
+    gScale: overrides.gScale ?? 1.0,
+    centralMassScale: overrides.centralMassScale ?? 1.0,
+    worldExtent: scenario.worldExtent ?? 3.6,
+    relativityEnabled: overrides.relativityEnabled ?? scenario.defaults.relativity,
+    collisionsEnabled: overrides.collisionsEnabled ?? scenario.defaults.collisions,
+    tidalEnabled: overrides.tidalEnabled ?? true,
+    keplerEnabled: overrides.keplerEnabled ?? scenario.defaults.keplerSectors,
+    bodies,
+    particles,
+    events: [],
+    nextSpawnCounter: 1,
+    selectedBodyId: scenario.selectedBodyId || bodies[0]?.id || null,
+    // Kepler 2nd law swept sectors
+    keplerSectors: [],
+    currentSector: null,
+    sectorInterval: 0.12,
+    sectorElapsed: 0,
+    sectorPaletteIndex: 0,
+    rocheTriggered: false,
+    initialEnergy: 0
+  };
+
+  sim.initialEnergy = computeSystemEnergy(sim).total;
+  return sim;
+}
+
+function getPrimaryBody(sim) {
+  if (!sim.bodies.length) return null;
+  const flagged = sim.bodies.find(b => b.isPrimary);
+  if (flagged) return flagged;
+  let best = sim.bodies[0];
+  for (const b of sim.bodies) {
+    if (b.mass > best.mass) best = b;
+  }
+  return best;
+}
+
+function applyCentralMassScale(sim, factor) {
+  sim.centralMassScale = factor;
+  const primary = getPrimaryBody(sim);
+  if (primary && typeof primary.baseMass === 'number') {
+    primary.mass = primary.baseMass * factor;
+  }
+}
+
+function selectBody(sim, bodyId) {
+  if (sim.selectedBodyId === bodyId) return;
+  sim.selectedBodyId = bodyId;
+  sim.keplerSectors = [];
+  sim.currentSector = null;
+  sim.sectorElapsed = 0;
+}
+
+function computeAccelerations(bodies, sim, gEff, softeningSq) {
+  const n = bodies.length;
+  const ax = new Float64Array(n);
+  const ay = new Float64Array(n);
+
+  for (let i = 0; i < n; i++) {
+    const bi = bodies[i];
+    for (let j = i + 1; j < n; j++) {
+      const bj = bodies[j];
+      const dx = bj.x - bi.x;
+      const dy = bj.y - bi.y;
+      const r2 = dx * dx + dy * dy + softeningSq;
+      const invR3 = 1 / (r2 * Math.sqrt(r2));
+      const f = gEff * invR3;
+      ax[i] += f * bj.mass * dx;
+      ay[i] += f * bj.mass * dy;
+      ax[j] -= f * bi.mass * dx;
+      ay[j] -= f * bi.mass * dy;
+    }
+  }
+
+  // Optional 1PN General Relativity radial precession force relative to primary attractor
+  if (sim.relativityEnabled && n >= 2) {
+    const primaryIdx = bodies.findIndex(b => b.isPrimary);
+    const pIdx = primaryIdx >= 0 ? primaryIdx : 0;
+    const p = bodies[pIdx];
+    const c2 = sim.cEff * sim.cEff;
+    for (let i = 0; i < n; i++) {
+      if (i === pIdx) continue;
+      const b = bodies[i];
+      const rx = b.x - p.x;
+      const ry = b.y - p.y;
+      const r2 = rx * rx + ry * ry + softeningSq;
+      const r = Math.sqrt(r2);
+      const rvx = b.vx - p.vx;
+      const rvy = b.vy - p.vy;
+      const lz = rx * rvy - ry * rvx;
+      // Derived from V_GR(r) = -G M L^2 / (c^2 r^3) => a_GR = -3 G M L^2 / (c^2 r^5) * r_vec
+      const factor = (-3 * gEff * (p.mass + b.mass) * lz * lz) / (c2 * r2 * r2 * r);
+      const arx = factor * rx;
+      const ary = factor * ry;
+      ax[i] += arx;
+      ay[i] += ary;
+      if (p.mass > 0) {
+        const react = b.mass / p.mass;
+        ax[pIdx] -= arx * react;
+        ay[pIdx] -= ary * react;
+      }
+    }
+  }
+
+  return { ax, ay };
+}
+
+// 4th-order Symplectic Yoshida integrator constants
+const CBRT2 = Math.cbrt(2);
+const W1 = 1 / (2 - CBRT2);
+const W0 = -CBRT2 / (2 - CBRT2);
+const C_YOSHIDA = [W1 / 2, (W0 + W1) / 2, (W0 + W1) / 2, W1 / 2];
+const D_YOSHIDA = [W1, W0, W1];
+
+function stepBodiesYoshida(sim, h) {
+  const bodies = sim.bodies;
+  const n = bodies.length;
+  const gEff = G0 * sim.gScale;
+  const epsSq = sim.softening * sim.softening;
+
+  for (let stage = 0; stage < 3; stage++) {
+    const c = C_YOSHIDA[stage];
+    const d = D_YOSHIDA[stage];
+    for (let i = 0; i < n; i++) {
+      bodies[i].x += c * h * bodies[i].vx;
+      bodies[i].y += c * h * bodies[i].vy;
+    }
+    const { ax, ay } = computeAccelerations(bodies, sim, gEff, epsSq);
+    for (let i = 0; i < n; i++) {
+      bodies[i].vx += d * h * ax[i];
+      bodies[i].vy += d * h * ay[i];
+    }
+  }
+  const cLast = C_YOSHIDA[3];
+  for (let i = 0; i < n; i++) {
+    bodies[i].x += cLast * h * bodies[i].vx;
+    bodies[i].y += cLast * h * bodies[i].vy;
+  }
+
+  // Advance lightweight accretion/ring particles via Velocity Verlet
+  if (sim.particles.length > 0) {
+    const massive = bodies.filter(b => b.mass >= 1e-4 || b.isPrimary);
+    const sources = massive.length ? massive : bodies;
+    const pSoft = Math.max(epsSq, 0.0025);
+    for (let pIdx = 0; pIdx < sim.particles.length; pIdx++) {
+      const pt = sim.particles[pIdx];
+      let pax1 = 0, pay1 = 0;
+      for (let m = 0; m < sources.length; m++) {
+        const s = sources[m];
+        const dx = s.x - pt.x;
+        const dy = s.y - pt.y;
+        const r2 = dx * dx + dy * dy + pSoft;
+        const f = (gEff * s.mass) / (r2 * Math.sqrt(r2));
+        pax1 += f * dx;
+        pay1 += f * dy;
+      }
+      pt.x += pt.vx * h + 0.5 * pax1 * h * h;
+      pt.y += pt.vy * h + 0.5 * pay1 * h * h;
+      let pax2 = 0, pay2 = 0;
+      for (let m = 0; m < sources.length; m++) {
+        const s = sources[m];
+        const dx = s.x - pt.x;
+        const dy = s.y - pt.y;
+        const r2 = dx * dx + dy * dy + pSoft;
+        const f = (gEff * s.mass) / (r2 * Math.sqrt(r2));
+        pax2 += f * dx;
+        pay2 += f * dy;
+      }
+      pt.vx += 0.5 * (pax1 + pax2) * h;
+      pt.vy += 0.5 * (pay1 + pay2) * h;
+    }
+  }
+}
+
+function handleRocheDisruption(sim) {
+  if (!sim.tidalEnabled) return;
+  for (let i = sim.bodies.length - 1; i >= 0; i--) {
+    const moon = sim.bodies[i];
+    if (!moon.fragile || moon.disrupted) continue;
+    const target = sim.bodies.find(b => b.id === moon.rocheTargetId) || getPrimaryBody(sim);
+    if (!target || target === moon) continue;
+    const dx = moon.x - target.x;
+    const dy = moon.y - target.y;
+    const d = Math.hypot(dx, dy);
+    const rocheR = moon.rocheLimit ?? (target.radius * 3.36);
+    if (d <= rocheR) {
+      moon.disrupted = true;
+      const ux = dx / (d || 1);
+      const uy = dy / (d || 1);
+      const tx = -uy;
+      const ty = ux;
+      const gEff = G0 * sim.gScale;
+      const relVx = moon.vx - target.vx;
+      const relVy = moon.vy - target.vy;
+      const count = 72;
+      for (let k = 0; k < count; k++) {
+        const f = (k / (count - 1)) * 2 - 1; // [-1, 1] tidal elongation across moon diameter
+        const jitterR = ((k * 37) % 19 - 9) * 0.008;
+        const radialOffset = f * moon.radius * 1.45 + jitterR;
+        const tangentOffset = Math.sin(k * 1.7) * moon.radius * 0.45;
+        const px = moon.x + ux * radialOffset + tx * tangentOffset;
+        const py = moon.y + uy * radialOffset + ty * tangentOffset;
+        const rLocal = Math.hypot(px - target.x, py - target.y);
+        // Slightly spread Keplerian orbital speed differential -> shears smoothly into a ring
+        const keplerRatio = Math.sqrt(d / Math.max(0.4, rLocal));
+        const tangentialShear = ((k * 53) % 13 - 6) * 0.035;
+        const vx = target.vx + relVx * keplerRatio + tx * tangentialShear + ux * f * 0.14;
+        const vy = target.vy + relVy * keplerRatio + ty * tangentialShear + uy * f * 0.14;
+        sim.particles.push({
+          x: px,
+          y: py,
+          vx,
+          vy,
+          size: 1.5 + (k % 4) * 0.45,
+          color: k % 3 === 0 ? '#bae6fd' : k % 3 === 1 ? '#7dd3fc' : '#e0f2fe',
+          alpha: 0.72 + (k % 3) * 0.09
+        });
+      }
+      sim.bodies.splice(i, 1);
+      sim.rocheTriggered = true;
+      // Re-baseline energy after non-conservative tracer fragmentation into massless ring debris
+      sim.initialEnergy = computeSystemEnergy(sim).total;
+      sim.events.push({
+        t: sim.t,
+        kind: 'roche',
+        message: `${moon.name}이(가) 로슈 한계(${rocheR.toFixed(2)} AU) 안쪽에서 조석 분열하여 고리를 형성했습니다.`
+      });
+      if (sim.selectedBodyId === moon.id) {
+        sim.selectedBodyId = target.id;
+      }
+    }
+  }
+}
+
+function handleCollisions(sim) {
+  if (!sim.collisionsEnabled || sim.bodies.length < 2) return;
+  for (let i = 0; i < sim.bodies.length; i++) {
+    for (let j = i + 1; j < sim.bodies.length; j++) {
+      const a = sim.bodies[i];
+      const b = sim.bodies[j];
+      const d = Math.hypot(b.x - a.x, b.y - a.y);
+      const minSep = (a.radius + b.radius) * 0.72;
+      if (d < minSep) {
+        const keep = a.mass >= b.mass ? a : b;
+        const absorb = keep === a ? b : a;
+        const totalM = keep.mass + absorb.mass;
+        if (totalM > 0) {
+          keep.vx = (keep.mass * keep.vx + absorb.mass * absorb.vx) / totalM;
+          keep.vy = (keep.mass * keep.vy + absorb.mass * absorb.vy) / totalM;
+          keep.x = (keep.mass * keep.x + absorb.mass * absorb.x) / totalM;
+          keep.y = (keep.mass * keep.y + absorb.mass * absorb.y) / totalM;
+        }
+        keep.mass = totalM;
+        if (keep.kind !== 'blackhole') {
+          keep.radius = Math.min(0.45, Math.cbrt(Math.pow(keep.radius, 3) + Math.pow(absorb.radius, 3)));
+        }
+        const absorbIdx = sim.bodies.indexOf(absorb);
+        sim.bodies.splice(absorbIdx, 1);
+        // Re-baseline energy after inelastic mass merger
+        sim.initialEnergy = computeSystemEnergy(sim).total;
+        sim.events.push({
+          t: sim.t,
+          kind: 'collision',
+          message: `${absorb.name}이(가) ${keep.name}에 충돌 병합되었습니다.`
+        });
+        if (sim.selectedBodyId === absorb.id) {
+          sim.selectedBodyId = keep.id;
+        }
+        return;
+      }
+    }
+  }
+}
+
+function updateKeplerSectors(sim, stepDt) {
+  if (!sim.keplerEnabled) return;
+  const focus = getPrimaryBody(sim);
+  const body = sim.bodies.find(b => b.id === sim.selectedBodyId && b !== focus);
+  if (!focus || !body) {
+    sim.currentSector = null;
+    return;
+  }
+
+  const rx = body.x - focus.x;
+  const ry = body.y - focus.y;
+  if (!sim.currentSector) {
+    sim.currentSector = {
+      focusX: focus.x,
+      focusY: focus.y,
+      points: [{ x: rx, y: ry }],
+      lastSubX: rx,
+      lastSubY: ry,
+      area: 0,
+      colorIndex: sim.sectorPaletteIndex
+    };
+    sim.sectorElapsed = 0;
+    return;
+  }
+
+  const sec = sim.currentSector;
+  const prevSubX = sec.lastSubX;
+  const prevSubY = sec.lastSubY;
+  const remaining = sim.sectorInterval - sim.sectorElapsed;
+
+  if (sim.sectorElapsed + stepDt >= sim.sectorInterval - 1e-12) {
+    const frac = Math.min(1, Math.max(0, remaining / stepDt));
+    const bx = prevSubX + (rx - prevSubX) * frac;
+    const by = prevSubY + (ry - prevSubY) * frac;
+    sec.area += 0.5 * Math.abs(prevSubX * by - prevSubY * bx);
+    sec.points.push({ x: bx, y: by });
+    sec.focusX = focus.x;
+    sec.focusY = focus.y;
+    sim.keplerSectors.push(sec);
+    if (sim.keplerSectors.length > 6) {
+      sim.keplerSectors.shift();
+    }
+    sim.sectorPaletteIndex = (sim.sectorPaletteIndex + 1) % 6;
+
+    const leftoverArea = 0.5 * Math.abs(bx * ry - by * rx);
+    sim.currentSector = {
+      focusX: focus.x,
+      focusY: focus.y,
+      points: [{ x: bx, y: by }],
+      lastSubX: rx,
+      lastSubY: ry,
+      area: leftoverArea,
+      colorIndex: sim.sectorPaletteIndex
+    };
+    if (Math.hypot(rx - bx, ry - by) > 1e-6) {
+      sim.currentSector.points.push({ x: rx, y: ry });
+    }
+    sim.sectorElapsed = stepDt - remaining;
+  } else {
+    sec.area += 0.5 * Math.abs(prevSubX * ry - prevSubY * rx);
+    sec.lastSubX = rx;
+    sec.lastSubY = ry;
+    sec.focusX = focus.x;
+    sec.focusY = focus.y;
+    const pts = sec.points;
+    const lastSaved = pts[pts.length - 1];
+    if (Math.hypot(rx - lastSaved.x, ry - lastSaved.y) > 0.025) {
+      pts.push({ x: rx, y: ry });
+    }
+    sim.sectorElapsed += stepDt;
+  }
+}
+
+function stepSimulation(sim, totalDt, maxSubDt = 0.0025) {
+  const steps = Math.max(1, Math.ceil(totalDt / maxSubDt));
+  const h = totalDt / steps;
+  for (let s = 0; s < steps; s++) {
+    stepBodiesYoshida(sim, h);
+    sim.t += h;
+    updateKeplerSectors(sim, h);
+    handleRocheDisruption(sim);
+    handleCollisions(sim);
+  }
+
+  // Record orbital trails once per visual step
+  for (const b of sim.bodies) {
+    if (b.burnTimer > 0) b.burnTimer = Math.max(0, b.burnTimer - totalDt);
+    const last = b.trail[b.trail.length - 1];
+    if (!last || Math.hypot(b.x - last.x, b.y - last.y) > 0.025) {
+      b.trail.push({ x: b.x, y: b.y });
+      const maxTrail = sim.scenarioId === 'blackhole' ? 750 : 320;
+      if (b.trail.length > maxTrail) b.trail.shift();
+    }
+  }
+}
+
+function computeSystemEnergy(sim) {
+  const bodies = sim.bodies;
+  const gEff = G0 * sim.gScale;
+  const epsSq = sim.softening * sim.softening;
+  let kinetic = 0;
+  let potential = 0;
+  let totalMass = 0;
+  let cmX = 0;
+  let cmY = 0;
+
+  for (let i = 0; i < bodies.length; i++) {
+    const bi = bodies[i];
+    const v2 = bi.vx * bi.vx + bi.vy * bi.vy;
+    kinetic += 0.5 * bi.mass * v2;
+    totalMass += bi.mass;
+    cmX += bi.mass * bi.x;
+    cmY += bi.mass * bi.y;
+
+    for (let j = i + 1; j < bodies.length; j++) {
+      const bj = bodies[j];
+      const dx = bj.x - bi.x;
+      const dy = bj.y - bi.y;
+      const r = Math.sqrt(dx * dx + dy * dy + epsSq);
+      potential -= (gEff * bi.mass * bj.mass) / r;
+      if (sim.relativityEnabled) {
+        const primary = getPrimaryBody(sim);
+        if (bi === primary || bj === primary) {
+          const other = bi === primary ? bj : bi;
+          const rx = other.x - primary.x;
+          const ry = other.y - primary.y;
+          const rvx = other.vx - primary.vx;
+          const rvy = other.vy - primary.vy;
+          const lz = rx * rvy - ry * rvx;
+          potential -= (gEff * (primary.mass + other.mass) * other.mass * lz * lz) / (sim.cEff * sim.cEff * r * r * r);
+        }
+      }
+    }
+  }
+
+  const total = kinetic + potential;
+  const barycenter = totalMass > 0 ? { x: cmX / totalMass, y: cmY / totalMass } : { x: 0, y: 0 };
+  const drift = sim.initialEnergy !== 0 ? Math.abs((total - sim.initialEnergy) / sim.initialEnergy) : 0;
+  return { kinetic, potential, total, barycenter, drift };
+}
+
+function computeOrbitalElements(body, sim) {
+  if (!body) return null;
+  // Find dominant attractor other than the body itself
+  let primary = null;
+  let bestScore = -1;
+  for (const cand of sim.bodies) {
+    if (cand === body) continue;
+    const dx = body.x - cand.x;
+    const dy = body.y - cand.y;
+    const r2 = dx * dx + dy * dy + 1e-6;
+    const score = cand.mass / r2;
+    if (score > bestScore) {
+      bestScore = score;
+      primary = cand;
+    }
+  }
+  if (!primary) {
+    const v = Math.hypot(body.vx, body.vy);
+    return {
+      primary: null,
+      r: 0,
+      v,
+      speedKms: v * AU_PER_YR_TO_KMS,
+      vCirc: 0,
+      vEsc: 0,
+      specificKinetic: 0.5 * v * v,
+      specificPotential: 0,
+      specificEnergy: 0.5 * v * v,
+      angularMomentum: 0,
+      a: Infinity,
+      e: 0,
+      rp: 0,
+      ra: Infinity,
+      period: Infinity,
+      keplerRatio: null,
+      bound: false,
+      typeLabel: '단독 천체'
+    };
+  }
+
+  const gEff = G0 * sim.gScale;
+  const mu = gEff * (primary.mass + body.mass);
+  const rx = body.x - primary.x;
+  const ry = body.y - primary.y;
+  const vx = body.vx - primary.vx;
+  const vy = body.vy - primary.vy;
+  const r = Math.hypot(rx, ry);
+  const v2 = vx * vx + vy * vy;
+  const v = Math.sqrt(v2);
+
+  const specificKinetic = 0.5 * v2;
+  const specificPotential = -mu / Math.max(r, 1e-6);
+  const specificEnergy = specificKinetic + specificPotential;
+  const h = rx * vy - ry * vx;
+
+  // Eccentricity vector: e_vec = ((v^2 - mu/r) r_vec - (r.v) v_vec) / mu
+  const rdotv = rx * vx + ry * vy;
+  const ex = ((v2 - mu / Math.max(r, 1e-6)) * rx - rdotv * vx) / Math.max(mu, 1e-9);
+  const ey = ((v2 - mu / Math.max(r, 1e-6)) * ry - rdotv * vy) / Math.max(mu, 1e-9);
+  const e = Math.hypot(ex, ey);
+
+  const vCirc = Math.sqrt(mu / Math.max(r, 1e-6));
+  const vEsc = Math.sqrt(2 * mu / Math.max(r, 1e-6));
+
+  let a = Infinity;
+  let rp = r;
+  let ra = Infinity;
+  let period = Infinity;
+  let keplerRatio = null;
+  const bound = specificEnergy < 0 && e < 1;
+
+  if (bound) {
+    a = -mu / (2 * specificEnergy);
+    rp = a * (1 - e);
+    ra = a * (1 + e);
+    period = 2 * Math.PI * Math.sqrt((a * a * a) / mu);
+    keplerRatio = (period * period) / (a * a * a);
+  } else {
+    a = e > 1 ? -mu / (2 * Math.max(specificEnergy, 1e-9)) : Infinity;
+  }
+
+  let typeLabel = '탈출 쌍곡선 (E ≥ 0)';
+  if (bound) {
+    typeLabel = e < 0.03 ? '원형 궤도 (E < 0)' : '타원 궤도 (E < 0)';
+  } else if (Math.abs(e - 1) < 0.02) {
+    typeLabel = '포물선 탈출 한계';
+  }
+
+  return {
+    primary,
+    r,
+    v,
+    speedKms: v * AU_PER_YR_TO_KMS,
+    vCirc,
+    vEsc,
+    vCircKms: vCirc * AU_PER_YR_TO_KMS,
+    vEscKms: vEsc * AU_PER_YR_TO_KMS,
+    specificKinetic,
+    specificPotential,
+    specificEnergy,
+    kinetic: specificKinetic * body.mass,
+    potential: specificPotential * body.mass,
+    energy: specificEnergy * body.mass,
+    angularMomentum: h,
+    a,
+    e,
+    rp,
+    ra,
+    period,
+    keplerRatio,
+    bound,
+    typeLabel
+  };
+}
+
+function applyImpulse(sim, bodyId, mode, deltaFactor = 0.14) {
+  const body = sim.bodies.find(b => b.id === bodyId);
+  if (!body) return { ok: false, reason: '선택된 천체가 없습니다.' };
+  const primary = getPrimaryBody(sim);
+  const rx = primary && primary !== body ? body.x - primary.x : body.x;
+  const ry = primary && primary !== body ? body.y - primary.y : body.y;
+  const vx = primary && primary !== body ? body.vx - primary.vx : body.vx;
+  const vy = primary && primary !== body ? body.vy - primary.vy : body.vy;
+  const v = Math.hypot(vx, vy);
+
+  if (mode === 'prograde') {
+    const dirX = v > 1e-5 ? vx / v : -ry / (Math.hypot(rx, ry) || 1);
+    const dirY = v > 1e-5 ? vy / v : rx / (Math.hypot(rx, ry) || 1);
+    const dv = Math.max(0.55, v * deltaFactor);
+    body.vx += dirX * dv;
+    body.vy += dirY * dv;
+    body.burnTimer = 0.45;
+  } else if (mode === 'retrograde') {
+    if (v > 1e-5) {
+      const dv = Math.min(v * 0.85, Math.max(0.45, v * deltaFactor));
+      body.vx -= (vx / v) * dv;
+      body.vy -= (vy / v) * dv;
+      body.burnTimer = 0.45;
+    }
+  } else if (mode === 'circularize') {
+    if (!primary || primary === body) return { ok: false, reason: '중심 천체는 원궤도화가 불가합니다.' };
+    const r = Math.hypot(rx, ry);
+    if (r < 1e-5) return { ok: false, reason: '중심과의 거리가 너무 가깝습니다.' };
+    const vCirc = Math.sqrt((G0 * sim.gScale * (primary.mass + body.mass)) / r);
+    // Tangent direction preserving current orbital sense (CCW vs CW)
+    const sign = rx * vy - ry * vx >= 0 ? 1 : -1;
+    const tx = (-ry / r) * sign;
+    const ty = (rx / r) * sign;
+    body.vx = primary.vx + tx * vCirc;
+    body.vy = primary.vy + ty * vCirc;
+    body.burnTimer = 0.55;
+  } else if (mode === 'hohmannTransfer') {
+    if (!primary || primary === body) return { ok: false, reason: '중심 천체가 필요합니다.' };
+    const r1 = Math.hypot(rx, ry);
+    const target = sim.bodies.find(b => b.id === 'target_giant') || sim.bodies[sim.bodies.length - 1];
+    const r2 = target && target !== primary ? Math.hypot(target.x - primary.x, target.y - primary.y) : r1 * 2.4;
+    const mu = G0 * sim.gScale * (primary.mass + body.mass);
+    const aTrans = 0.5 * (r1 + r2);
+    const vReq = Math.sqrt(mu * (2 / r1 - 1 / aTrans));
+    const sign = rx * vy - ry * vx >= 0 ? 1 : -1;
+    const tx = (-ry / r1) * sign;
+    const ty = (rx / r1) * sign;
+    body.vx = primary.vx + tx * vReq;
+    body.vy = primary.vy + ty * vReq;
+    body.burnTimer = 0.65;
+  } else if (mode === 'perturbChaos') {
+    // Perturb first body velocity by +0.5% to demonstrate Figure-8 chaos sensitivity
+    body.vx *= 1.005;
+    body.vy *= 0.995;
+    body.burnTimer = 0.5;
+  }
+
+  return { ok: true };
+}
+
+function spawnBody(sim, templateKey, x, y, vx, vy) {
+  const tpl = BODY_TEMPLATES[templateKey] || BODY_TEMPLATES.terrestrial;
+  const idx = sim.nextSpawnCounter++;
+  const body = {
+    id: `${tpl.idPrefix}_${idx}`,
+    name: `${tpl.label} #${idx}`,
+    kind: tpl.kind,
+    mass: tpl.mass,
+    baseMass: tpl.mass,
+    radius: tpl.radius,
+    x,
+    y,
+    vx,
+    vy,
+    color: tpl.color,
+    trailColor: tpl.trailColor,
+    trail: [{ x, y }],
+    burnTimer: 0.35
+  };
+  sim.bodies.push(body);
+  sim.selectedBodyId = body.id;
+  return body;
+}
+
+function predictTrajectory(sim, x, y, vx, vy, steps = 240, stepDt = 0.008) {
+  const gEff = G0 * sim.gScale;
+  const epsSq = sim.softening * sim.softening;
+  const attractors = sim.bodies.filter(b => b.mass >= 1e-4 || b.isPrimary);
+  const sources = attractors.length ? attractors : sim.bodies;
+
+  let px = x;
+  let py = y;
+  let pvx = vx;
+  let pvy = vy;
+  const path = [{ x: px, y: py }];
+  let collided = false;
+  let collisionPoint = null;
+
+  for (let s = 0; s < steps; s++) {
+    let ax1 = 0, ay1 = 0;
+    for (let m = 0; m < sources.length; m++) {
+      const b = sources[m];
+      const dx = b.x - px;
+      const dy = b.y - py;
+      const dist = Math.hypot(dx, dy);
+      if (dist < b.radius * 0.85) {
+        collided = true;
+        collisionPoint = { x: px, y: py };
+        break;
+      }
+      const r2 = dx * dx + dy * dy + epsSq;
+      const f = (gEff * b.mass) / (r2 * Math.sqrt(r2));
+      ax1 += f * dx;
+      ay1 += f * dy;
+    }
+    if (collided) break;
+
+    px += pvx * stepDt + 0.5 * ax1 * stepDt * stepDt;
+    py += pvy * stepDt + 0.5 * ay1 * stepDt * stepDt;
+
+    let ax2 = 0, ay2 = 0;
+    for (let m = 0; m < sources.length; m++) {
+      const b = sources[m];
+      const dx = b.x - px;
+      const dy = b.y - py;
+      const r2 = dx * dx + dy * dy + epsSq;
+      const f = (gEff * b.mass) / (r2 * Math.sqrt(r2));
+      ax2 += f * dx;
+      ay2 += f * dy;
+    }
+    pvx += 0.5 * (ax1 + ax2) * stepDt;
+    pvy += 0.5 * (ay1 + ay2) * stepDt;
+
+    if (s % 2 === 0) path.push({ x: px, y: py });
+  }
+
+  // Classify predicted conic relative to strongest attractor at launch point
+  let primary = sources[0];
+  let best = -1;
+  for (const s of sources) {
+    const d2 = (x - s.x) ** 2 + (y - s.y) ** 2 + 1e-6;
+    if (s.mass / d2 > best) {
+      best = s.mass / d2;
+      primary = s;
+    }
+  }
+  let e = 0;
+  let bound = false;
+  if (primary) {
+    const mu = gEff * primary.mass;
+    const rx = x - primary.x;
+    const ry = y - primary.y;
+    const rvx = vx - primary.vx;
+    const rvy = vy - primary.vy;
+    const r = Math.hypot(rx, ry);
+    const v2 = rvx * rvx + rvy * rvy;
+    const eps = 0.5 * v2 - mu / Math.max(r, 1e-6);
+    const rdotv = rx * rvx + ry * rvy;
+    const ex = ((v2 - mu / Math.max(r, 1e-6)) * rx - rdotv * rvx) / Math.max(mu, 1e-9);
+    const ey = ((v2 - mu / Math.max(r, 1e-6)) * ry - rdotv * rvy) / Math.max(mu, 1e-9);
+    e = Math.hypot(ex, ey);
+    bound = eps < 0 && e < 1;
+  }
+
+  return { path, collided, collisionPoint, e, bound };
+}
+
+function evaluatePotentialAt(sim, x, y) {
+  let phi = 0;
+  const gEff = G0 * sim.gScale;
+  for (let i = 0; i < sim.bodies.length; i++) {
+    const b = sim.bodies[i];
+    if (b.mass <= 1e-6 && !b.isPrimary) continue;
+    const dx = x - b.x;
+    const dy = y - b.y;
+    const soft = Math.max(0.28, b.radius * 1.45);
+    const r = Math.sqrt(dx * dx + dy * dy + soft * soft);
+    phi -= (gEff * b.mass) / r;
+  }
+  return phi;
+}
+
+function evaluateGravityAt(sim, x, y) {
+  let gx = 0;
+  let gy = 0;
+  const gEff = G0 * sim.gScale;
+  for (let i = 0; i < sim.bodies.length; i++) {
+    const b = sim.bodies[i];
+    if (b.mass <= 1e-6 && !b.isPrimary) continue;
+    const dx = b.x - x;
+    const dy = b.y - y;
+    const soft = Math.max(0.22, b.radius * 1.2);
+    const r2 = dx * dx + dy * dy + soft * soft;
+    const f = (gEff * b.mass) / (r2 * Math.sqrt(r2));
+    gx += f * dx;
+    gy += f * dy;
+  }
+  return { gx, gy, mag: Math.hypot(gx, gy) };
+}
+
+const SCENARIO_EXPLANATIONS = {
+  kepler: {
+    badge: '케플러 제1·2·3법칙',
+    guide: '타원 궤도의 혜성 B는 태양에 가장 가까운 근일점(0.72 AU)에서 가장 빠르게 공전하고, 가장 먼 원일점(2.88 AU)에서 가장 느리게 공전합니다. 그럼에도 같은 시간 Δt 동안 동경이 쓸고 간 부채꼴의 면적(ΔA)은 항상 같습니다.',
+    tryThis: '중심 항성의 질량 슬라이더를 바꾸거나, 혜성 B에 +Δv 가속을 주어 이심률 e ≥ 1(탈출 쌍곡선)로 넘어가는 순간을 관찰해 보세요.'
+  },
+  blackhole: {
+    badge: '일반상대론과 중력장',
+    guide: '강한 중력장에서는 뉴턴의 중력 법칙(1/r²)과 달리 유효 퍼텐셜에 −GML²/(c²r³) 항이 더해져 궤도가 닫히지 않습니다. 근일점이 매 공전마다 앞으로 회전하는 근일점 세차(Rosette 궤도)가 나타납니다.',
+    tryThis: '오른쪽 설정에서 "일반상대론 세차 보정" 체크를 끄고 켜 보며 궤도가 완벽한 닫힌 타원으로 돌아오는 차이를 비교해 보세요.'
+  },
+  binary: {
+    badge: '이체 운동과 로슈 엽',
+    guide: '두 별은 서로의 질량에 반비례하는 거리(m₁r₁ = m₂r₂)를 유지하며 공통 질량 중심(십자 표시) 주위를 공전합니다. 등퍼텐셜선을 켜면 두 별 사이의 안장점(L₁ 라그랑주 점)과 8자 모양의 로슈 엽(Roche lobe)을 볼 수 있습니다.',
+    tryThis: '슬링샷 발사로 두 별 사이 또는 바깥쪽에 새 행성을 던져 안정된 공전 궤도를 찾을 수 있는지 실험해 보세요.'
+  },
+  figure8: {
+    badge: '삼체 문제와 카오스',
+    guide: '질량이 같은 세 천체가 8자 곡선 위를 일정 주기로 추적하며 도는 특수해(Chenciner–Montgomery 해)입니다. 하지만 삼체 문제는 해석적 일반해가 존재하지 않으며, 초기 조건의 아주 미세한 차이가 시간이 지나면 기하급수적으로 증폭됩니다.',
+    tryThis: '"+0.5% 카오스 섭동" 버튼을 한 번 눌러 8자 대칭성이 어떻게 붕괴하고 결국 한 천체가 튕겨 나가는지 관찰해 보세요.'
+  },
+  roche: {
+    badge: '조석력과 로슈 한계',
+    guide: '위성이 모행성에 너무 가까이 접근하면 위성의 앞면(행성 쪽)과 뒷면(바깥쪽)에 작용하는 중력의 차이(조석력, ∝ 1/d³)가 위성 자체의 중력을 넘어섭니다. 점선 원으로 표시된 로슈 한계 안쪽에서 위성이 분열해 행성 고리로 펼쳐집니다.',
+    tryThis: '고리가 형성되는 동안 3D 시점 기울기(피치)를 바꾸거나, 시공간 곡률 격자를 켜서 입자들의 공전 속도 차이(케플러 전단)를 살펴보세요.'
+  },
+  hohmann: {
+    badge: '호만 전이와 중력 도움',
+    guide: '안쪽 원궤도(r₁)에서 바깥 원궤도(r₂)로 탐사선을 보낼 때, 근지점에서 접선 방향 순방향 분사(Δv₁)를 하면 타원 전이 궤도에 오르고, 원지점(목표 궤도)에 도달했을 때 다시 원궤도 속력으로 맞추기(Δv₂)를 실행하면 최소 에너지로 전이를 완료합니다.',
+    tryThis: '탐사선의 "호만 전이 Δv₁ 분사"를 누른 뒤, 탐사선이 거대행성(2.40 AU) 부근 원지점에 도달할 때 "원궤도 속력으로 맞추기"를 눌러 보세요.'
+  }
+};
+
+const QUIZ_ITEMS = [
+  {
+    question: '타원 궤도를 도는 혜성이 근일점(가장 가까운 위치)을 지날 때 나타나는 물리적 현상으로 옳은 것은?',
+    options: [
+      '중력 위치에너지가 최소이고 속력이 최대이며, 단위 시간당 쓸고 간 면적은 원일점과 같다.',
+      '속력이 최대이므로 단위 시간당 쓸고 간 면적이 원일점보다 크다.',
+      '속력이 빨라지므로 총 역학적 에너지(K + U)가 증가한다.',
+      '각운동량이 최대가 되고 원일점에서 각운동량이 최소가 된다.'
+    ],
+    answer: 0,
+    explanation: '중력은 중심력이므로 각운동량 L이 보존되고, dA/dt = L/(2m) 역시 일정합니다. 근일점에서는 r이 최소이므로 위치에너지 U = −GMm/r이 가장 작고, 총 에너지 E = K + U 보존에 따라 운동에너지 K와 속력이 최대가 됩니다.'
+  },
+  {
+    question: '반지름 r인 원궤도를 도는 행성의 속력이 v_circ일 때, 중심 별의 중력을 영원히 탈출하기 위해 필요한 최소 속력(탈출 속력)은?',
+    options: [
+      '√2 · v_circ (총 역학적 에너지 E = 0)',
+      '2 · v_circ (총 역학적 에너지 E > 0)',
+      '√3 · v_circ',
+      'v_circ / √2'
+    ],
+    answer: 0,
+    explanation: '원궤도 속력은 v_circ = √(GM/r)이고, 탈출 조건은 E = (1/2)mv² − GMm/r = 0이므로 v_esc = √(2GM/r) = √2 · v_circ입니다.'
+  },
+  {
+    question: '수성이나 블랙홀 근처 항성의 궤도에서 나타나는 "근일점 세차 운동"에 대한 설명으로 옳은 것은?',
+    options: [
+      '일반상대성 이론의 시공간 곡률 효과로 인해 닫힌 타원이 유지되지 않고 근일점이 공전 방향으로 회전한다.',
+      '뉴턴의 1/r² 만유인력만으로도 이체 문제의 타원 궤도는 항상 빠르게 회전한다.',
+      '중심 천체에서 멀어질수록 상대론적 세차 효과가 급격히 커진다.',
+      '세차 운동은 행성의 질량이 태양보다 클 때만 발생한다.'
+    ],
+    answer: 0,
+    explanation: '순수 뉴턴 역학의 이체(1/r²) 퍼텐셜에서는 닫힌 타원이 유지되지만, 강한 중력장에서의 일반상대론 1PN 보정(∝ −1/r³)은 타원 궤도의 근일점을 매 주기 Δω ∝ 1/[a(1−e²)c²]만큼 앞으로 전진시킵니다.'
+  },
+  {
+    question: '유체 또는 느슨하게 결합된 위성이 모행성의 로슈 한계(Roche limit) 안쪽으로 들어갔을 때 부서지는 주된 원인은?',
+    options: [
+      '위성의 행성 쪽 부분과 바깥쪽 부분 사이의 중력 차이(조석력)가 위성의 자체 결합력을 넘기 때문이다.',
+      '행성의 대기 마찰열이 우주 공간 전체에서 급격히 증가하기 때문이다.',
+      '원심력이 0이 되어 위성이 정지하기 때문이다.',
+      '행성의 자기장이 얼음 결정을 즉시 기화시키기 때문이다.'
+    ],
+    answer: 0,
+    explanation: '조석력은 거리 세제곱에 반비례(Δg ∝ 2GMR_m / d³)하여 급격히 커집니다. 로슈 한계 d_R ≈ 2.44 R_M (ρ_M/ρ_m)^(1/3) 안쪽에서는 조석 신장이 자체 중력을 압도하여 파편들이 케플러 전단 속도 차이로 고리를 이룹니다.'
+  },
+  {
+    question: '호만 전이(Hohmann Transfer)를 통해 안쪽 원궤도에서 바깥쪽 원궤도로 탐사선을 옮길 때 가장 효율적인 추진 방법은?',
+    options: [
+      '근지점에서 접선 순방향으로 +Δv₁ 분사 후, 반 바퀴 돌아 원지점에서 다시 순방향 Δv₂ 분사로 원궤도화한다.',
+      '전 과정 동안 반지름 바깥쪽(법선 방향)으로만 계속 로켓을 분사한다.',
+      '근지점에서 역추진(−Δv)하여 속력을 줄이면 자동으로 더 높은 원궤도로 올라간다.',
+      '초기 속력을 탈출 속력 이상으로 올린 뒤 원지점에서 0으로 멈춘다.'
+    ],
+    answer: 0,
+    explanation: '근지점에서의 접선 순방향 가속은 반대편 원지점 고도를 높여 타원 전이 궤도를 만들고, 원지점에 도달했을 때 부족한 접선 속력을 보충(+Δv₂)해 이심률 0인 바깥 원궤도로 안착시킵니다.'
+  }
+];
+
+const MODEL_SOURCES = [
+  { label: 'NASA JPL · Basics of Space Flight (Orbital Mechanics)', url: 'https://science.nasa.gov/learn/basics-of-space-flight/chapter3-2/' },
+  { label: 'OpenStax University Physics · Gravitation & Kepler Laws', url: 'https://openstax.org/books/university-physics-volume-1/pages/13-5-keplers-laws-of-planetary-motion' },
+  { label: 'Chenciner & Montgomery (2000) · Figure-8 Three-Body Solution', url: 'https://arxiv.org/abs/math/0011268' }
+];
+
+
+const SECTOR_COLORS = [
+  'rgba(56, 189, 248, 0.24)',
+  'rgba(52, 211, 153, 0.24)',
+  'rgba(251, 191, 36, 0.24)',
+  'rgba(186, 103, 243, 0.24)',
+  'rgba(96, 165, 223, 0.24)',
+  'rgba(244, 114, 182, 0.24)'
+];
+
+const SECTOR_STROKES = [
+  '#38bdf8',
+  '#34d399',
+  '#fbbf24',
+  '#ba67f3',
+  '#60a5df',
+  '#f472b6'
+];
+
+class GravityRenderer {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.camera = {
+      yaw: 0.55,
+      pitch: 42 * (Math.PI / 180),
+      zoom: 1.0,
+      panX: 0,
+      panY: 0,
+      followBodyId: null
+    };
+    this.stars = Array.from({ length: 140 }, (_, i) => ({
+      u: ((Math.sin(i * 127.1 + 1.3) * 43758.5453) % 1 + 1) % 1,
+      v: ((Math.sin(i * 311.7 + 2.9) * 43758.5453) % 1 + 1) % 1,
+      r: 0.55 + (i % 4) * 0.38,
+      a: 0.16 + (i % 5) * 0.09
+    }));
+  }
+
+  getPalette() {
+    const isLight = document.body.dataset.theme === 'light';
+    if (isLight) {
+      return {
+        bgTop: '#f3f6fc',
+        bgBottom: '#e5edf9',
+        gridFlat: 'rgba(48, 78, 156, 0.19)',
+        gridSlope: 'rgba(31, 27, 141, 0.48)',
+        gridDeep: 'rgba(139, 92, 246, 0.68)',
+        contour: 'rgba(48, 78, 156, 0.52)',
+        vector: 'rgba(48, 78, 156, 0.58)',
+        roche: '#2563eb',
+        label: '#142058',
+        labelMuted: '#475569',
+        labelBg: 'rgba(255, 255, 255, 0.88)',
+        labelBorder: 'rgba(48, 78, 156, 0.3)',
+        selectionRing: '#1f1b8d',
+        stem: 'rgba(48, 78, 156, 0.35)',
+        starVisible: false
+      };
+    }
+    return {
+      bgTop: '#070b18',
+      bgBottom: '#10182b',
+      gridFlat: 'rgba(48, 78, 156, 0.32)',
+      gridSlope: 'rgba(96, 165, 223, 0.55)',
+      gridDeep: 'rgba(186, 103, 243, 0.78)',
+      contour: 'rgba(96, 165, 223, 0.45)',
+      vector: 'rgba(96, 165, 223, 0.62)',
+      roche: '#60a5df',
+      label: '#f8fafc',
+      labelMuted: '#94a3b8',
+      labelBg: 'rgba(16, 24, 43, 0.86)',
+      labelBorder: 'rgba(96, 165, 223, 0.35)',
+      selectionRing: '#60a5df',
+      stem: 'rgba(96, 165, 223, 0.34)',
+      starVisible: true
+    };
+  }
+
+  getMetrics(sim) {
+    const rect = this.canvas.getBoundingClientRect();
+    const cssW = Math.max(260, rect.width || this.canvas.width);
+    const cssH = Math.max(260, rect.height || this.canvas.height);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const targetW = Math.round(cssW * dpr);
+    const targetH = Math.round(cssH * dpr);
+    if (this.canvas.width !== targetW || this.canvas.height !== targetH) {
+      this.canvas.width = targetW;
+      this.canvas.height = targetH;
+    }
+
+    const extent = sim.worldExtent || 3.6;
+    const minSide = Math.min(cssW, cssH);
+    const scale = (minSide / (2.34 * extent)) * this.camera.zoom;
+    const fov = Math.max(12, extent * 4.5);
+
+    if (this.camera.followBodyId) {
+      const target = sim.bodies.find(b => b.id === this.camera.followBodyId);
+      if (target) {
+        this.camera.panX += (target.x - this.camera.panX) * 0.22;
+        this.camera.panY += (target.y - this.camera.panY) * 0.22;
+      } else {
+        this.camera.followBodyId = null;
+      }
+    }
+
+    return {
+      cssW,
+      cssH,
+      dpr,
+      centerX: cssW * 0.5,
+      centerY: cssH * (0.485 - 0.055 * Math.sin(this.camera.pitch)),
+      scale,
+      fov,
+      extent
+    };
+  }
+
+  project(x, y, z, metrics) {
+    const dx = x - this.camera.panX;
+    const dy = y - this.camera.panY;
+    const dz = z;
+
+    const cy = Math.cos(this.camera.yaw);
+    const sy = Math.sin(this.camera.yaw);
+    const rx = dx * cy - dy * sy;
+    const ry = dx * sy + dy * cy;
+
+    const cp = Math.cos(this.camera.pitch);
+    const sp = Math.sin(this.camera.pitch);
+    const sxCam = rx;
+    const syCam = ry * cp + dz * sp;
+    const szCam = -ry * sp + dz * cp;
+
+    const denom = Math.max(3.0, metrics.fov - szCam);
+    const persp = metrics.fov / denom;
+    return {
+      x: metrics.centerX + sxCam * metrics.scale * persp,
+      y: metrics.centerY - syCam * metrics.scale * persp,
+      depth: szCam,
+      persp
+    };
+  }
+
+  screenToWorld(clientX, clientY, sim) {
+    const rect = this.canvas.getBoundingClientRect();
+    const m = this.getMetrics(sim);
+    const sx = clientX - rect.left;
+    const sy = clientY - rect.top;
+
+    const u = (sx - m.centerX) / m.scale;
+    const v = (m.centerY - sy) / m.scale;
+
+    const cp = Math.cos(this.camera.pitch);
+    const sp = Math.sin(this.camera.pitch);
+    const denom = cp * m.fov - v * sp;
+    // Clamp near horizon singularity if tilted sharply
+    const safeDenom = Math.abs(denom) < 0.8 ? (denom >= 0 ? 0.8 : -0.8) : denom;
+    const ry = (v * m.fov) / safeDenom;
+    const szCam = -ry * sp;
+    const persp = m.fov / Math.max(3.0, m.fov - szCam);
+    const rx = u / persp;
+
+    const cy = Math.cos(this.camera.yaw);
+    const syYaw = Math.sin(this.camera.yaw);
+    const dx = rx * cy + ry * syYaw;
+    const dy = -rx * syYaw + ry * cy;
+    return {
+      x: dx + this.camera.panX,
+      y: dy + this.camera.panY
+    };
+  }
+
+  wellHeight(sim, x, y, wellDepth) {
+    if (wellDepth <= 0.001) return 0;
+    const phi = evaluatePotentialAt(sim, x, y);
+    return -wellDepth * 0.42 * Math.log(1 + Math.abs(phi) / 14);
+  }
+
+  render(sim, options = {}) {
+    const m = this.getMetrics(sim);
+    const ctx = this.ctx;
+    const pal = this.getPalette();
+    const {
+      showGrid = true,
+      showEquipotential = false,
+      showField = false,
+      showKeplerSectors = true,
+      wellDepth = 0.9,
+      slingshot = null,
+      prediction = null
+    } = options;
+
+    ctx.save();
+    ctx.scale(m.dpr, m.dpr);
+
+    // 1. Background
+    const bg = ctx.createLinearGradient(0, 0, 0, m.cssH);
+    bg.addColorStop(0, pal.bgTop);
+    bg.addColorStop(1, pal.bgBottom);
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, m.cssW, m.cssH);
+
+    if (pal.starVisible) {
+      for (const st of this.stars) {
+        ctx.fillStyle = `rgba(226, 232, 240, ${st.a})`;
+        ctx.beginPath();
+        ctx.arc(st.u * m.cssW, st.v * m.cssH, st.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // 2. 3D Warped Spacetime Fabric Mesh
+    if (showGrid) {
+      this.drawSpacetimeGrid(ctx, sim, m, pal, wellDepth);
+    }
+
+    // 3. Equipotential Contours (Roche lobes around stars/planets)
+    if (showEquipotential) {
+      this.drawEquipotentials(ctx, sim, m, pal);
+    }
+
+    // 4. Gravity Vector Field
+    if (showField) {
+      this.drawGravityField(ctx, sim, m, pal);
+    }
+
+    // 5. Roche Limit Boundary Circle
+    if (sim.scenario.rocheRadius) {
+      const primary = getPrimaryBody(sim);
+      if (primary) {
+        this.drawRocheRing(ctx, primary, sim.scenario.rocheRadius, m, pal);
+      }
+    }
+
+    // 6. Kepler 2nd Law Equal-Area Sectors
+    if (showKeplerSectors && sim.keplerEnabled) {
+      this.drawKeplerSectors(ctx, sim, m, pal);
+    }
+
+    // 7. Barycenter Marker for Multi-Star / 3-Body Systems
+    if (sim.scenarioId === 'binary' || sim.scenarioId === 'figure8') {
+      const { barycenter } = computeSystemEnergy(sim);
+      const pb = this.project(barycenter.x, barycenter.y, 0, m);
+      ctx.save();
+      ctx.strokeStyle = pal.labelMuted;
+      ctx.lineWidth = 1.1;
+      ctx.beginPath();
+      ctx.moveTo(pb.x - 6, pb.y);
+      ctx.lineTo(pb.x + 6, pb.y);
+      ctx.moveTo(pb.x, pb.y - 6);
+      ctx.lineTo(pb.x, pb.y + 6);
+      ctx.stroke();
+      ctx.font = '600 10px "Gmarket Sans", sans-serif';
+      ctx.fillStyle = pal.labelMuted;
+      ctx.fillText('질량 중심', pb.x + 8, pb.y + 3);
+      ctx.restore();
+    }
+
+    // 8. Orbital Trails
+    for (const body of sim.bodies) {
+      this.drawTrail(ctx, body, m);
+    }
+
+    // 9. Slingshot Conic Trajectory Prediction & Pull Arrow
+    if (slingshot && slingshot.active) {
+      this.drawSlingshotOverlay(ctx, sim, slingshot, prediction, m, pal);
+    }
+
+    // 10. Depth-Sorted Ring Particles + Bodies
+    this.drawParticlesAndBodies(ctx, sim, m, pal, showGrid ? wellDepth : 0);
+
+    ctx.restore();
+  }
+
+  drawSpacetimeGrid(ctx, sim, m, pal, wellDepth) {
+    const N = 28;
+    const span = m.extent * 0.94;
+    const pts = Array.from({ length: N + 1 }, () => new Array(N + 1));
+
+    for (let ix = 0; ix <= N; ix++) {
+      const wx = -span + (2 * span * ix) / N;
+      for (let iy = 0; iy <= N; iy++) {
+        const wy = -span + (2 * span * iy) / N;
+        const wz = this.wellHeight(sim, wx, wy, wellDepth);
+        const p = this.project(wx, wy, wz, m);
+        pts[ix][iy] = { sx: p.x, sy: p.y, z: wz };
+      }
+    }
+
+    const strokeSegment = (a, b) => {
+      const depthAvg = 0.5 * (Math.abs(a.z) + Math.abs(b.z));
+      if (depthAvg < 0.16) {
+        ctx.strokeStyle = pal.gridFlat;
+        ctx.lineWidth = 0.85;
+      } else if (depthAvg < 0.65) {
+        ctx.strokeStyle = pal.gridSlope;
+        ctx.lineWidth = 1.05;
+      } else {
+        ctx.strokeStyle = pal.gridDeep;
+        ctx.lineWidth = 1.25;
+      }
+      ctx.beginPath();
+      ctx.moveTo(a.sx, a.sy);
+      ctx.lineTo(b.sx, b.sy);
+      ctx.stroke();
+    };
+
+    for (let ix = 0; ix <= N; ix++) {
+      for (let iy = 0; iy < N; iy++) {
+        strokeSegment(pts[ix][iy], pts[ix][iy + 1]);
+      }
+    }
+    for (let iy = 0; iy <= N; iy++) {
+      for (let ix = 0; ix < N; ix++) {
+        strokeSegment(pts[ix][iy], pts[ix + 1][iy]);
+      }
+    }
+  }
+
+  drawEquipotentials(ctx, sim, m, pal) {
+    const G = 38;
+    const span = m.extent * 1.1;
+    const field = new Float32Array((G + 1) * (G + 1));
+    let totalMass = 0;
+    for (const b of sim.bodies) {
+      if (b.mass > 1e-5 || b.isPrimary) totalMass += b.mass;
+    }
+    if (totalMass <= 0) return;
+
+    for (let iy = 0; iy <= G; iy++) {
+      const wy = -span + (2 * span * iy) / G;
+      for (let ix = 0; ix <= G; ix++) {
+        const wx = -span + (2 * span * ix) / G;
+        field[iy * (G + 1) + ix] = evaluatePotentialAt(sim, wx, wy);
+      }
+    }
+
+    // Smart levels proportional to total mass
+    const base = 39.478 * totalMass;
+    const levels = [-2.2, -1.65, -1.25, -0.95, -0.72, -0.52, -0.36].map(k => k * base);
+
+    const interp = (v1, v2, level) => {
+      const d = v2 - v1;
+      if (Math.abs(d) < 1e-9) return 0.5;
+      return (level - v1) / d;
+    };
+
+    ctx.save();
+    ctx.strokeStyle = pal.contour;
+    ctx.lineWidth = 1.05;
+    ctx.beginPath();
+
+    const step = (2 * span) / G;
+    for (const level of levels) {
+      for (let iy = 0; iy < G; iy++) {
+        const y0 = -span + step * iy;
+        const y1 = y0 + step;
+        for (let ix = 0; ix < G; ix++) {
+          const x0 = -span + step * ix;
+          const x1 = x0 + step;
+          const v00 = field[iy * (G + 1) + ix];
+          const v10 = field[iy * (G + 1) + (ix + 1)];
+          const v11 = field[(iy + 1) * (G + 1) + (ix + 1)];
+          const v01 = field[(iy + 1) * (G + 1) + ix];
+
+          const pts = [];
+          if ((v00 < level) !== (v10 < level)) pts.push({ x: x0 + step * interp(v00, v10, level), y: y0 });
+          if ((v10 < level) !== (v11 < level)) pts.push({ x: x1, y: y0 + step * interp(v10, v11, level) });
+          if ((v11 < level) !== (v01 < level)) pts.push({ x: x0 + step * interp(v01, v11, level), y: y1 });
+          if ((v01 < level) !== (v00 < level)) pts.push({ x: x0, y: y0 + step * interp(v00, v01, level) });
+
+          if (pts.length === 2) {
+            const p0 = this.project(pts[0].x, pts[0].y, 0, m);
+            const p1 = this.project(pts[1].x, pts[1].y, 0, m);
+            ctx.moveTo(p0.x, p0.y);
+            ctx.lineTo(p1.x, p1.y);
+          } else if (pts.length === 4) {
+            for (let k = 0; k < 4; k += 2) {
+              const p0 = this.project(pts[k].x, pts[k].y, 0, m);
+              const p1 = this.project(pts[k + 1].x, pts[k + 1].y, 0, m);
+              ctx.moveTo(p0.x, p0.y);
+              ctx.lineTo(p1.x, p1.y);
+            }
+          }
+        }
+      }
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  drawGravityField(ctx, sim, m, pal) {
+    const N = 8;
+    const span = m.extent * 0.95;
+    ctx.save();
+    ctx.strokeStyle = pal.vector;
+    ctx.fillStyle = pal.vector;
+    ctx.lineWidth = 1.15;
+
+    for (let ix = 0; ix <= N; ix++) {
+      const wx = -span + (2 * span * ix) / N;
+      for (let iy = 0; iy <= N; iy++) {
+        const wy = -span + (2 * span * iy) / N;
+        let inside = false;
+        for (const b of sim.bodies) {
+          if (Math.hypot(wx - b.x, wy - b.y) < Math.max(0.28, b.radius * 1.6)) {
+            inside = true;
+            break;
+          }
+        }
+        if (inside) continue;
+
+        const { gx, gy, mag } = evaluateGravityAt(sim, wx, wy);
+        if (mag < 0.05) continue;
+        const len = Math.min(0.26, 0.075 * Math.log(1 + mag * 0.35));
+        const ux = gx / mag;
+        const uy = gy / mag;
+        const p0 = this.project(wx, wy, 0, m);
+        const p1 = this.project(wx + ux * len, wy + uy * len, 0, m);
+
+        ctx.beginPath();
+        ctx.moveTo(p0.x, p0.y);
+        ctx.lineTo(p1.x, p1.y);
+        ctx.stroke();
+
+        const ang = Math.atan2(p1.y - p0.y, p1.x - p0.x);
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p1.x - 5 * Math.cos(ang - 0.5), p1.y - 5 * Math.sin(ang - 0.5));
+        ctx.lineTo(p1.x - 5 * Math.cos(ang + 0.5), p1.y - 5 * Math.sin(ang + 0.5));
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  drawRocheRing(ctx, primary, rocheR, m, pal) {
+    ctx.save();
+    ctx.strokeStyle = pal.roche;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 5]);
+    ctx.beginPath();
+    const segs = 72;
+    for (let i = 0; i <= segs; i++) {
+      const th = (i / segs) * Math.PI * 2;
+      const p = this.project(primary.x + Math.cos(th) * rocheR, primary.y + Math.sin(th) * rocheR, 0, m);
+      if (i === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    const lblP = this.project(primary.x, primary.y + rocheR, 0, m);
+    ctx.font = '700 11px "Gmarket Sans", sans-serif';
+    ctx.fillStyle = pal.roche;
+    ctx.textAlign = 'center';
+    ctx.fillText(`로슈 한계 (d_R = ${rocheR.toFixed(2)} AU)`, lblP.x, lblP.y - 8);
+    ctx.restore();
+  }
+
+  drawKeplerSectors(ctx, sim, m, pal) {
+    const all = [...sim.keplerSectors];
+    if (sim.currentSector && sim.currentSector.points.length >= 2) {
+      all.push(sim.currentSector);
+    }
+    let lastLabelX = -1e9;
+    let lastLabelY = -1e9;
+    for (let idx = 0; idx < all.length; idx++) {
+      const sec = all[idx];
+      if (!sec.points.length) continue;
+      const cIdx = sec.colorIndex % SECTOR_COLORS.length;
+      const fx = sec.focusX;
+      const fy = sec.focusY;
+      const fProj = this.project(fx, fy, 0, m);
+
+      ctx.save();
+      ctx.fillStyle = SECTOR_COLORS[cIdx];
+      ctx.strokeStyle = SECTOR_STROKES[cIdx];
+      ctx.lineWidth = 1.15;
+      ctx.beginPath();
+      ctx.moveTo(fProj.x, fProj.y);
+      let cx = 0, cy = 0;
+      for (const pt of sec.points) {
+        const sp = this.project(fx + pt.x, fy + pt.y, 0, m);
+        ctx.lineTo(sp.x, sp.y);
+        cx += sp.x;
+        cy += sp.y;
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Label completed sectors cleanly inside the wedge (avoid adjacent text pileups)
+      if (idx < sim.keplerSectors.length && sec.area > 0.005) {
+        const avgX = cx / sec.points.length;
+        const avgY = cy / sec.points.length;
+        const frac = idx % 2 === 0 ? 0.58 : 0.72;
+        const mx = fProj.x * (1 - frac) + avgX * frac;
+        const my = fProj.y * (1 - frac) + avgY * frac;
+        if (Math.hypot(mx - lastLabelX, my - lastLabelY) > 40) {
+          ctx.font = '700 10px ui-monospace, Consolas, monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.strokeStyle = pal.labelBg;
+          ctx.lineWidth = 3;
+          ctx.strokeText(`ΔA=${sec.area.toFixed(3)}`, mx, my);
+          ctx.fillStyle = pal.label;
+          ctx.fillText(`ΔA=${sec.area.toFixed(3)}`, mx, my);
+          lastLabelX = mx;
+          lastLabelY = my;
+        }
+      }
+      ctx.restore();
+    }
+  }
+
+  drawTrail(ctx, body, m) {
+    const trail = body.trail;
+    if (!trail || trail.length < 2) return;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    const chunks = 8;
+    const len = trail.length;
+    for (let c = 0; c < chunks; c++) {
+      const iStart = Math.floor((c * (len - 1)) / chunks);
+      const iEnd = Math.floor(((c + 1) * (len - 1)) / chunks);
+      if (iEnd <= iStart) continue;
+      const alpha = 0.1 + 0.72 * ((c + 1) / chunks);
+      ctx.strokeStyle = body.trailColor || body.color;
+      ctx.globalAlpha = alpha;
+      ctx.lineWidth = 1.1 + (c / chunks) * 1.15;
+      ctx.beginPath();
+      for (let i = iStart; i <= iEnd; i++) {
+        const p = this.project(trail[i].x, trail[i].y, 0, m);
+        if (i === iStart) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  drawSlingshotOverlay(ctx, sim, slingshot, prediction, m, pal) {
+    const pStart = this.project(slingshot.wx, slingshot.wy, 0, m);
+    const pVecEnd = this.project(
+      slingshot.wx + slingshot.vx * 0.14,
+      slingshot.wy + slingshot.vy * 0.14,
+      0,
+      m
+    );
+
+    ctx.save();
+    if (prediction && prediction.path.length > 1) {
+      ctx.strokeStyle = prediction.collided
+        ? '#f87171'
+        : prediction.bound
+        ? '#34d399'
+        : '#fbbf24';
+      ctx.lineWidth = 1.75;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      for (let i = 0; i < prediction.path.length; i++) {
+        const pt = prediction.path[i];
+        const sp = this.project(pt.x, pt.y, 0, m);
+        if (i === 0) ctx.moveTo(sp.x, sp.y);
+        else ctx.lineTo(sp.x, sp.y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (prediction.collided && prediction.collisionPoint) {
+        const cp = this.project(prediction.collisionPoint.x, prediction.collisionPoint.y, 0, m);
+        ctx.strokeStyle = '#f87171';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(cp.x - 5, cp.y - 5);
+        ctx.lineTo(cp.x + 5, cp.y + 5);
+        ctx.moveTo(cp.x + 5, cp.y - 5);
+        ctx.lineTo(cp.x - 5, cp.y + 5);
+        ctx.stroke();
+      }
+    }
+
+    // Velocity launch arrow
+    ctx.strokeStyle = '#38bdf8';
+    ctx.fillStyle = '#38bdf8';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(pStart.x, pStart.y);
+    ctx.lineTo(pVecEnd.x, pVecEnd.y);
+    ctx.stroke();
+
+    const ang = Math.atan2(pVecEnd.y - pStart.y, pVecEnd.x - pStart.x);
+    ctx.beginPath();
+    ctx.moveTo(pVecEnd.x, pVecEnd.y);
+    ctx.lineTo(pVecEnd.x - 8 * Math.cos(ang - 0.45), pVecEnd.y - 8 * Math.sin(ang - 0.45));
+    ctx.lineTo(pVecEnd.x - 8 * Math.cos(ang + 0.45), pVecEnd.y - 8 * Math.sin(ang + 0.45));
+    ctx.closePath();
+    ctx.fill();
+
+    // Launch speed & predicted orbit badge
+    const speedKms = Math.hypot(slingshot.vx, slingshot.vy) * AU_PER_YR_TO_KMS;
+    const statusText = prediction?.collided
+      ? '충돌 경로'
+      : prediction?.bound
+      ? `속박 궤도 (e = ${prediction.e.toFixed(2)})`
+      : '탈출 쌍곡선 (E ≥ 0)';
+    const badge = `${speedKms.toFixed(1)} km/s · ${statusText}`;
+    ctx.font = '700 11px "Gmarket Sans", sans-serif';
+    const tw = ctx.measureText(badge).width + 16;
+    const bx = Math.min(m.cssW - tw - 10, Math.max(10, pStart.x + 14));
+    const by = Math.max(26, pStart.y - 16);
+    ctx.fillStyle = pal.labelBg;
+    ctx.strokeStyle = pal.labelBorder;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(bx, by - 16, tw, 24, 5);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = pal.label;
+    ctx.textAlign = 'left';
+    ctx.fillText(badge, bx + 8, by);
+    ctx.restore();
+  }
+
+  drawParticlesAndBodies(ctx, sim, m, pal, wellDepth) {
+    const primary = getPrimaryBody(sim);
+    const drawList = [];
+
+    for (let i = 0; i < sim.particles.length; i++) {
+      const pt = sim.particles[i];
+      const p = this.project(pt.x, pt.y, 0, m);
+      drawList.push({ type: 'particle', item: pt, p, depth: p.depth });
+    }
+
+    for (let i = 0; i < sim.bodies.length; i++) {
+      const b = sim.bodies[i];
+      const p = this.project(b.x, b.y, 0, m);
+      const wellZ = wellDepth > 0 ? this.wellHeight(sim, b.x, b.y, wellDepth) : 0;
+      const pWell = this.project(b.x, b.y, wellZ, m);
+      drawList.push({ type: 'body', item: b, p, pWell, depth: p.depth });
+    }
+
+    drawList.sort((a, b) => a.depth - b.depth);
+
+    for (const entry of drawList) {
+      if (entry.type === 'particle') {
+        const { item: pt, p } = entry;
+        ctx.save();
+        ctx.globalAlpha = pt.alpha ?? 0.8;
+        ctx.fillStyle = pt.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, pt.size * Math.max(0.65, p.persp), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        continue;
+      }
+
+      const { item: body, p, pWell } = entry;
+      const pxRadius = Math.max(5.5, body.radius * m.scale * p.persp);
+
+      // Vertical drop-stem linking orbital position to spacetime well
+      if (wellDepth > 0 && Math.abs(pWell.y - p.y) > 4) {
+        ctx.save();
+        ctx.strokeStyle = pal.stem;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 3]);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(pWell.x, pWell.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = pal.stem;
+        ctx.beginPath();
+        ctx.arc(pWell.x, pWell.y, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Comet ion tail pointing away from primary star
+      if (body.kind === 'comet' && primary && primary !== body) {
+        const dx = body.x - primary.x;
+        const dy = body.y - primary.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist > 0.05) {
+          const tailLen = Math.min(1.1, 0.36 / Math.max(0.35, dist));
+          const pTail = this.project(body.x + (dx / dist) * tailLen, body.y + (dy / dist) * tailLen, 0, m);
+          const grad = ctx.createLinearGradient(p.x, p.y, pTail.x, pTail.y);
+          grad.addColorStop(0, 'rgba(125, 211, 252, 0.72)');
+          grad.addColorStop(1, 'rgba(125, 211, 252, 0)');
+          ctx.save();
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = Math.max(3, pxRadius * 1.15);
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(pTail.x, pTail.y);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // Thruster exhaust plume when burning Delta-V
+      if (body.burnTimer > 0) {
+        const vMag = Math.hypot(body.vx, body.vy) || 1;
+        const pExhaust = this.project(
+          body.x - (body.vx / vMag) * 0.38,
+          body.y - (body.vy / vMag) * 0.38,
+          0,
+          m
+        );
+        ctx.save();
+        const plumeGrad = ctx.createLinearGradient(p.x, p.y, pExhaust.x, pExhaust.y);
+        plumeGrad.addColorStop(0, '#fef08a');
+        plumeGrad.addColorStop(0.5, '#38bdf8');
+        plumeGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+        ctx.strokeStyle = plumeGrad;
+        ctx.lineWidth = Math.max(4, pxRadius * 0.9);
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(pExhaust.x, pExhaust.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.save();
+      if (body.kind === 'blackhole') {
+        // Glowing gravitational photon sphere & accretion halo
+        const halo = ctx.createRadialGradient(p.x, p.y, pxRadius * 0.75, p.x, p.y, pxRadius * 2.8);
+        halo.addColorStop(0, 'rgba(254, 240, 138, 0.95)');
+        halo.addColorStop(0.28, 'rgba(186, 103, 243, 0.65)');
+        halo.addColorStop(0.6, 'rgba(96, 165, 223, 0.2)');
+        halo.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, pxRadius * 2.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Event horizon core
+        ctx.fillStyle = '#03050a';
+        ctx.strokeStyle = '#fde68a';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, pxRadius * 0.88, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      } else if (body.kind === 'star') {
+        const glow = ctx.createRadialGradient(p.x, p.y, pxRadius * 0.25, p.x, p.y, pxRadius * 2.5);
+        glow.addColorStop(0, '#ffffff');
+        glow.addColorStop(0.32, body.color);
+        glow.addColorStop(1, 'rgba(253, 224, 71, 0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, pxRadius * 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = body.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, pxRadius, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (body.kind === 'probe') {
+        // Spacecraft diamond + solar panels aligned with screen velocity vector
+        const vMag = Math.hypot(body.vx, body.vy) || 1;
+        const pAhead = this.project(body.x + (body.vx / vMag) * 0.1, body.y + (body.vy / vMag) * 0.1, 0, m);
+        const screenAngle = Math.atan2(pAhead.y - p.y, pAhead.x - p.x);
+        ctx.translate(p.x, p.y);
+        ctx.rotate(screenAngle + Math.PI / 2);
+        ctx.fillStyle = '#60a5df';
+        ctx.fillRect(-pxRadius * 1.4, -pxRadius * 0.3, pxRadius * 2.8, pxRadius * 0.6);
+        ctx.fillStyle = '#f8fafc';
+        ctx.strokeStyle = '#1f1b8d';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(0, 0, pxRadius * 0.72, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      } else {
+        // Directional illumination facing star
+        let lx = -0.4;
+        let ly = -0.4;
+        if (primary && primary !== body) {
+          const ps = this.project(primary.x, primary.y, 0, m);
+          const dx = ps.x - p.x;
+          const dy = ps.y - p.y;
+          const d = Math.hypot(dx, dy) || 1;
+          lx = (dx / d) * pxRadius * 0.45;
+          ly = (dy / d) * pxRadius * 0.45;
+        }
+        const sphereGrad = ctx.createRadialGradient(p.x + lx, p.y + ly, pxRadius * 0.15, p.x, p.y, pxRadius * 1.15);
+        sphereGrad.addColorStop(0, '#ffffff');
+        sphereGrad.addColorStop(0.35, body.color);
+        sphereGrad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = sphereGrad;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, pxRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Selection reticle
+      if (body.id === sim.selectedBodyId) {
+        ctx.strokeStyle = pal.selectionRing;
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, pxRadius + 6, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Clean body name label for selected or primary body
+      if (body.id === sim.selectedBodyId || body.isPrimary || sim.bodies.length <= 5) {
+        ctx.font = '700 11px "Gmarket Sans", sans-serif';
+        ctx.textAlign = 'center';
+        const shortName = body.name.split('(')[0].trim();
+        ctx.fillStyle = pal.label;
+        ctx.fillText(shortName, p.x, p.y + pxRadius + 16);
+      }
+      ctx.restore();
+    }
+  }
+}
+
+
+const $ = id => document.getElementById(id);
+const STORAGE_KEY = 'arcadia-gravity-records-v1';
+
+const canvas = $('space-canvas');
+const energyCanvas = $('energy-plot');
+const energyCtx = energyCanvas.getContext('2d');
+const renderer = new GravityRenderer(canvas);
+
+let sim = createSimulation('kepler');
+let playing = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let speedMultiplier = 1.0;
+let dragMode = 'slingshot';
+let spawnTemplateKey = 'terrestrial';
+let wellDepth = SCENARIOS.kepler.defaultWellDepth;
+let showGrid = true;
+let showEquipotential = false;
+let showField = false;
+let showKeplerSectors = true;
+let followSelected = false;
+
+let history = [];
+let lastSampleT = -1;
+let quizIndex = 0;
+let quizAnswered = false;
+let records = [];
+let lastFrameMs = 0;
+let rafId = 0;
+let uiSyncAcc = 0;
+
+const slingshot = {
+  active: false,
+  pointerId: null,
+  startScreenX: 0,
+  startScreenY: 0,
+  wx: 0,
+  wy: 0,
+  vx: 0,
+  vy: 0
+};
+let slingshotPrediction = null;
+
+const camDrag = {
+  active: false,
+  pointerId: null,
+  lastX: 0,
+  lastY: 0,
+  moved: false
+};
+
+try {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  if (Array.isArray(saved)) records = saved.slice(-40);
+} catch {}
+
+function saveRecords() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  } catch {}
+}
+
+function fmtNum(val, digits = 2) {
+  if (!Number.isFinite(val)) return '∞';
+  return val.toFixed(digits);
+}
+
+function loadScenario(scenarioId) {
+  const sc = SCENARIOS[scenarioId] || SCENARIOS.kepler;
+  sim = createSimulation(sc.id);
+  showGrid = sc.defaults.grid;
+  showEquipotential = sc.defaults.equipotential;
+  showField = sc.defaults.field;
+  showKeplerSectors = sc.defaults.keplerSectors;
+  wellDepth = sc.defaultWellDepth ?? 0.9;
+  renderer.camera.pitch = (sc.defaultPitch ?? 42) * (Math.PI / 180);
+  renderer.camera.yaw = 0.55;
+  renderer.camera.zoom = 1.0;
+  renderer.camera.panX = 0;
+  renderer.camera.panY = 0;
+  renderer.camera.followBodyId = null;
+  followSelected = false;
+
+  history = [];
+  lastSampleT = -1;
+  slingshot.active = false;
+  slingshotPrediction = null;
+
+  syncControlsFromState();
+  recordHistorySample(true);
+  renderAll();
+}
+
+function syncControlsFromState() {
+  const sc = sim.scenario;
+  const info = SCENARIO_EXPLANATIONS[sc.id];
+
+  document.querySelectorAll('.tabs button[data-scenario]').forEach(btn => {
+    btn.setAttribute('aria-pressed', String(btn.dataset.scenario === sc.id));
+  });
+
+  $('principle-kicker').textContent = info.badge;
+  $('principle-title').textContent = sc.title;
+  $('principle-caption').textContent = info.guide;
+  $('main-formula').textContent = sc.formula;
+  $('story').textContent = info.tryThis;
+
+  $('pitch-slider').value = String(Math.round((renderer.camera.pitch * 180) / Math.PI));
+  $('pitch-out').textContent = `${$('pitch-slider').value}°`;
+  $('well-slider').value = String(wellDepth);
+  $('well-out').textContent = `${wellDepth.toFixed(2)}×`;
+  $('mass-slider').value = String(sim.centralMassScale);
+  $('mass-out').textContent = `${sim.centralMassScale.toFixed(2)}×`;
+  $('speed-slider').value = String(speedMultiplier);
+  $('speed-out').textContent = `${speedMultiplier.toFixed(2)}×`;
+
+  $('opt-grid').checked = showGrid;
+  $('opt-equi').checked = showEquipotential;
+  $('opt-field').checked = showField;
+  $('opt-kepler').checked = showKeplerSectors;
+  $('opt-gr').checked = sim.relativityEnabled;
+  $('opt-collision').checked = sim.collisionsEnabled;
+
+  $('follow-check').checked = followSelected;
+  $('play-btn').setAttribute('aria-pressed', String(playing));
+  $('play-btn').textContent = playing ? 'Ⅱ 일시정지' : '▶ 재생';
+
+  $('stage').dataset.dragMode = dragMode;
+  $('mode-slingshot').setAttribute('aria-pressed', String(dragMode === 'slingshot'));
+  $('mode-orbit').setAttribute('aria-pressed', String(dragMode === 'orbit'));
+
+  const spBtn = $('special-action');
+  if (sc.id === 'figure8') {
+    spBtn.hidden = false;
+    spBtn.textContent = '+0.5% 카오스 섭동';
+  } else if (sc.id === 'hohmann') {
+    spBtn.hidden = false;
+    spBtn.textContent = '호만 전이 Δv₁ 분사';
+  } else {
+    spBtn.hidden = true;
+  }
+
+  document.querySelectorAll('#template-chips button').forEach(btn => {
+    btn.setAttribute('aria-pressed', String(btn.dataset.template === spawnTemplateKey));
+  });
+
+  syncBodyChips();
+}
+
+function syncBodyChips() {
+  const container = $('body-chips');
+  container.replaceChildren(
+    ...sim.bodies.map(b => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = b.name.split('(')[0].trim();
+      btn.setAttribute('aria-pressed', String(b.id === sim.selectedBodyId));
+      btn.addEventListener('click', () => {
+        selectBody(sim, b.id);
+        if (followSelected) renderer.camera.followBodyId = b.id;
+        syncBodyChips();
+        updateTelemetry();
+      });
+      return btn;
+    })
+  );
+}
+
+function recordHistorySample(force = false) {
+  if (!force && sim.t - lastSampleT < 0.025) return;
+  lastSampleT = sim.t;
+  const sysE = computeSystemEnergy(sim);
+  const body = sim.bodies.find(b => b.id === sim.selectedBodyId);
+  const el = body ? computeOrbitalElements(body, sim) : null;
+  const useSpecific = Boolean(el && el.primary && body.mass < 0.05);
+  history.push({
+    t: sim.t,
+    k: useSpecific ? el.specificKinetic : sysE.kinetic,
+    u: useSpecific ? el.specificPotential : sysE.potential,
+    e: useSpecific ? el.specificEnergy : sysE.total,
+    speed: el ? el.speedKms : 0
+  });
+  if (history.length > 220) history.shift();
+}
+
+function updateTelemetry() {
+  const sysE = computeSystemEnergy(sim);
+  $('clock-out').textContent = `t = ${sim.t.toFixed(2)} yr · ΔE/E = ${(sysE.drift * 100).toFixed(4)}%`;
+  $('stage-title-bar').textContent = `${sim.scenario.shortTitle} · 천체 ${sim.bodies.length}개${sim.particles.length ? ` · 입자 ${sim.particles.length}개` : ''}`;
+
+  const latestEvent = sim.events[sim.events.length - 1];
+  const banner = $('event-banner');
+  if (latestEvent) {
+    banner.hidden = false;
+    banner.textContent = `[t=${latestEvent.t.toFixed(2)} yr] ${latestEvent.message}`;
+  } else {
+    banner.hidden = true;
+  }
+
+  const body = sim.bodies.find(b => b.id === sim.selectedBodyId) || sim.bodies[0];
+  const el = body ? computeOrbitalElements(body, sim) : null;
+  if (!el) return;
+
+  $('sel-name').textContent = body.name;
+  $('val-speed').textContent = fmtNum(el.speedKms, 2);
+  $('val-dist').textContent = fmtNum(el.r, 3);
+  $('val-ecc').textContent = fmtNum(el.e, 3);
+  $('val-a').textContent = el.bound ? fmtNum(el.a, 3) : '∞';
+  $('val-period').textContent = el.bound ? fmtNum(el.period, 3) : '—';
+  $('val-vesc').textContent = el.primary ? fmtNum(el.vEscKms, 2) : '—';
+
+  const unitLabel = body.mass < 0.05 && el.primary ? 'AU²/yr²' : 'M☉·AU²/yr²';
+  const kVal = body.mass < 0.05 && el.primary ? el.specificKinetic : sysE.kinetic;
+  const uVal = body.mass < 0.05 && el.primary ? el.specificPotential : sysE.potential;
+  const eVal = body.mass < 0.05 && el.primary ? el.specificEnergy : sysE.total;
+
+  $('e-k').textContent = `${kVal.toFixed(2)} ${unitLabel}`;
+  $('e-u').textContent = `${uVal.toFixed(2)} ${unitLabel}`;
+  $('e-tot').textContent = `${eVal.toFixed(2)} ${unitLabel}`;
+  $('orbit-state-badge').textContent = el.primary ? el.typeLabel : '계 전체 중심체';
+
+  const canThrust = Boolean(el.primary && body !== el.primary);
+  $('thrust-pro').disabled = !canThrust;
+  $('thrust-retro').disabled = !canThrust;
+  $('thrust-circ').disabled = !canThrust;
+
+  updateKeplerTable();
+  drawEnergyPlot();
+}
+
+function updateKeplerTable() {
+  const tbody = $('kepler-table-body');
+  const primary = getPrimaryBody(sim);
+  const rows = sim.bodies
+    .filter(b => b !== primary)
+    .map(b => {
+      const el = computeOrbitalElements(b, sim);
+      const tr = document.createElement('tr');
+      const ratioText = el.keplerRatio != null ? el.keplerRatio.toFixed(3) : '—';
+      const cells = [
+        b.name.split('(')[0].trim(),
+        el.bound ? `${el.a.toFixed(3)} AU` : '쌍곡선',
+        el.e.toFixed(3),
+        el.bound ? `${el.period.toFixed(3)} yr` : '—',
+        ratioText,
+        `${el.speedKms.toFixed(2)} km/s`,
+        el.typeLabel
+      ];
+      cells.forEach((txt, idx) => {
+        const td = document.createElement('td');
+        if (idx >= 1 && idx <= 5) td.className = 'num';
+        td.textContent = txt;
+        tr.appendChild(td);
+      });
+      return tr;
+    });
+  tbody.replaceChildren(...rows);
+}
+
+function drawEnergyPlot() {
+  const isLight = document.body.dataset.theme === 'light';
+  const bg = isLight ? '#f7f9fd' : '#10182b';
+  const gridCol = isLight ? '#dce4f0' : '#223875';
+  const textCol = isLight ? '#526581' : '#b6c9e7';
+  const kCol = isLight ? '#2563eb' : '#60a5df';
+  const uCol = isLight ? '#d97706' : '#fbbf24';
+  const eCol = isLight ? '#059669' : '#34d399';
+
+  const w = energyCanvas.width;
+  const h = energyCanvas.height;
+  energyCtx.clearRect(0, 0, w, h);
+  energyCtx.fillStyle = bg;
+  energyCtx.fillRect(0, 0, w, h);
+
+  const pad = { l: 58, r: 22, t: 22, b: 34 };
+  const pw = w - pad.l - pad.r;
+  const ph = h - pad.t - pad.b;
+
+  if (history.length < 2) return;
+
+  let minV = 0;
+  let maxV = 0;
+  for (const pt of history) {
+    minV = Math.min(minV, pt.u, pt.e, pt.k);
+    maxV = Math.max(maxV, pt.k, pt.e, pt.u);
+  }
+  const margin = Math.max(1, (maxV - minV) * 0.14);
+  minV -= margin;
+  maxV += margin;
+  const spanV = Math.max(1e-4, maxV - minV);
+  const toY = v => pad.t + ((maxV - v) / spanV) * ph;
+
+  // Zero energy line
+  const zeroY = toY(0);
+  energyCtx.strokeStyle = gridCol;
+  energyCtx.lineWidth = 1.2;
+  energyCtx.beginPath();
+  energyCtx.moveTo(pad.l, zeroY);
+  energyCtx.lineTo(w - pad.r, zeroY);
+  energyCtx.stroke();
+
+  energyCtx.fillStyle = textCol;
+  energyCtx.font = '12px ui-monospace, Consolas, monospace';
+  energyCtx.fillText('0 (탈출 경계)', pad.l + 6, Math.max(pad.t + 14, zeroY - 5));
+
+  const drawCurve = (key, color, dashed = false) => {
+    energyCtx.save();
+    energyCtx.strokeStyle = color;
+    energyCtx.lineWidth = 2.4;
+    if (dashed) energyCtx.setLineDash([7, 5]);
+    energyCtx.beginPath();
+    history.forEach((pt, i) => {
+      const x = pad.l + (i / (history.length - 1)) * pw;
+      const y = toY(pt[key]);
+      if (i === 0) energyCtx.moveTo(x, y);
+      else energyCtx.lineTo(x, y);
+    });
+    energyCtx.stroke();
+    energyCtx.restore();
+  };
+
+  drawCurve('u', uCol);
+  drawCurve('k', kCol);
+  drawCurve('e', eCol, true);
+
+  // Legend
+  const legendItems = [
+    ['운동 K', kCol],
+    ['위치 U', uCol],
+    ['총 에너지 E = K + U', eCol]
+  ];
+  let lx = pad.l;
+  const ly = h - 11;
+  energyCtx.font = '700 13px "Gmarket Sans", sans-serif';
+  for (const [label, col] of legendItems) {
+    energyCtx.fillStyle = col;
+    energyCtx.fillRect(lx, ly - 10, 14, 4);
+    energyCtx.fillStyle = textCol;
+    energyCtx.fillText(label, lx + 20, ly - 4);
+    lx += energyCtx.measureText(label).width + 44;
+  }
+}
+
+function renderAll() {
+  renderer.render(sim, {
+    showGrid,
+    showEquipotential,
+    showField,
+    showKeplerSectors,
+    wellDepth,
+    slingshot: slingshot.active ? slingshot : null,
+    prediction: slingshotPrediction
+  });
+  updateTelemetry();
+}
+
+function loop(nowMs) {
+  if (!lastFrameMs) lastFrameMs = nowMs;
+  const realDt = Math.min(0.05, (nowMs - lastFrameMs) / 1000);
+  lastFrameMs = nowMs;
+
+  if (playing) {
+    const simDt = sim.dt * speedMultiplier * (realDt * 60);
+    const prevCount = sim.bodies.length;
+    stepSimulation(sim, simDt);
+    if (sim.bodies.length !== prevCount) syncBodyChips();
+    recordHistorySample(false);
+    uiSyncAcc += realDt;
+    renderer.render(sim, {
+      showGrid,
+      showEquipotential,
+      showField,
+      showKeplerSectors,
+      wellDepth,
+      slingshot: slingshot.active ? slingshot : null,
+      prediction: slingshotPrediction
+    });
+    if (uiSyncAcc >= 0.08) {
+      uiSyncAcc = 0;
+      updateTelemetry();
+    }
+  } else {
+    renderer.render(sim, {
+      showGrid,
+      showEquipotential,
+      showField,
+      showKeplerSectors,
+      wellDepth,
+      slingshot: slingshot.active ? slingshot : null,
+      prediction: slingshotPrediction
+    });
+  }
+  rafId = requestAnimationFrame(loop);
+}
+
+// Canvas pointer interactions (Slingshot launch OR 3D camera orbit + click-to-select)
+function pickBodyAtScreen(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const sx = clientX - rect.left;
+  const sy = clientY - rect.top;
+  const m = renderer.getMetrics(sim);
+  let closest = null;
+  let bestDist = 26;
+  for (const b of sim.bodies) {
+    const p = renderer.project(b.x, b.y, 0, m);
+    const d = Math.hypot(p.x - sx, p.y - sy);
+    if (d < bestDist) {
+      bestDist = d;
+      closest = b;
+    }
+  }
+  return closest;
+}
+
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+canvas.addEventListener('pointerdown', e => {
+  canvas.setPointerCapture(e.pointerId);
+  const forceOrbit = e.button === 2 || e.shiftKey || dragMode === 'orbit';
+  if (forceOrbit) {
+    camDrag.active = true;
+    camDrag.pointerId = e.pointerId;
+    camDrag.lastX = e.clientX;
+    camDrag.lastY = e.clientY;
+    camDrag.moved = false;
+    return;
+  }
+
+  const worldPt = renderer.screenToWorld(e.clientX, e.clientY, sim);
+  slingshot.active = true;
+  slingshot.pointerId = e.pointerId;
+  slingshot.startScreenX = e.clientX;
+  slingshot.startScreenY = e.clientY;
+  slingshot.wx = worldPt.x;
+  slingshot.wy = worldPt.y;
+  slingshot.vx = 0;
+  slingshot.vy = 0;
+  slingshotPrediction = predictTrajectory(sim, slingshot.wx, slingshot.wy, 0, 0, 220, 0.008);
+});
+
+canvas.addEventListener('pointermove', e => {
+  if (camDrag.active && camDrag.pointerId === e.pointerId) {
+    const dx = e.clientX - camDrag.lastX;
+    const dy = e.clientY - camDrag.lastY;
+    if (Math.hypot(dx, dy) > 2) camDrag.moved = true;
+    camDrag.lastX = e.clientX;
+    camDrag.lastY = e.clientY;
+    renderer.camera.yaw -= dx * 0.007;
+    const nextPitch = Math.max(0, Math.min(78 * (Math.PI / 180), renderer.camera.pitch + dy * 0.007));
+    renderer.camera.pitch = nextPitch;
+    $('pitch-slider').value = String(Math.round((nextPitch * 180) / Math.PI));
+    $('pitch-out').textContent = `${$('pitch-slider').value}°`;
+    return;
+  }
+
+  if (slingshot.active && slingshot.pointerId === e.pointerId) {
+    const worldNow = renderer.screenToWorld(e.clientX, e.clientY, sim);
+    // Pull back like a slingshot -> launch opposite to drag vector
+    const gain = 6.2;
+    slingshot.vx = (slingshot.wx - worldNow.x) * gain;
+    slingshot.vy = (slingshot.wy - worldNow.y) * gain;
+    slingshotPrediction = predictTrajectory(sim, slingshot.wx, slingshot.wy, slingshot.vx, slingshot.vy, 220, 0.008);
+  }
+});
+
+canvas.addEventListener('pointerup', e => {
+  if (camDrag.active && camDrag.pointerId === e.pointerId) {
+    if (!camDrag.moved) {
+      const hit = pickBodyAtScreen(e.clientX, e.clientY);
+      if (hit) {
+        selectBody(sim, hit.id);
+        if (followSelected) renderer.camera.followBodyId = hit.id;
+        syncBodyChips();
+        updateTelemetry();
+      }
+    }
+    camDrag.active = false;
+    camDrag.pointerId = null;
+    return;
+  }
+
+  if (slingshot.active && slingshot.pointerId === e.pointerId) {
+    const pullPx = Math.hypot(e.clientX - slingshot.startScreenX, e.clientY - slingshot.startScreenY);
+    if (pullPx < 7) {
+      // Short click selects nearby body or spawns circular orbiter if empty space
+      const hit = pickBodyAtScreen(e.clientX, e.clientY);
+      if (hit) {
+        selectBody(sim, hit.id);
+        if (followSelected) renderer.camera.followBodyId = hit.id;
+        syncBodyChips();
+        updateTelemetry();
+      }
+    } else {
+      spawnBody(sim, spawnTemplateKey, slingshot.wx, slingshot.wy, slingshot.vx, slingshot.vy);
+      if (followSelected) renderer.camera.followBodyId = sim.selectedBodyId;
+      syncBodyChips();
+      updateTelemetry();
+    }
+    slingshot.active = false;
+    slingshot.pointerId = null;
+    slingshotPrediction = null;
+  }
+});
+
+canvas.addEventListener('pointercancel', () => {
+  camDrag.active = false;
+  slingshot.active = false;
+  slingshotPrediction = null;
+});
+
+canvas.addEventListener(
+  'wheel',
+  e => {
+    e.preventDefault();
+    const factor = e.deltaY > 0 ? 0.91 : 1.1;
+    renderer.camera.zoom = Math.max(0.35, Math.min(3.2, renderer.camera.zoom * factor));
+  },
+  { passive: false }
+);
+
+// Wire all buttons & inputs
+document.querySelectorAll('.tabs button[data-scenario]').forEach(btn => {
+  btn.addEventListener('click', () => loadScenario(btn.dataset.scenario));
+});
+
+$('play-btn').addEventListener('click', () => {
+  playing = !playing;
+  $('play-btn').setAttribute('aria-pressed', String(playing));
+  $('play-btn').textContent = playing ? 'Ⅱ 일시정지' : '▶ 재생';
+});
+
+$('step-btn').addEventListener('click', () => {
+  playing = false;
+  $('play-btn').setAttribute('aria-pressed', 'false');
+  $('play-btn').textContent = '▶ 재생';
+  stepSimulation(sim, sim.dt * 12);
+  recordHistorySample(true);
+  renderAll();
+});
+
+$('reset-btn').addEventListener('click', () => loadScenario(sim.scenarioId));
+
+$('zoom-in-btn').addEventListener('click', () => {
+  renderer.camera.zoom = Math.min(3.2, renderer.camera.zoom * 1.18);
+});
+$('zoom-out-btn').addEventListener('click', () => {
+  renderer.camera.zoom = Math.max(0.35, renderer.camera.zoom * 0.84);
+});
+$('cam-reset-btn').addEventListener('click', () => {
+  renderer.camera.yaw = 0.55;
+  renderer.camera.pitch = (sim.scenario.defaultPitch ?? 42) * (Math.PI / 180);
+  renderer.camera.zoom = 1.0;
+  renderer.camera.panX = 0;
+  renderer.camera.panY = 0;
+  followSelected = false;
+  renderer.camera.followBodyId = null;
+  $('follow-check').checked = false;
+  $('pitch-slider').value = String(Math.round((renderer.camera.pitch * 180) / Math.PI));
+  $('pitch-out').textContent = `${$('pitch-slider').value}°`;
+});
+
+$('mode-slingshot').addEventListener('click', () => {
+  dragMode = 'slingshot';
+  syncControlsFromState();
+});
+$('mode-orbit').addEventListener('click', () => {
+  dragMode = 'orbit';
+  syncControlsFromState();
+});
+
+document.querySelectorAll('#template-chips button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    spawnTemplateKey = btn.dataset.template;
+    document.querySelectorAll('#template-chips button').forEach(b => {
+      b.setAttribute('aria-pressed', String(b === btn));
+    });
+  });
+});
+
+$('pitch-slider').addEventListener('input', e => {
+  const deg = Number(e.target.value);
+  renderer.camera.pitch = (deg * Math.PI) / 180;
+  $('pitch-out').textContent = `${deg}°`;
+});
+
+$('well-slider').addEventListener('input', e => {
+  wellDepth = Number(e.target.value);
+  $('well-out').textContent = `${wellDepth.toFixed(2)}×`;
+});
+
+$('mass-slider').addEventListener('input', e => {
+  const factor = Number(e.target.value);
+  applyCentralMassScale(sim, factor);
+  $('mass-out').textContent = `${factor.toFixed(2)}×`;
+  updateTelemetry();
+});
+
+$('speed-slider').addEventListener('input', e => {
+  speedMultiplier = Number(e.target.value);
+  $('speed-out').textContent = `${speedMultiplier.toFixed(2)}×`;
+});
+
+$('opt-grid').addEventListener('change', e => { showGrid = e.target.checked; });
+$('opt-equi').addEventListener('change', e => { showEquipotential = e.target.checked; });
+$('opt-field').addEventListener('change', e => { showField = e.target.checked; });
+$('opt-kepler').addEventListener('change', e => {
+  showKeplerSectors = e.target.checked;
+  sim.keplerEnabled = showKeplerSectors;
+  if (!showKeplerSectors) {
+    sim.keplerSectors = [];
+    sim.currentSector = null;
+  }
+});
+$('opt-gr').addEventListener('change', e => { sim.relativityEnabled = e.target.checked; });
+$('opt-collision').addEventListener('change', e => { sim.collisionsEnabled = e.target.checked; });
+
+$('follow-check').addEventListener('change', e => {
+  followSelected = e.target.checked;
+  renderer.camera.followBodyId = followSelected ? sim.selectedBodyId : null;
+  if (!followSelected) {
+    renderer.camera.panX = 0;
+    renderer.camera.panY = 0;
+  }
+});
+
+$('thrust-pro').addEventListener('click', () => {
+  applyImpulse(sim, sim.selectedBodyId, 'prograde', 0.14);
+  updateTelemetry();
+});
+$('thrust-retro').addEventListener('click', () => {
+  applyImpulse(sim, sim.selectedBodyId, 'retrograde', 0.14);
+  updateTelemetry();
+});
+$('thrust-circ').addEventListener('click', () => {
+  applyImpulse(sim, sim.selectedBodyId, 'circularize');
+  updateTelemetry();
+});
+$('special-action').addEventListener('click', () => {
+  if (sim.scenarioId === 'figure8') {
+    applyImpulse(sim, 'body1', 'perturbChaos');
+  } else if (sim.scenarioId === 'hohmann') {
+    applyImpulse(sim, 'spacecraft', 'hohmannTransfer');
+  }
+  updateTelemetry();
+});
+
+// Observation Notebook & CSV Export
+function renderRecords() {
+  const list = $('records-list');
+  if (!records.length) {
+    const p = document.createElement('p');
+    p.className = 'caption';
+    p.textContent = '아직 저장한 기록이 없습니다. 원하는 순간에 "현재 궤도 기록"을 눌러 보세요.';
+    list.replaceChildren(p);
+    return;
+  }
+  list.replaceChildren(
+    ...records.slice().reverse().map(r => {
+      const div = document.createElement('div');
+      div.className = 'record-item';
+      const title = document.createElement('strong');
+      title.textContent = `${r.scenario} · ${r.body} (t = ${r.t} yr)`;
+      const detail = document.createElement('span');
+      detail.textContent = `v=${r.speed} km/s, r=${r.dist} AU, e=${r.ecc}, ${r.state}`;
+      div.append(title, detail);
+      return div;
+    })
+  );
+}
+
+$('record-btn').addEventListener('click', () => {
+  const body = sim.bodies.find(b => b.id === sim.selectedBodyId) || sim.bodies[0];
+  if (!body) return;
+  const el = computeOrbitalElements(body, sim);
+  records.push({
+    scenario: sim.scenario.shortTitle,
+    body: body.name.split('(')[0].trim(),
+    t: sim.t.toFixed(2),
+    speed: el.speedKms.toFixed(2),
+    dist: el.r.toFixed(3),
+    ecc: el.e.toFixed(3),
+    a: el.bound ? el.a.toFixed(3) : 'Inf',
+    state: el.typeLabel
+  });
+  if (records.length > 40) records.shift();
+  saveRecords();
+  renderRecords();
+});
+
+$('csv-btn').addEventListener('click', () => {
+  const header = 'scenario,body,t_yr,speed_kms,distance_AU,eccentricity,semi_major_AU,orbit_state';
+  const lines = records.map(r =>
+    [r.scenario, r.body, r.t, r.speed, r.dist, r.ecc, r.a, r.state]
+      .map(s => `"${String(s).replaceAll('"', '""')}"`)
+      .join(',')
+  );
+  const blob = new Blob(['\uFEFF' + [header, ...lines].join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'arcadia-gravity-observations.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+// Interactive 5-Question Quiz
+function renderQuiz() {
+  const q = QUIZ_ITEMS[quizIndex];
+  $('quiz-counter').textContent = `${quizIndex + 1} / ${QUIZ_ITEMS.length}`;
+  $('quiz-question').textContent = q.question;
+  $('quiz-feedback').textContent = '';
+  $('quiz-next').hidden = true;
+  quizAnswered = false;
+
+  $('quiz-options').replaceChildren(
+    ...q.options.map((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = `${idx + 1}. ${opt}`;
+      btn.addEventListener('click', () => {
+        if (quizAnswered) return;
+        quizAnswered = true;
+        const correct = idx === q.answer;
+        btn.setAttribute('aria-pressed', 'true');
+        $('quiz-feedback').textContent = (correct ? '정답입니다! ' : '다시 확인해 보세요. ') + q.explanation;
+        $('quiz-next').hidden = false;
+      });
+      return btn;
+    })
+  );
+}
+
+$('quiz-next').addEventListener('click', () => {
+  quizIndex = (quizIndex + 1) % QUIZ_ITEMS.length;
+  renderQuiz();
+});
+
+// Theme Toggle
+$('theme').addEventListener('click', () => {
+  const next = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.body.dataset.theme = next;
+  $('theme').textContent = next === 'dark' ? '밝은 테마' : '어두운 테마';
+  $('theme').setAttribute('aria-label', next === 'dark' ? '밝은 테마로 전환' : '어두운 테마로 전환');
+  renderAll();
+});
+
+// Render model source links
+$('sources-links').innerHTML = MODEL_SOURCES
+  .map(s => `<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`)
+  .join(' · ');
+
+// Boot
+syncControlsFromState();
+recordHistorySample(true);
+renderRecords();
+renderQuiz();
+renderAll();
+rafId = requestAnimationFrame(loop);
+</script>
+</body>
+</html>
