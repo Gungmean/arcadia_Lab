@@ -6,8 +6,12 @@ import {
   stepSimulation,
   computeSystemEnergy,
   computeOrbitalElements,
+  applyCentralMassScale,
   applyImpulse,
-  predictTrajectory
+  predictTrajectory,
+  getBinaryRocheContext,
+  evaluatePotentialAt,
+  evaluateRochePotentialAt
 } from './physics.mjs';
 
 test('circular orbit preserves radius, Kepler 3rd Law (T^2 / a^3 = 1), and energy', () => {
@@ -136,4 +140,26 @@ test('Hohmann transfer delta-v expands circular orbit apoapsis to outer target r
   const el = computeOrbitalElements(sc, sim);
   assert.ok(el.bound);
   assert.ok(Math.abs(el.ra - 2.40) < 0.08, `Expected apoapsis near 2.40 AU, got ${el.ra}`);
+});
+
+test('Binary corotating Roche potential captures centrifugal term and locates L1 closer to secondary than static saddle', () => {
+  const sim = createSimulation('binary');
+  const ctx = getBinaryRocheContext(sim);
+  assert.ok(ctx);
+  // Barycenter at x = 0; primary at -0.3833, secondary at +0.7667; dynamical L1 < static neutral point
+  const phiEff = evaluateRochePotentialAt(sim, ctx.l1X, ctx.l1Y, ctx);
+  const phiStatic = evaluatePotentialAt(sim, ctx.l1X, ctx.l1Y);
+  assert.ok(phiEff < phiStatic, 'Centrifugal term must lower corotating effective potential away from barycenter');
+  assert.ok(ctx.l1X > 0.15 && ctx.l1X < 0.35, `Expected binary L1 near +0.27 AU, got ${ctx.l1X}`);
+});
+
+test('Mass scaling and impulse re-baseline reference energy so symplectic drift stays small afterward', () => {
+  const sim = createSimulation('kepler', { collisionsEnabled: false });
+  applyCentralMassScale(sim, 1.5);
+  applyImpulse(sim, 'comet', 'prograde', 0.1);
+  for (let i = 0; i < 120; i++) {
+    stepSimulation(sim, 0.004);
+  }
+  const e = computeSystemEnergy(sim);
+  assert.ok(e.drift < 5e-5, `Expected drift re-baselined cleanly after external intervention, got ${e.drift}`);
 });

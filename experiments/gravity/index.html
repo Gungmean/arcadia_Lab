@@ -645,7 +645,7 @@
 
       <section id="kepler-table-section" class="table-section" aria-label="케플러 제3법칙 검증표">
         <h2>전체 천체 궤도 요소 &amp; 케플러 제3법칙(T² / a³)</h2>
-        <p class="caption">태양 질량(1.0 M☉) 중심의 속박 궤도에서는 반장축의 세제곱과 주기의 제곱의 비 T²/a³가 항상 1.000 yr²/AU³로 일정합니다.</p>
+        <p class="caption">케플러 제3법칙에 따라 속박 궤도의 T²/a³ 값은 중심 천체 질량 M에 반비례합니다(태양 질량 M = 1.0 M☉일 때 T²/a³ = 1.000 yr²/AU³, 블랙홀 2.5 M☉일 때 ≈ 0.400). 질량 배율 슬라이더로 변화를 확인해 보세요.</p>
         <div class="table-scroll">
           <table>
             <thead>
@@ -694,7 +694,7 @@
         <div class="notes">
           <p><strong>수치 적분 및 단위계:</strong> 궤도 계산은 에너지와 각운동량을 장시간 정밀하게 보존하는 4차 심플렉틱 요시다(Yoshida) 적분기를 사용합니다. 표준 천문 단위계(길이 AU, 질량 M☉, 시간 yr, G = 4π²)를 사용하여 1 AU 원궤도 주기 T = 1.000 yr, 속력 v = 29.78 km/s를 정확히 재현합니다.</p>
           <p><strong>시공간 곡률 우물(3D 격자):</strong> 2차원 공전 평면 위의 중력 퍼텐셜 Φ(x,y)를 로그 척도 깊이 z = −k·ln(1 + |Φ|/14)로 변환하여 3차원 시공간 깔때기처럼 시각화한 교육용 표현입니다. 실제 일반상대론의 4차원 리만 계량 텐서 곡률을 1:1 축척으로 그린 것은 아닙니다.</p>
-          <p><strong>블랙홀 세차 및 로슈 한계:</strong> 일반상대론 근일점 세차는 유효 퍼텐셜 보정 V_GR(r) = −GML²/(c_eff² r³)을 적용하며, 수 분 안에 세차 꽃잎(Rosette) 무늬를 관찰할 수 있도록 블랙홀 프리셋에서는 유효 광속 c_eff를 과장된 상대론적 영역으로 설정했습니다. 로슈 한계 고리는 위성이 d &lt; d_R 진입 시 정성적 조석 전단 속도를 가진 72개의 고리 입자로 분열되는 교육용 모형입니다.</p>
+          <p><strong>블랙홀 세차·로슈 엽 및 로슈 한계:</strong> 일반상대론 근일점 세차는 단위 질량당 유효 퍼텐셜 보정 V_GR(r) = −G(M+m)l²/(c_eff² r³) (l = r × v: 비각운동량)을 적용하며, 수 분 안에 세차 꽃잎(Rosette) 무늬를 관찰할 수 있도록 블랙홀 프리셋에서는 유효 광속 c_eff를 과장된 상대론적 영역으로 설정했습니다. 쌍성계의 등퍼텐셜선은 두 별과 함께 공회전하는 좌표계의 원심력 항(−½Ω²r_cm²)을 포함한 로슈 유효 퍼텐셜이며, 로슈 한계 시나리오의 모행성 질량(1.2 M☉)·반지름(0.44 AU)·로슈 반지름(1.48 AU, ρ_M/ρ_m ≈ 2.6 상당)은 AU 격자에서 조석 분열과 72개 고리 입자의 케플러 전단을 선명히 관찰하기 위한 교육용 확장 축척입니다.</p>
           <p>참고 자료: <span id="sources-links"></span></p>
         </div>
       </details>
@@ -850,7 +850,7 @@ const SCENARIOS = {
     shortTitle: '블랙홀 세차',
     title: '블랙홀 강착과 일반상대론 근일점 세차',
     subtitle: '강한 중력장에서는 뉴턴 역학의 닫힌 타원이 유지되지 않고 근일점이 공전 방향으로 서서히 회전(세차 운동)합니다.',
-    formula: 'Δω ≈ 6πGM / [a(1 − e²) c²]   ·   V_eff(r) = −GM/r − GML²/(c²r³)',
+    formula: 'Δω ≈ 6πGM / [a(1 − e²) c²]   ·   V_eff(r) = −GM/r + l²/(2r²) − GMl²/(c²r³)',
     worldExtent: 3.4,
     baseDt: 0.0032,
     softening: 0.02,
@@ -935,7 +935,7 @@ const SCENARIOS = {
     shortTitle: '쌍성계·로슈 엽',
     title: '쌍성계 질량 중심 공전과 등퍼텐셜 로슈 엽',
     subtitle: '두 별은 공통 질량 중심(Barycenter)을 중심으로 서로 끌어당기며 돌고, 등퍼텐셜선은 라그랑주 점과 로슈 엽을 드러냅니다.',
-    formula: 'm₁r₁ = m₂r₂   ·   Φ(r) = −G(m₁/r₁ + m₂/r₂)',
+    formula: 'm₁r₁ = m₂r₂   ·   Φ_eff(r) = −G(m₁/r₁ + m₂/r₂) − ½Ω²r_cm²',
     worldExtent: 4.0,
     baseDt: 0.0035,
     softening: 0.02,
@@ -1261,11 +1261,17 @@ function getPrimaryBody(sim) {
   return best;
 }
 
+function rebaselineEnergy(sim) {
+  sim.initialEnergy = computeSystemEnergy(sim).total;
+  return sim.initialEnergy;
+}
+
 function applyCentralMassScale(sim, factor) {
   sim.centralMassScale = factor;
   const primary = getPrimaryBody(sim);
   if (primary && typeof primary.baseMass === 'number') {
     primary.mass = primary.baseMass * factor;
+    rebaselineEnergy(sim);
   }
 }
 
@@ -1811,6 +1817,7 @@ function applyImpulse(sim, bodyId, mode, deltaFactor = 0.14) {
     body.burnTimer = 0.5;
   }
 
+  rebaselineEnergy(sim);
   return { ok: true };
 }
 
@@ -1835,6 +1842,7 @@ function spawnBody(sim, templateKey, x, y, vx, vy) {
   };
   sim.bodies.push(body);
   sim.selectedBodyId = body.id;
+  rebaselineEnergy(sim);
   return body;
 }
 
@@ -1936,6 +1944,85 @@ function evaluatePotentialAt(sim, x, y) {
   return phi;
 }
 
+function getBinaryRocheContext(sim) {
+  // Identify two dominant massive stars to form a corotating Roche potential frame
+  const massive = sim.bodies
+    .filter(b => b.mass >= 0.05)
+    .sort((a, b) => b.mass - a.mass);
+  if (massive.length < 2) return null;
+
+  const b1 = massive[0];
+  const b2 = massive[1];
+  const mt = b1.mass + b2.mass;
+  const dx = b2.x - b1.x;
+  const dy = b2.y - b1.y;
+  const sep = Math.hypot(dx, dy);
+  if (mt <= 0 || sep < 0.08) return null;
+
+  const gEff = G0 * sim.gScale;
+  const omegaSq = (gEff * mt) / (sep * sep * sep);
+  const cmX = (b1.mass * b1.x + b2.mass * b2.x) / mt;
+  const cmY = (b1.mass * b1.y + b2.mass * b2.y) / mt;
+
+  const evalPhiEff = (px, py) => {
+    const phiGrav = evaluatePotentialAt(sim, px, py);
+    const rx = px - cmX;
+    const ry = py - cmY;
+    return phiGrav - 0.5 * omegaSq * (rx * rx + ry * ry);
+  };
+
+  // Locate critical L1 saddle point along the axis connecting the two stars
+  let bestS = 0.5;
+  let phiL1 = -Infinity;
+  for (let k = 1; k < 48; k++) {
+    const s = 0.08 + (0.84 * k) / 48;
+    const px = b1.x + dx * s;
+    const py = b1.y + dy * s;
+    const v = evalPhiEff(px, py);
+    if (v > phiL1) {
+      phiL1 = v;
+      bestS = s;
+    }
+  }
+  // Golden-section refinement around L1 peak along axis
+  let lo = Math.max(0.05, bestS - 0.03);
+  let hi = Math.min(0.95, bestS + 0.03);
+  for (let it = 0; it < 16; it++) {
+    const m1s = lo + (hi - lo) * 0.381966;
+    const m2s = lo + (hi - lo) * 0.618034;
+    const v1 = evalPhiEff(b1.x + dx * m1s, b1.y + dy * m1s);
+    const v2 = evalPhiEff(b1.x + dx * m2s, b1.y + dy * m2s);
+    if (v1 < v2) lo = m1s;
+    else hi = m2s;
+  }
+  const sL1 = 0.5 * (lo + hi);
+  const l1X = b1.x + dx * sL1;
+  const l1Y = b1.y + dy * sL1;
+  phiL1 = evalPhiEff(l1X, l1Y);
+
+  return {
+    b1,
+    b2,
+    mt,
+    sep,
+    omegaSq,
+    cmX,
+    cmY,
+    l1X,
+    l1Y,
+    phiL1
+  };
+}
+
+function evaluateRochePotentialAt(sim, x, y, rocheCtx = null) {
+  const ctx = rocheCtx ?? (sim.scenarioId === 'binary' ? getBinaryRocheContext(sim) : null);
+  const phiGrav = evaluatePotentialAt(sim, x, y);
+  if (!ctx) return phiGrav;
+  const rx = x - ctx.cmX;
+  const ry = y - ctx.cmY;
+  return phiGrav - 0.5 * ctx.omegaSq * (rx * rx + ry * ry);
+}
+
 function evaluateGravityAt(sim, x, y) {
   let gx = 0;
   let gy = 0;
@@ -1962,12 +2049,12 @@ const SCENARIO_EXPLANATIONS = {
   },
   blackhole: {
     badge: '일반상대론과 중력장',
-    guide: '강한 중력장에서는 뉴턴의 중력 법칙(1/r²)과 달리 유효 퍼텐셜에 −GML²/(c²r³) 항이 더해져 궤도가 닫히지 않습니다. 근일점이 매 공전마다 앞으로 회전하는 근일점 세차(Rosette 궤도)가 나타납니다.',
+    guide: '강한 중력장에서는 뉴턴의 중력 법칙(1/r²)과 달리 단위 질량당 유효 퍼텐셜 V_eff(r) = −GM/r + l²/(2r²) − GMl²/(c²r³) (l: 비각운동량)의 상대론 보정항 때문에 궤도가 닫히지 않습니다. 근일점이 매 공전마다 앞으로 회전하는 근일점 세차(Rosette 궤도)가 나타납니다.',
     tryThis: '오른쪽 설정에서 "일반상대론 세차 보정" 체크를 끄고 켜 보며 궤도가 완벽한 닫힌 타원으로 돌아오는 차이를 비교해 보세요.'
   },
   binary: {
     badge: '이체 운동과 로슈 엽',
-    guide: '두 별은 서로의 질량에 반비례하는 거리(m₁r₁ = m₂r₂)를 유지하며 공통 질량 중심(십자 표시) 주위를 공전합니다. 등퍼텐셜선을 켜면 두 별 사이의 안장점(L₁ 라그랑주 점)과 8자 모양의 로슈 엽(Roche lobe)을 볼 수 있습니다.',
+    guide: '두 별은 서로의 질량에 반비례하는 거리(m₁r₁ = m₂r₂)를 유지하며 공통 질량 중심(십자 표시) 주위를 공전합니다. 등퍼텐셜선은 두 별과 함께 공회전하는 좌표계의 로슈 유효 퍼텐셜(중력 + 원심력 −½Ω²r_cm²)로, L₁ 라그랑주 안장점과 8자 모양의 임계 로슈 엽(Roche lobe)을 보여 줍니다.',
     tryThis: '슬링샷 발사로 두 별 사이 또는 바깥쪽에 새 행성을 던져 안정된 공전 궤도를 찾을 수 있는지 실험해 보세요.'
   },
   figure8: {
@@ -2372,8 +2459,8 @@ class GravityRenderer {
   }
 
   drawEquipotentials(ctx, sim, m, pal) {
-    const G = 38;
-    const span = m.extent * 1.1;
+    const G = 40;
+    const span = m.extent * 0.94;
     const field = new Float32Array((G + 1) * (G + 1));
     let totalMass = 0;
     for (const b of sim.bodies) {
@@ -2381,17 +2468,36 @@ class GravityRenderer {
     }
     if (totalMass <= 0) return;
 
+    const rocheCtx = sim.scenarioId === 'binary' ? getBinaryRocheContext(sim) : null;
+
     for (let iy = 0; iy <= G; iy++) {
       const wy = -span + (2 * span * iy) / G;
       for (let ix = 0; ix <= G; ix++) {
         const wx = -span + (2 * span * ix) / G;
-        field[iy * (G + 1) + ix] = evaluatePotentialAt(sim, wx, wy);
+        field[iy * (G + 1) + ix] = rocheCtx
+          ? evaluateRochePotentialAt(sim, wx, wy, rocheCtx)
+          : evaluatePotentialAt(sim, wx, wy);
       }
     }
 
-    // Smart levels proportional to total mass
-    const base = 39.478 * totalMass;
-    const levels = [-2.2, -1.65, -1.25, -0.95, -0.72, -0.52, -0.36].map(k => k * base);
+    let levelEntries;
+    if (rocheCtx) {
+      const phiL1 = rocheCtx.phiL1;
+      levelEntries = [
+        { val: phiL1 * 1.48, isCritical: false },
+        { val: phiL1 * 1.18, isCritical: false },
+        { val: phiL1, isCritical: true },
+        { val: phiL1 * 0.91, isCritical: false },
+        { val: phiL1 * 0.82, isCritical: false },
+        { val: phiL1 * 0.74, isCritical: false }
+      ];
+    } else {
+      const base = 39.478 * totalMass;
+      levelEntries = [-2.2, -1.65, -1.25, -0.95, -0.72, -0.52, -0.36].map(k => ({
+        val: k * base,
+        isCritical: false
+      }));
+    }
 
     const interp = (v1, v2, level) => {
       const d = v2 - v1;
@@ -2399,13 +2505,12 @@ class GravityRenderer {
       return (level - v1) / d;
     };
 
-    ctx.save();
-    ctx.strokeStyle = pal.contour;
-    ctx.lineWidth = 1.05;
-    ctx.beginPath();
-
     const step = (2 * span) / G;
-    for (const level of levels) {
+    for (const { val: level, isCritical } of levelEntries) {
+      ctx.save();
+      ctx.strokeStyle = isCritical ? pal.roche : pal.contour;
+      ctx.lineWidth = isCritical ? 1.65 : 1.0;
+      ctx.beginPath();
       for (let iy = 0; iy < G; iy++) {
         const y0 = -span + step * iy;
         const y1 = y0 + step;
@@ -2438,9 +2543,26 @@ class GravityRenderer {
           }
         }
       }
+      ctx.stroke();
+      ctx.restore();
     }
-    ctx.stroke();
-    ctx.restore();
+
+    // Annotate exact L1 Lagrange saddle point for binary Roche lobes
+    if (rocheCtx) {
+      const pL1 = this.project(rocheCtx.l1X, rocheCtx.l1Y, 0, m);
+      ctx.save();
+      ctx.fillStyle = pal.roche;
+      ctx.beginPath();
+      ctx.arc(pL1.x, pL1.y, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = '700 10px ui-monospace, Consolas, monospace';
+      ctx.textAlign = 'center';
+      ctx.strokeStyle = pal.labelBg;
+      ctx.lineWidth = 3;
+      ctx.strokeText('L₁', pL1.x, pL1.y - 8);
+      ctx.fillText('L₁', pL1.x, pL1.y - 8);
+      ctx.restore();
+    }
   }
 
   drawGravityField(ctx, sim, m, pal) {
@@ -3487,7 +3609,11 @@ $('opt-kepler').addEventListener('change', e => {
     sim.currentSector = null;
   }
 });
-$('opt-gr').addEventListener('change', e => { sim.relativityEnabled = e.target.checked; });
+$('opt-gr').addEventListener('change', e => {
+  sim.relativityEnabled = e.target.checked;
+  rebaselineEnergy(sim);
+  updateTelemetry();
+});
 $('opt-collision').addEventListener('change', e => { sim.collisionsEnabled = e.target.checked; });
 
 $('follow-check').addEventListener('change', e => {

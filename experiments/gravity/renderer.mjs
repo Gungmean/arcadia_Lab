@@ -1,6 +1,8 @@
 import {
   AU_PER_YR_TO_KMS,
   evaluatePotentialAt,
+  evaluateRochePotentialAt,
+  getBinaryRocheContext,
   evaluateGravityAt,
   getPrimaryBody,
   computeSystemEnergy
@@ -326,8 +328,8 @@ export class GravityRenderer {
   }
 
   drawEquipotentials(ctx, sim, m, pal) {
-    const G = 38;
-    const span = m.extent * 1.1;
+    const G = 40;
+    const span = m.extent * 0.94;
     const field = new Float32Array((G + 1) * (G + 1));
     let totalMass = 0;
     for (const b of sim.bodies) {
@@ -335,17 +337,36 @@ export class GravityRenderer {
     }
     if (totalMass <= 0) return;
 
+    const rocheCtx = sim.scenarioId === 'binary' ? getBinaryRocheContext(sim) : null;
+
     for (let iy = 0; iy <= G; iy++) {
       const wy = -span + (2 * span * iy) / G;
       for (let ix = 0; ix <= G; ix++) {
         const wx = -span + (2 * span * ix) / G;
-        field[iy * (G + 1) + ix] = evaluatePotentialAt(sim, wx, wy);
+        field[iy * (G + 1) + ix] = rocheCtx
+          ? evaluateRochePotentialAt(sim, wx, wy, rocheCtx)
+          : evaluatePotentialAt(sim, wx, wy);
       }
     }
 
-    // Smart levels proportional to total mass
-    const base = 39.478 * totalMass;
-    const levels = [-2.2, -1.65, -1.25, -0.95, -0.72, -0.52, -0.36].map(k => k * base);
+    let levelEntries;
+    if (rocheCtx) {
+      const phiL1 = rocheCtx.phiL1;
+      levelEntries = [
+        { val: phiL1 * 1.48, isCritical: false },
+        { val: phiL1 * 1.18, isCritical: false },
+        { val: phiL1, isCritical: true },
+        { val: phiL1 * 0.91, isCritical: false },
+        { val: phiL1 * 0.82, isCritical: false },
+        { val: phiL1 * 0.74, isCritical: false }
+      ];
+    } else {
+      const base = 39.478 * totalMass;
+      levelEntries = [-2.2, -1.65, -1.25, -0.95, -0.72, -0.52, -0.36].map(k => ({
+        val: k * base,
+        isCritical: false
+      }));
+    }
 
     const interp = (v1, v2, level) => {
       const d = v2 - v1;
@@ -353,13 +374,12 @@ export class GravityRenderer {
       return (level - v1) / d;
     };
 
-    ctx.save();
-    ctx.strokeStyle = pal.contour;
-    ctx.lineWidth = 1.05;
-    ctx.beginPath();
-
     const step = (2 * span) / G;
-    for (const level of levels) {
+    for (const { val: level, isCritical } of levelEntries) {
+      ctx.save();
+      ctx.strokeStyle = isCritical ? pal.roche : pal.contour;
+      ctx.lineWidth = isCritical ? 1.65 : 1.0;
+      ctx.beginPath();
       for (let iy = 0; iy < G; iy++) {
         const y0 = -span + step * iy;
         const y1 = y0 + step;
@@ -392,9 +412,26 @@ export class GravityRenderer {
           }
         }
       }
+      ctx.stroke();
+      ctx.restore();
     }
-    ctx.stroke();
-    ctx.restore();
+
+    // Annotate exact L1 Lagrange saddle point for binary Roche lobes
+    if (rocheCtx) {
+      const pL1 = this.project(rocheCtx.l1X, rocheCtx.l1Y, 0, m);
+      ctx.save();
+      ctx.fillStyle = pal.roche;
+      ctx.beginPath();
+      ctx.arc(pL1.x, pL1.y, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = '700 10px ui-monospace, Consolas, monospace';
+      ctx.textAlign = 'center';
+      ctx.strokeStyle = pal.labelBg;
+      ctx.lineWidth = 3;
+      ctx.strokeText('L₁', pL1.x, pL1.y - 8);
+      ctx.fillText('L₁', pL1.x, pL1.y - 8);
+      ctx.restore();
+    }
   }
 
   drawGravityField(ctx, sim, m, pal) {

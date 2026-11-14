@@ -140,7 +140,7 @@ export const SCENARIOS = {
     shortTitle: '블랙홀 세차',
     title: '블랙홀 강착과 일반상대론 근일점 세차',
     subtitle: '강한 중력장에서는 뉴턴 역학의 닫힌 타원이 유지되지 않고 근일점이 공전 방향으로 서서히 회전(세차 운동)합니다.',
-    formula: 'Δω ≈ 6πGM / [a(1 − e²) c²]   ·   V_eff(r) = −GM/r − GML²/(c²r³)',
+    formula: 'Δω ≈ 6πGM / [a(1 − e²) c²]   ·   V_eff(r) = −GM/r + l²/(2r²) − GMl²/(c²r³)',
     worldExtent: 3.4,
     baseDt: 0.0032,
     softening: 0.02,
@@ -225,7 +225,7 @@ export const SCENARIOS = {
     shortTitle: '쌍성계·로슈 엽',
     title: '쌍성계 질량 중심 공전과 등퍼텐셜 로슈 엽',
     subtitle: '두 별은 공통 질량 중심(Barycenter)을 중심으로 서로 끌어당기며 돌고, 등퍼텐셜선은 라그랑주 점과 로슈 엽을 드러냅니다.',
-    formula: 'm₁r₁ = m₂r₂   ·   Φ(r) = −G(m₁/r₁ + m₂/r₂)',
+    formula: 'm₁r₁ = m₂r₂   ·   Φ_eff(r) = −G(m₁/r₁ + m₂/r₂) − ½Ω²r_cm²',
     worldExtent: 4.0,
     baseDt: 0.0035,
     softening: 0.02,
@@ -551,11 +551,17 @@ export function getPrimaryBody(sim) {
   return best;
 }
 
+export function rebaselineEnergy(sim) {
+  sim.initialEnergy = computeSystemEnergy(sim).total;
+  return sim.initialEnergy;
+}
+
 export function applyCentralMassScale(sim, factor) {
   sim.centralMassScale = factor;
   const primary = getPrimaryBody(sim);
   if (primary && typeof primary.baseMass === 'number') {
     primary.mass = primary.baseMass * factor;
+    rebaselineEnergy(sim);
   }
 }
 
@@ -1101,6 +1107,7 @@ export function applyImpulse(sim, bodyId, mode, deltaFactor = 0.14) {
     body.burnTimer = 0.5;
   }
 
+  rebaselineEnergy(sim);
   return { ok: true };
 }
 
@@ -1125,6 +1132,7 @@ export function spawnBody(sim, templateKey, x, y, vx, vy) {
   };
   sim.bodies.push(body);
   sim.selectedBodyId = body.id;
+  rebaselineEnergy(sim);
   return body;
 }
 
@@ -1224,6 +1232,85 @@ export function evaluatePotentialAt(sim, x, y) {
     phi -= (gEff * b.mass) / r;
   }
   return phi;
+}
+
+export function getBinaryRocheContext(sim) {
+  // Identify two dominant massive stars to form a corotating Roche potential frame
+  const massive = sim.bodies
+    .filter(b => b.mass >= 0.05)
+    .sort((a, b) => b.mass - a.mass);
+  if (massive.length < 2) return null;
+
+  const b1 = massive[0];
+  const b2 = massive[1];
+  const mt = b1.mass + b2.mass;
+  const dx = b2.x - b1.x;
+  const dy = b2.y - b1.y;
+  const sep = Math.hypot(dx, dy);
+  if (mt <= 0 || sep < 0.08) return null;
+
+  const gEff = G0 * sim.gScale;
+  const omegaSq = (gEff * mt) / (sep * sep * sep);
+  const cmX = (b1.mass * b1.x + b2.mass * b2.x) / mt;
+  const cmY = (b1.mass * b1.y + b2.mass * b2.y) / mt;
+
+  const evalPhiEff = (px, py) => {
+    const phiGrav = evaluatePotentialAt(sim, px, py);
+    const rx = px - cmX;
+    const ry = py - cmY;
+    return phiGrav - 0.5 * omegaSq * (rx * rx + ry * ry);
+  };
+
+  // Locate critical L1 saddle point along the axis connecting the two stars
+  let bestS = 0.5;
+  let phiL1 = -Infinity;
+  for (let k = 1; k < 48; k++) {
+    const s = 0.08 + (0.84 * k) / 48;
+    const px = b1.x + dx * s;
+    const py = b1.y + dy * s;
+    const v = evalPhiEff(px, py);
+    if (v > phiL1) {
+      phiL1 = v;
+      bestS = s;
+    }
+  }
+  // Golden-section refinement around L1 peak along axis
+  let lo = Math.max(0.05, bestS - 0.03);
+  let hi = Math.min(0.95, bestS + 0.03);
+  for (let it = 0; it < 16; it++) {
+    const m1s = lo + (hi - lo) * 0.381966;
+    const m2s = lo + (hi - lo) * 0.618034;
+    const v1 = evalPhiEff(b1.x + dx * m1s, b1.y + dy * m1s);
+    const v2 = evalPhiEff(b1.x + dx * m2s, b1.y + dy * m2s);
+    if (v1 < v2) lo = m1s;
+    else hi = m2s;
+  }
+  const sL1 = 0.5 * (lo + hi);
+  const l1X = b1.x + dx * sL1;
+  const l1Y = b1.y + dy * sL1;
+  phiL1 = evalPhiEff(l1X, l1Y);
+
+  return {
+    b1,
+    b2,
+    mt,
+    sep,
+    omegaSq,
+    cmX,
+    cmY,
+    l1X,
+    l1Y,
+    phiL1
+  };
+}
+
+export function evaluateRochePotentialAt(sim, x, y, rocheCtx = null) {
+  const ctx = rocheCtx ?? (sim.scenarioId === 'binary' ? getBinaryRocheContext(sim) : null);
+  const phiGrav = evaluatePotentialAt(sim, x, y);
+  if (!ctx) return phiGrav;
+  const rx = x - ctx.cmX;
+  const ry = y - ctx.cmY;
+  return phiGrav - 0.5 * ctx.omegaSq * (rx * rx + ry * ry);
 }
 
 export function evaluateGravityAt(sim, x, y) {

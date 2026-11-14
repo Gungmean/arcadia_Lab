@@ -7,6 +7,7 @@ import {
   computeSystemEnergy,
   computeOrbitalElements,
   applyCentralMassScale,
+  rebaselineEnergy,
   selectBody,
   applyImpulse,
   spawnBody,
@@ -627,7 +628,11 @@ $('opt-kepler').addEventListener('change', e => {
     sim.currentSector = null;
   }
 });
-$('opt-gr').addEventListener('change', e => { sim.relativityEnabled = e.target.checked; });
+$('opt-gr').addEventListener('change', e => {
+  sim.relativityEnabled = e.target.checked;
+  rebaselineEnergy(sim);
+  updateTelemetry();
+});
 $('opt-collision').addEventListener('change', e => { sim.collisionsEnabled = e.target.checked; });
 
 $('follow-check').addEventListener('change', e => {
