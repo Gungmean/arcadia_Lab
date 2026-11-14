@@ -1,0 +1,143 @@
+/* Instrument pages inherit the live Arcadia palette, fonts and brand assets. */
+.arcadia-instrument,
+.arcadia-instrument[data-theme='dark'] {
+  --paper:var(--bugwang-black)!important;
+  --surface:#142058;
+  --line:var(--bugwang-blue)!important;
+  --ink:#fff!important;
+  --quiet:#b6c9e7!important;
+  --accent:var(--bugwang-sky)!important;
+  --soft:#223875!important;
+  --accent-soft:#223875!important;
+  color-scheme:dark;
+  background:var(--paper)!important;
+  color:var(--ink)!important;
+  padding:0!important;
+  font-size:14px;
+  line-height:1.85;
+  scrollbar-color:#60a5df #191919;
+}
+.arcadia-instrument .wrap { max-width:1440px; padding:0 40px 32px; }
+.arcadia-instrument .instrument-nav { min-height:86px; height:auto; padding:15px 0; gap:24px; border-bottom:1px solid var(--line); }
+.arcadia-instrument .brand-lockup { color:var(--ink)!important; font-size:16px; }
+.arcadia-instrument .brand-lockup .club-logo { width:44px; height:44px; }
+.arcadia-instrument .nav-actions { display:flex; align-items:center; gap:20px; flex-shrink:0; }
+.arcadia-instrument .back-link { font-size:13px; text-decoration:none; }
+.arcadia-instrument .back-link:hover { text-decoration:underline; text-underline-offset:5px; }
+.arcadia-instrument #theme { font-size:12px; padding:8px 12px; min-height:40px; }
+.arcadia-instrument .wrap>header { padding:36px 0 30px; }
+.arcadia-instrument h1 { font-size:34px; line-height:1.4; letter-spacing:-.025em; font-weight:700; text-wrap:balance; margin:0 0 12px; }
+.arcadia-instrument header p { font-size:14px; max-width:78ch; line-height:1.9; }
+.arcadia-instrument .course { margin:0 0 9px; color:var(--accent)!important; font-size:12px; }
+.arcadia-instrument h2 { font-size:17px; line-height:1.65; letter-spacing:-.02em; }
+.arcadia-instrument .eyebrow { display:none; }
+.arcadia-instrument .layout { gap:24px; }
+.arcadia-instrument :is(.panel,.figure,.first-law,.chart) { border-radius:8px; border-color:var(--line); }
+.arcadia-instrument :is(.panel,.chart,.first-law) { background:var(--surface); }
+.arcadia-instrument .panel { padding:22px; }
+.arcadia-instrument :is(.caption,.hint,.annotation,.notes,.legend,.part-desc,.law-signs) { font-size:12px; line-height:1.95; color:var(--quiet); }
+.arcadia-instrument :is(.caption,.hint,.annotation,.notes) { max-width:78ch; }
+.arcadia-instrument :is(.control label,.switchrow,.check) { font-size:13px; }
+.arcadia-instrument .control { margin:20px 0; }
+.arcadia-instrument input[type='range'] { min-height:30px; height:30px; appearance:none; background:transparent!important; cursor:pointer; }
+.arcadia-instrument input[type='range']::-webkit-slider-runnable-track { height:4px; border-radius:2px; }
+.arcadia-instrument input[type='range']::-webkit-slider-thumb { appearance:none; width:16px; height:16px; border:2px solid var(--accent)!important; border-radius:50%; margin-top:-6px; }
+.arcadia-instrument input[type='range']::-moz-range-track { height:4px; border-radius:2px; background:var(--line); }
+.arcadia-instrument input[type='range']::-moz-range-thumb { width:13px; height:13px; border:2px solid var(--accent); border-radius:50%; background:var(--accent); }
+.arcadia-instrument select { min-height:44px; border-radius:4px; padding:10px; }
+.arcadia-instrument button { border-radius:4px; min-height:38px; transition:background-color .16s,border-color .16s,color .16s; }
+.arcadia-instrument button:disabled { opacity:.5; }
+.arcadia-instrument :is(.buttons button,.parts-buttons button,.law-cases button) { font-size:12px; padding:8px 12px; }
+.arcadia-instrument button[aria-pressed='true'],
+.arcadia-instrument button[aria-checked='true'] { background:var(--bugwang-indigo)!important; border-color:var(--accent)!important; color:white!important; }
+.arcadia-instrument :is(#quick-end,#heat100,#adopt) { background:var(--accent)!important; border-color:var(--accent)!important; color:#142058!important; font-weight:700; }
+.arcadia-instrument :is(#quick-end,#heat100,#adopt):hover:not(:disabled) { background:#8cc4ee!important; }
+.arcadia-instrument :is(button,input,select,a):focus-visible { outline:3px solid var(--bugwang-violet); outline-offset:4px; }
+.arcadia-instrument .tabs { gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+.arcadia-instrument .tabs button { background:transparent!important; border:0; border-bottom:3px solid transparent!important; border-radius:0; padding:16px 20px; font-size:16px; }
+.arcadia-instrument .tabs button+button { border-left:1px solid var(--line); }
+.arcadia-instrument .tabs button[aria-pressed='true'] { background:#142058!important; border-bottom-color:var(--accent)!important; }
+.arcadia-instrument .tabs small { font-family:'Gmarket Sans',sans-serif; font-size:11px; letter-spacing:0; color:var(--quiet); }
+.arcadia-instrument .principle { padding:24px 0; gap:14px 32px; }
+.arcadia-instrument .principle h2 { font-size:21px; }
+.arcadia-instrument .formula,
+.arcadia-instrument .law-reading strong { font-family:'Gmarket Sans',sans-serif; font-size:21px; color:var(--accent); }
+.arcadia-instrument .principle .story { font-size:14px; }
+.arcadia-instrument .frame-head,
+.arcadia-instrument .frame-foot { background:#142058; font-size:11px; padding:15px 18px; color:var(--quiet); }
+.arcadia-instrument #stage,
+.arcadia-instrument[data-theme='dark'] #stage {
+  background:#10182b;
+  --anatomy-paper:#17233b;
+  --anatomy-top:#344762;
+  --anatomy-shade-0:#111d31;
+  --anatomy-shade-1:#1b2b43;
+  --anatomy-shade-2:#263954;
+  --anatomy-shade-3:#304562;
+  --anatomy-mid:#d5dfee;
+  --anatomy-lo:#97accb;
+  --anatomy-faint:#667e9f;
+}
+.arcadia-instrument .selected .iso-edge { stroke:var(--bugwang-sky); }
+.arcadia-instrument .law-term strong { color:var(--accent); }
+.arcadia-instrument .energy-track,
+.arcadia-instrument[data-theme='dark'] .energy-track { background:#26396b; }
+.arcadia-instrument .value span,
+.arcadia-instrument .readouts span { font-size:11px; }
+.arcadia-instrument .readouts strong,
+.arcadia-instrument .value strong { font-size:21px; font-variant-numeric:tabular-nums; }
+.arcadia-instrument .answer strong { font-size:30px; }
+.arcadia-instrument .answer>span { font-size:12px; }
+.arcadia-instrument .compare { font-size:12px; }
+.arcadia-instrument details { font-size:13px; }
+.arcadia-instrument summary { padding:16px 0; }
+.arcadia-instrument .lab-footer { display:flex; align-items:center; justify-content:space-between; gap:28px; padding:25px 0 8px; font-size:11px; }
+.arcadia-instrument .footer-meta { display:flex; flex-direction:column; gap:6px; }
+.arcadia-instrument .lab-footer .team-logo { width:150px; height:auto; flex-shrink:0; }
+.arcadia-instrument ::selection { background:#304e9c; color:white; }
+.arcadia-instrument input { caret-color:var(--accent); }
+.arcadia-instrument[data-theme='light'] {
+  --paper:#f4f6fb!important;
+  --surface:#fff;
+  --ink:#142058!important;
+  --quiet:#526581!important;
+  --line:#c1cde4!important;
+  --accent:#304e9c!important;
+  --soft:#e5edf9!important;
+  color-scheme:light;
+  scrollbar-color:#304e9c #f4f6fb;
+}
+.arcadia-instrument[data-theme='light'] :is(h1,h2,h3,a,.brand,.eyebrow,label) { color:var(--ink)!important; }
+.arcadia-instrument[data-theme='light'] .panel { background:#fff!important; color:var(--ink)!important; border-color:var(--line)!important; }
+.arcadia-instrument[data-theme='light'] :is(input,select) { background:#f4f6fb!important; color:var(--ink)!important; border-color:var(--line)!important; accent-color:#304e9c!important; }
+.arcadia-instrument[data-theme='light'] input[type='range'] { background:transparent!important; }
+.arcadia-instrument[data-theme='light'] button { background:#e5edf9!important; color:#142058!important; border-color:#9fb3d5!important; }
+.arcadia-instrument[data-theme='light'] button[aria-pressed='true'],
+.arcadia-instrument[data-theme='light'] button[aria-checked='true'],
+.arcadia-instrument[data-theme='light'] :is(#quick-end,#heat100,#adopt) { background:#304e9c!important; color:white!important; }
+.arcadia-instrument[data-theme='light'] button:hover:not(:disabled) { background:#d4dff3!important; color:#142058!important; }
+.arcadia-instrument[data-theme='light'] .tabs button[aria-pressed='true'] { background:#e5edf9!important; color:#142058!important; }
+.arcadia-instrument[data-theme='light'] :is(.frame-head,.frame-foot) { background:#e5edf9; }
+.arcadia-instrument[data-theme='light'] .energy-track { background:#dbe5f5; }
+.arcadia-instrument[data-theme='light'] #stage { background:#f7f9fd; --anatomy-paper:#f7f9fd; --anatomy-top:#fff; --anatomy-shade-0:#d3dbe7; --anatomy-shade-1:#dce3ec; --anatomy-shade-2:#e6ebf2; --anatomy-shade-3:#eef2f7; --anatomy-mid:#344762; --anatomy-lo:#607591; --anatomy-faint:#98a7bd; }
+@media(max-width:850px) {
+  .arcadia-instrument .wrap { padding:0 18px 24px; }
+  .arcadia-instrument .instrument-nav { min-height:72px; gap:10px; padding:12px 0; }
+  .arcadia-instrument .brand-lockup { font-size:13px; gap:8px; }
+  .arcadia-instrument .brand-lockup .club-logo { width:32px; height:32px; }
+  .arcadia-instrument .nav-actions { gap:10px; }
+  .arcadia-instrument .back-link { font-size:11px; }
+  .arcadia-instrument #theme { font-size:11px; padding:7px 9px; }
+  .arcadia-instrument .wrap>header { padding:26px 0 24px; }
+  .arcadia-instrument h1 { font-size:26px; }
+  .arcadia-instrument h2 { font-size:16px; }
+  .arcadia-instrument .panel { padding:18px; }
+  .arcadia-instrument .tabs button { padding:13px 12px; font-size:14px; }
+  .arcadia-instrument .tabs small { font-size:10px; }
+  .arcadia-instrument .law-term span { font-size:10px; }
+  .arcadia-instrument .law-term output { font-size:18px; }
+  .arcadia-instrument .lab-footer { align-items:flex-start; }
+  .arcadia-instrument .lab-footer .team-logo { width:100px; margin-top:5px; }
+  .arcadia-instrument .energy-row { grid-template-columns:78px 1fr 78px; }
+}
+@media(prefers-reduced-motion:reduce) { .arcadia-instrument * { transition:none!important; } }

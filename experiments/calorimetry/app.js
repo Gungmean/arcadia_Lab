@@ -13,6 +13,7 @@ function reset(){stop();time=target=0;dirty=true;draw();start();}
 function chooseMode(mode){options.mode=mode;$$('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===mode));reset();}
 function draw(){
  if(!dirty)return;
+ $('#theme').textContent=document.body.dataset.theme==='dark'?'밝은 테마':'어두운 테마';$('#theme').setAttribute('aria-label',$('#theme').textContent+'로 전환');
  const s=observe(options,time,usedCapacity(),$('#include-cal').checked),cal=options.mode==='calibration',r=REACTIONS[options.reaction];
  // Only the exposed front wedge is tinted. The back half remains behind
  // the opaque vessel, while immersed probes receive a translucent tint.
@@ -47,11 +48,11 @@ function draw(){
  plot(s);dirty=false;
 }
 function plot(current){
- const c=$('#plot').getContext('2d'),w=900,h=380,l=70,r=870,t=25,b=325,dark=document.body.dataset.theme==='dark';
- const ink=dark?'#d5e1d2':'#36513e',grid=dark?'#425646':'#dce2d8',full=dark?'#7b9478':'#afbdac',points=Array.from({length:121},(_,i)=>stateAt(options,i));
+ const c=$('#plot').getContext('2d'),w=900,h=380,l=70,r=870,t=25,b=325,styles=getComputedStyle(document.body);
+ const ink=styles.getPropertyValue('--accent').trim(),grid=styles.getPropertyValue('--line').trim(),full=styles.getPropertyValue('--quiet').trim(),points=Array.from({length:121},(_,i)=>stateAt(options,i));
  const low=Math.floor(Math.min(23,...points.map(s=>s.temperature))-1),high=Math.ceil(Math.max(28,...points.map(s=>s.temperature))+1);
  const x=v=>l+v/120*(r-l),y=v=>b-(v-low)/(high-low)*(b-t);
- c.clearRect(0,0,w,h);c.font='13px "Malgun Gothic",sans-serif';c.lineWidth=1;c.strokeStyle=grid;c.fillStyle=ink;
+ c.clearRect(0,0,w,h);c.font='13px "Gmarket Sans",sans-serif';c.lineWidth=1;c.strokeStyle=grid;c.fillStyle=ink;
  for(let i=0;i<=4;i++){const v=low+(high-low)*i/4;c.beginPath();c.moveTo(l,y(v));c.lineTo(r,y(v));c.stroke();c.fillText(v.toFixed(1),20,y(v)+4);}
  for(let i=0;i<=120;i+=30)c.fillText(String(i),x(i)-7,b+24);c.fillText('°C',23,16);c.fillText('t / s',r-22,h-7);
  c.setLineDash([4,5]);c.strokeStyle=grid;c.beginPath();c.moveTo(x(current.duration),t);c.lineTo(x(current.duration),b);c.stroke();c.setLineDash([]);
@@ -81,3 +82,4 @@ new IntersectionObserver(entries=>{visible=entries.at(-1).isIntersecting;if(visi
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(frame);frame=0;}else start();});reduced.addEventListener('change',()=>{stop();dirty=true;start();});
 window.calorimetryLab={get state(){return observe(options,time,usedCapacity(),$('#include-cal').checked);},get time(){return time;},get options(){return{...options};},get adopted(){return adopted;}};
 draw();
+document.fonts.ready.then(()=>{dirty=true;draw();});

@@ -2,12 +2,12 @@
 
 2022 개정 「역학과 에너지」의 열역학 제1법칙 Q=ΔU+W를 중심으로 다룬다. 화면 상단의 실시간 식과 해설이 받은 열·내부 에너지 변화·기체가 한 일을 연결한다. 팽창 가열, 고정 가열, 냉각 압축의 세 비교 실험으로 양수·음수 부호를 확인한다. 계는 실린더 내부 기체이며 피스톤과 하중은 외부다. 아르카디아 실험 목록의 물리 탭에서 입장한다.
 
-`index.html`은 SVG·스타일·스크립트를 포함한 독립 실행 파일이다. 저장소 루트에서 HTTP 서버를 켜고 `/experiments/piston/`으로 접속하거나 파일을 직접 열 수 있다.
+`index.html`은 실험용 SVG·스크립트를 내장하고 공통 브랜드 스타일·Gmarket Sans·로고를 `assets/`에서 불러온다. 저장소 루트에서 HTTP 서버를 켜고 `/experiments/piston/`으로 접속한다. 기본 디자인은 아르카디아 랩의 검정 배경·인디고 패널·스카이 블루 강조색이며 밝은 테마 전환을 지원한다.
 
 ```powershell
 node experiments/piston/build.mjs
 node experiments/piston/build.mjs --audit
-node experiments/piston/build.mjs --dark
+node experiments/piston/build.mjs --light
 node --test experiments/piston/model.test.mjs
 ```
 
