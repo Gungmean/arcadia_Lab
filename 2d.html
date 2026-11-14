@@ -378,7 +378,7 @@
     <div class="card" data-category="physics" data-image="pendulum-wave.png" onclick="location.href='experiments/pendulum_wave.html'">
       <span class="badge">물리 · 역학</span>
       <div class="icon">🔮</div>
-      <h2>진자 웨이브 (Wave)</h2>
+      <h2>진자 파동</h2>
       <p>길이가 다른 여러 진자의 주기 차이로 생성되는 아름다운 파동 패턴</p>
       <div class="card-footer">
         <span>실험 시작하기</span>
@@ -544,7 +544,7 @@
       photo.className = 'experiment-photo';
       photo.setAttribute('aria-hidden', 'true');
       const description = card.querySelector('p')?.textContent.trim() || '';
-      photo.innerHTML = `<span>PHOTO</span><img src="assets/images/experiments/${card.dataset.image}" alt="">${description ? `<figcaption class="photo-description">${description}</figcaption>` : ''}`;
+      photo.innerHTML = `<span>실험 그림</span><img src="assets/images/experiments/${card.dataset.image}" alt="">${description ? `<figcaption class="photo-description">${description}</figcaption>` : ''}`;
       
       const img = photo.querySelector('img');
       if (img) {

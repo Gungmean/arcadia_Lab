@@ -29,6 +29,7 @@
 - 단계별 반응 확대 장면, 장면별 생성물, 단계별·누적 물질 수지, 관찰 노트·CSV 내보내기, 개념 퀴즈를 제공합니다. 생명과학 탭에서 입장할 수 있습니다.
 - 로컬 실행: 저장소 루트에서 `python -m http.server 8765`, 브라우저에서 `http://localhost:8765/experiments/bio-energy/` 접속. 모듈과 SVG 로딩을 위해 HTTP 서버를 사용하세요.
 - 검증: `node --test experiments/bio-energy/lessons.test.mjs experiments/bio-energy/model.test.mjs`. 소기관 SVG 재생성: `node experiments/bio-energy/build-figure.mjs`.
+- 분자의 이동·분리·결합, 전자와 H⁺ 전달, ATP 합성효소 회전을 모션으로 관찰합니다. 모션 멈춤·되감기·진행 탐색·재생 속도·정리 그림 전환을 지원합니다.
 - 변수 슬라이더 없이 원하는 단계와 세부 장면을 직접 선택합니다. 순서 재생은 현재 단계 안에서만 진행하며, 실제 반응 시간을 뜻하지 않습니다. ATP 투자·생성·순생산, 운반체 생성 누계와 소비를 구분합니다.
 
 ### 🧪 2D 가상 실험실

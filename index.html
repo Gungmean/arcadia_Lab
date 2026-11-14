@@ -31,10 +31,10 @@
   <header class="topbar"><a class="brand brand-lockup" href="index.html"><img class="club-logo" src="assets/images/arcadia-club-logo.png" alt="아르카디아 동아리 로고"><span>ARCADIA / LAB</span></a><a class="feedback" href="https://docs.google.com/forms/d/e/1FAIpQLSdRpS65k_rRiENkOXQtqERFZpdIhjpSssaQSaVSrIKf-ynJyw/viewform?usp=header" target="_blank" rel="noopener noreferrer">의견 남기기</a></header>
   <main class="entry-main">
     <section class="intro">
-      <p class="eyebrow"><span>ARCADIA</span> VIRTUAL SCIENCE LAB</p>
+
       <h1>아르카디아<br>가상 실험실</h1>
       <a class="enter-button" href="2d.html">실험실 입장 <span aria-hidden="true">→</span></a>
-      <p class="footnote">ARCADIA SCIENCE CLUB</p>
+
     </section>
     <div class="particle-stage" aria-hidden="true">
       <img class="particle-fallback" src="assets/images/arcadia-club-logo.png" alt="">
@@ -48,7 +48,6 @@
       const timeline = gsap.timeline({ defaults: { ease: 'power2.out' } });
       timeline
         .from('.topbar', { opacity: 0, y: -12, duration: 0.45 })
-        .from('.entry-main .eyebrow', { opacity: 0, y: 12, duration: 0.35 }, '-=0.12')
         .from('.entry-main h1', { opacity: 0, y: 18, duration: 0.5 }, '-=0.1')
         .from('.enter-button', { opacity: 0, y: 12, duration: 0.35 }, '-=0.14')
         .from('.site-footer', { opacity: 0, duration: 0.35 }, '-=0.1');

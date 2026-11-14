@@ -116,7 +116,7 @@ function sync(){
     metric('a','총배율',fmt(m.magnification),'×');metric('b','Rayleigh 분해 한계',fmt(m.resolution/1000,2),'µm');
     txt('fig-readout',`λ ${s.wavelength} nm / NA ${m.na.toFixed(2)}`);
     note=s.objective===100?'100× 대물렌즈: 오일을 사용한 유침 조건으로 계산합니다.':s.eyepiece>10?'접안배율을 올려도 대물렌즈의 분해 한계는 그대로입니다.':'대물렌즈를 바꿔 배율과 분해 한계가 어떻게 달라지는지 비교하세요.';
-    txt('screen-title',`BRIGHTFIELD / ${m.magnification}×`);
+    txt('screen-title',`명시야 · ${m.magnification}×`);
   }else if(mode==='tem') {
     metric('a','명목 배율',fmt(m.magnification),'×');metric('b','전자 파장',fmt(m.wavelength,2),'pm');
     txt('fig-readout',`${s.voltage} kV / ${s.thickness} nm`);
@@ -156,13 +156,13 @@ function highlight(id){
 }
 function chooseStep(i){
   step=(i+6)%6;stepClock=0;const [id,name,text]=catalog[mode].stages[step];
-  highlight(id);txt('detail-index',`PROCESS / 0${step+1}`);txt('detail-title',name);txt('detail-text',text);txt('step-position',`0${step+1} / 06`);
+  highlight(id);txt('detail-index',`작동 과정 0${step+1}`);txt('detail-title',name);txt('detail-text',text);txt('step-position',`0${step+1} / 06`);
   $$('#steps button').forEach((b,j)=>{if(j===step)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
   $('#prev').disabled=false;$('#next').disabled=false;run();
 }
 function choosePart(id){
   const part=catalog[mode].parts[id];if(!part)return;
-  highlight(id);txt('detail-index','COMPONENT / '+id.toUpperCase());txt('detail-title',part[0]);txt('detail-text',part[1]);
+  highlight(id);txt('detail-index','선택한 부품');txt('detail-title',part[0]);txt('detail-text',part[1]);
   $$('#steps button').forEach(b=>b.removeAttribute('aria-current'));
 }
 function setPlaying(value){playing=value&&!reduced.matches;$('#play').setAttribute('aria-pressed',playing);$('#play').textContent=reduced.matches?'한 단계 보기':playing?'Ⅱ 일시정지':'▶ 과정 재생';stepClock=0;run();}
@@ -172,11 +172,11 @@ function setMode(value){
   $$('.tab').forEach(b=>{b.setAttribute('aria-selected',b.dataset.mode===mode);b.tabIndex=b.dataset.mode===mode?0:-1;});
   $$('.instrument-slot').forEach(slot=>slot.hidden=slot.dataset.instrument!==mode);
   $('#lab-panel').setAttribute('aria-labelledby','tab-'+mode);
-  const c=catalog[mode];txt('fig-number',`FIG. 0${['optical','tem','sem'].indexOf(mode)+1} / CUTAWAY`);txt('fig-title',c.title+' · '+c.short);txt('sample-name',c.sample);txt('image-note',c.imageNote);
+  const c=catalog[mode];txt('fig-number',`장치 0${['optical','tem','sem'].indexOf(mode)+1} · 내부 구조`);txt('fig-title',c.title+' · '+c.short);txt('sample-name',c.sample);txt('image-note',c.imageNote);
   svg().classList.toggle('hide-beam',!beamOn);svg().classList.toggle('isolate',isolate);
   buildControls();buildStages();chooseStep(0);sync();renderDirty=true;run();
   fitView();
-  $('.view-badge').textContent='등각 절개도 · 부품을 선택해 보세요';
+  $('.view-badge').textContent='내부 절개도 · 부품을 선택해 보세요';
 }
 
 // Procedural teaching images. Seeds are stable, so changing a control changes
@@ -292,7 +292,7 @@ $('#beam-toggle').onclick=()=>{beamOn=!beamOn;$('#beam-toggle').setAttribute('ar
 $('#isolate').onclick=()=>{isolate=!isolate;$('#isolate').setAttribute('aria-pressed',isolate);svg().classList.toggle('isolate',isolate);};
 function positionView(){const r=$('#stage').getBoundingClientRect();panX=clamp(panX,-r.width*(zoom-1)/2,r.width*(zoom-1)/2);panY=clamp(panY,-r.height*(zoom-1)/2,r.height*(zoom-1)/2);svg().style.transform=`translate(${panX}px,${panY}px) scale(${zoom})`;}
 function fitView(){for(const s of $$('.instrument'))s.setAttribute('viewBox',innerWidth<=760?'150 10 460 640':'0 0 760 660');positionView();}
-function zoomBy(delta){zoom=clamp(zoom+delta,1,2);if(zoom===1)panX=panY=0;positionView();$('#zoom-out').disabled=zoom<=1;$('#zoom-in').disabled=zoom>=2;$('#stage').style.touchAction=zoom>1?'none':'pan-y';$('#stage').style.cursor=zoom>1?'grab':'';$('.view-badge').textContent=zoom>1?'확대한 구조는 드래그 · 방향키로 이동':'등각 절개도 · 부품을 선택해 보세요';}
+function zoomBy(delta){zoom=clamp(zoom+delta,1,2);if(zoom===1)panX=panY=0;positionView();$('#zoom-out').disabled=zoom<=1;$('#zoom-in').disabled=zoom>=2;$('#stage').style.touchAction=zoom>1?'none':'pan-y';$('#stage').style.cursor=zoom>1?'grab':'';$('.view-badge').textContent=zoom>1?'확대한 구조는 드래그 · 방향키로 이동':'내부 절개도 · 부품을 선택해 보세요';}
 $('#zoom-in').onclick=()=>zoomBy(.25);$('#zoom-out').onclick=()=>zoomBy(-.25);
 const stageEl=$('#stage');stageEl.tabIndex=0;stageEl.setAttribute('role','group');stageEl.setAttribute('aria-label','현미경 내부 구조. 부품을 누르면 설명을 봅니다. 확대 상태에서는 드래그 또는 방향키로 이동합니다.');
 stageEl.addEventListener('pointerdown',e=>{if(zoom<=1||e.target.closest('button'))return;drag={x:e.clientX,y:e.clientY,px:panX,py:panY};suppressClick=false;stageEl.setPointerCapture(e.pointerId);svg().style.transition='none';});

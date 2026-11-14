@@ -1,5 +1,5 @@
 export const law = `<section class="first-law" aria-labelledby="law-title">
-  <div class="law-heading"><div><span class="eyebrow">ENERGY CONSERVATION</span><h2 id="law-title">열역학 제1법칙</h2></div><p>계는 실린더 안의 기체입니다.<br>열과 일은 계의 경계를 통해 에너지를 전달합니다.</p></div>
+  <div class="law-heading"><div><span class="eyebrow">에너지 보존</span><h2 id="law-title">열역학 제1법칙</h2></div><p>계는 실린더 안의 기체입니다.<br>열과 일은 계의 경계를 통해 에너지를 전달합니다.</p></div>
   <div class="law-equation" aria-label="기체가 받은 열은 내부 에너지 변화와 기체가 한 일의 합">
     <div class="law-term"><strong>Q</strong><span>기체가 받은 열</span><output id="law-Q">0.0 J</output></div>
     <span class="law-operator" aria-hidden="true">=</span>

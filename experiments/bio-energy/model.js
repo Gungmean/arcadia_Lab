@@ -22,7 +22,7 @@ export const PROCESSES = {
     }, {
       name:'TCA 회로', location:'미토콘드리아 기질',
       description:'포도당 1개에서 온 아세틸 CoA 2개가 회로를 두 번 돌아, 나머지 탄소 4개를 CO₂로 내보냅니다.',
-      inputs:['아세틸 CoA 2','NAD⁺ 6','FAD 2'], outputs:['CO₂ 4','NADH 6 · FADH₂ 2','ATP 상당량 2'],
+      inputs:['아세틸 CoA 2','NAD⁺ 6','FAD 2'], outputs:['CO₂ 4','NADH 6 · FADH₂ 2','ATP 환산량 2'],
       why:'ATP보다 전자 운반체를 많이 만듭니다. 산소를 직접 소비하지 않지만 전자전달계의 재산화에 의존합니다.'
     }, {
       name:'산화적 인산화', location:'미토콘드리아 내막',

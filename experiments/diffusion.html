@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../assets/arcadia.css">
-    <title>비가역 현상 실험실 - 분자 확산</title>
+    <title>기체 분자 확산 · 비가역 현상 실험실</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -152,7 +152,7 @@
 <nav class="ar-lab-nav" aria-label="아르카디아 실험실"><a class="brand-lockup" href="../index.html"><img class="club-logo" src="../assets/images/arcadia-club-logo.png" alt="아르카디아 동아리 로고"><span>ARCADIA / LAB</span></a><a class="ar-return" href="../2d.html">실험 목록</a></nav>
 
 <h2>기체 분자 확산</h2>
-    <p class="desc">서로 다른 두 기체가 칸막이 제거 뒤 무작위 운동과 탄성 충돌을 거쳐 섞이는 과정을 관찰하세요.</p>
+    <p class="desc">칸막이를 열고 서로 다른 두 기체가 무작위 운동과 탄성 충돌로 섞이는 과정을 관찰하세요.</p>
 
     <canvas id="gasCanvas" width="800" height="400"></canvas>
 
@@ -175,7 +175,7 @@
         <div class="stats" id="stats">보라색과 하늘색 기체가 칸막이 양쪽에 준비되어 있습니다. 칸막이를 열어 확산을 시작하세요.</div>
     </div>
 
-    <div class="model-note"><strong>이상 기체 모형의 가정</strong><br>분자는 무작위로 움직이며, 분자 사이의 인력·반발력은 충돌 순간을 제외하고 무시합니다. 같은 질량·크기의 입자가 충돌할 때는 완전 탄성 충돌로 근사하므로, 이 화면은 실제 기체의 확산 경향을 단순화해 보여 줍니다.</div>
+    <div class="model-note"><strong>이상 기체 모형의 가정</strong><br>분자는 무작위로 움직입니다. 충돌할 때를 제외하면 분자 사이의 인력과 반발력을 무시합니다. 모든 입자의 질량과 크기는 같으며, 충돌 전후의 총 운동 에너지가 보존되는 완전 탄성 충돌로 계산합니다. 실제 기체의 확산 경향을 단순화한 모형입니다.</div>
 
     <script>
         const canvas = document.getElementById('gasCanvas');

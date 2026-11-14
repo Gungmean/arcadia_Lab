@@ -37,6 +37,7 @@ body.arcadia-experiment{--bg:#191919;--card:#142058;--surface:#142058;--panel:#1
 .arcadia-experiment[data-theme=light],html[data-theme=light] .arcadia-experiment[data-lab-kind=bio]{--bg:#f4f6fb;--card:#fff;--surface:#fff;--panel:#e5edf9;--ink:#142058!important;--muted:#526581;--border:#c1cde4;--accent:#304e9c!important;--soft:#e5edf9!important;--inset:#e5edf9;background:#f4f6fb!important;color:#142058!important;color-scheme:light}
 .arcadia-experiment[data-theme=light] :is(h1,h2,h3,a,label,.brand),html[data-theme=light] .arcadia-experiment[data-lab-kind=bio] :is(h1,h2,h3,a,label,.brand){color:#142058!important}
 .arcadia-experiment[data-theme=light] .eyebrow,html[data-theme=light] .arcadia-experiment[data-lab-kind=bio] .eyebrow{color:#526581!important}
+html[data-theme=light] .arcadia-experiment[data-lab-kind=bio] .lead{color:#526581!important}
 .arcadia-experiment[data-theme=light] :is(button,input,select),html[data-theme=light] .arcadia-experiment[data-lab-kind=bio] :is(button,input,select){background:#e5edf9!important;color:#142058!important;border-color:#9fb3d5!important}
 .arcadia-experiment[data-theme=light] input[type=range],html[data-theme=light] .arcadia-experiment[data-lab-kind=bio] input[type=range]{background:transparent!important}
 .arcadia-experiment ::selection{background:#304e9c;color:#fff}

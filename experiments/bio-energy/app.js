@@ -2,11 +2,14 @@ import {PROCESSES,QUIZ,SOURCES} from './model.js';
 import {LESSONS,LESSON_NOTE} from './lessons.js';
 import {organelleSvg} from './organelles.js';
 import {reactionScene} from './reaction-scenes.js';
+import {carbonMotion} from './carbon-motion.js';
+import {energyMotion} from './energy-motion.js';
 
 const $=id=>document.getElementById(id);
 const put=(id,value)=>{$(id).textContent=value;};
 let processId='respiration',stage=0,sceneIndex=0,playing=false,last=0,elapsed=0,clock=0,raf=0,visible=true,quizIndex=0;
-let motionPaths=[],particles=[],records=[];
+let sceneMotion=null,motionRoot=null,motionPlaying=false,diagramMode=false,records=[];
+const motionDuration=8;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const storageKey='arcadia-bio-observations-v2';
 const currentStage=()=>LESSONS[processId].stages[stage];
@@ -27,7 +30,7 @@ function renderProcess(){
  put('figure-number',String(Object.keys(PROCESSES).indexOf(processId)+1).padStart(2,'0'));
  put('equation',p.equation);
  $('stages').style.gridTemplateColumns='repeat('+p.stages.length+',1fr)';
- $('stages').replaceChildren(...p.stages.map((s,i)=>{const b=document.createElement('button'),n=document.createElement('span');n.textContent='STEP '+String(i+1).padStart(2,'0');b.append(n,s.name);b.addEventListener('click',()=>selectStage(i));return b;}));
+ $('stages').replaceChildren(...p.stages.map((s,i)=>{const b=document.createElement('button'),n=document.createElement('span');n.textContent='단계 '+String(i+1).padStart(2,'0');b.append(n,s.name);b.addEventListener('click',()=>selectStage(i));return b;}));
  $('organelle-map').innerHTML=organelleSvg(processId);
  $('organelle-map').querySelectorAll('[data-stage][role="button"]').forEach(g=>{g.addEventListener('click',()=>selectStage(Number(g.dataset.stage)));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();g.dispatchEvent(new Event('click'));}});});
  selectStage(0);
@@ -48,42 +51,61 @@ function selectStage(index){
  selectScene(0);
 }
 function selectScene(index){
- sceneIndex=Math.max(0,Math.min(index,currentStage().scenes.length-1));elapsed=0;clock=0;
+ sceneIndex=Math.max(0,Math.min(index,currentStage().scenes.length-1));elapsed=0;clock=reduced.matches?motionDuration:0;motionPlaying=!reduced.matches;diagramMode=false;
  const sc=currentScene(),total=currentStage().scenes.length;
- put('scene-count','SCENE '+String(sceneIndex+1).padStart(2,'0')+' / '+String(total).padStart(2,'0'));
+ put('scene-count','장면 '+String(sceneIndex+1).padStart(2,'0')+' / '+String(total).padStart(2,'0'));
  put('scene-title',sc.title);put('scene-narration',sc.narration);put('scene-equation',sc.equation);
  $('scene-outputs').replaceChildren(...sc.outputs.map(x=>itemCard(x,true)));
  if(!sc.outputs.length){const p=document.createElement('p');p.className='empty';p.textContent='이 장면은 반응 준비·전달 단계입니다. 다음 장면에서 생성물을 확인하세요.';$('scene-outputs').append(p);}
  [...$('scene-steps').children].forEach((b,i)=>b.setAttribute('aria-pressed',String(i===sceneIndex)));
  $('previous-scene').disabled=sceneIndex===0;$('next-scene').disabled=sceneIndex===total-1;
- $('instrument').innerHTML=reactionScene(processId,stage,sceneIndex,sc);$('instrument').setAttribute('aria-busy','false');
+ $('instrument').setAttribute('aria-busy','false');
  mountMotion();updatePlayback();draw();kick();
 }
+let lastPhase=-1,playbackSpeed=1;
 function updatePlayback(){
- $('play').setAttribute('aria-pressed',String(playing));put('play',playing?'Ⅱ 잠시 멈추기':'▶ 순서대로 보기');
- put('run-state',playing?'세부 장면을 순서대로 보여 줍니다. 큰 단계는 자동으로 바뀌지 않습니다.':sceneIndex===currentStage().scenes.length-1?'이 단계의 마지막 장면입니다. 생성물 수지를 확인하고 다음 단계를 선택하세요.':'장면을 직접 선택하거나 순서대로 재생하세요. 재생 시간은 실제 반응 속도를 뜻하지 않습니다.');
+ $('play').setAttribute('aria-pressed',String(playing));put('play',playing?'Ⅱ 단계 재생 멈추기':'▶ 단계 전체 재생');
+ $('motion-play').setAttribute('aria-pressed',String(motionPlaying));put('motion-play',motionPlaying?'Ⅱ 일시정지':clock>=motionDuration?'▶ 재생':'▶ 재생');
+ $('diagram-mode').setAttribute('aria-pressed',String(diagramMode));put('diagram-mode',diagramMode?'움직이는 반응 보기':'정리 그림 보기');
+ $('motion-seek').disabled=diagramMode;
+ put('run-state',diagramMode?'반응의 전체 연결을 정리한 그림입니다. 움직이는 반응 보기로 돌아가 재생하세요.':reduced.matches&&!motionPlaying?'동작 줄이기 설정으로 자동 재생을 멈췄습니다. 진행 막대로 원하는 순간을 살펴볼 수 있습니다.':playing?'각 장면의 반응을 이어서 재생합니다. 현재 반응 단계의 마지막 장면에서 멈춥니다.':motionPlaying?'지금 선택한 반응을 재생하고 있습니다. 멈추거나 진행 막대를 움직여 자세히 관찰하세요.':clock>=motionDuration?'반응이 끝났습니다. 생성물을 확인하거나 다시 재생하세요.':'멈춘 장면입니다. 진행 막대를 움직여 분자의 변화 과정을 살펴보세요.');
 }
-function stop(){playing=false;cancelAnimationFrame(raf);raf=0;elapsed=0;last=0;}
+function stop(){playing=false;motionPlaying=false;cancelAnimationFrame(raf);raf=0;elapsed=0;last=0;}
 function mountMotion(){
- const root=$('instrument').querySelector('svg');motionPaths=[];particles=[];if(!root)return;
- motionPaths=[...root.querySelectorAll('[data-motion]')].map(path=>({path,length:path.getTotalLength()})).filter(x=>x.length>0);
- const ns='http://www.w3.org/2000/svg',group=document.createElementNS(ns,'g');group.setAttribute('aria-hidden','true');group.style.pointerEvents='none';
- motionPaths.forEach((track,n)=>{for(let i=0;i<3;i++){const dot=document.createElementNS(ns,'circle');dot.setAttribute('r',3.5);dot.style.fill='var(--accent)';group.append(dot);particles.push({dot,track,offset:i/3+n*.13});}});root.append(group);
+ const sc=currentScene();lastPhase=-1;
+ sceneMotion=energyMotion(processId,stage,sceneIndex,sc)||carbonMotion(processId,stage,sceneIndex,sc);
+ if(!sceneMotion)throw new Error('Missing biological motion: '+processId+'/'+stage+'/'+sceneIndex);
+ $('instrument').innerHTML=diagramMode?reactionScene(processId,stage,sceneIndex,sc):sceneMotion.svg;
+ motionRoot=$('instrument').querySelector('svg');motionRoot.setAttribute('aria-label',sc.title+' — 반응 영상. 아래의 진행 막대로 재생 위치를 조절할 수 있습니다.');
+ $('motion-phases').replaceChildren(...sceneMotion.phases.map((label,i)=>{const b=document.createElement('button'),n=document.createElement('span'),full=document.createElement('span'),short=document.createElement('span');n.className='phase-number';n.textContent=String(i+1).padStart(2,'0')+' ';full.className='phase-full';full.textContent=label;short.className='phase-short';short.textContent=['반응 준비','분자 변화','결과 확인'][i];b.setAttribute('aria-label',label);b.append(n,full,short);b.addEventListener('click',()=>seek([0,.45,.83][i]??1));return b;}));
+ $('motion-phases').hidden=diagramMode;
+}
+function seek(progress){
+ stop();clock=Math.max(0,Math.min(1,progress))*motionDuration;lastPhase=-1;draw();updatePlayback();
 }
 function draw(){
- for(const {dot,track,offset} of particles){const at=track.path.getPointAtLength(((clock*.12+offset)%1)*track.length);dot.setAttribute('cx',at.x);dot.setAttribute('cy',at.y);}
+ const progress=Math.min(1,Math.max(0,clock/motionDuration));
+ if(sceneMotion&&!diagramMode){sceneMotion.render(motionRoot,progress);motionRoot.dataset.progress=progress.toFixed(4);}
+ $('motion-seek').value=Math.round(progress*1000);put('motion-percent',Math.round(progress*100)+'%');
+ const phase=Math.min(2,Math.floor(progress*3));
+ if(phase!==lastPhase){lastPhase=phase;put('motion-phase',diagramMode?'정리 그림 · 전체 반응 연결':sceneMotion.phases[phase]);[...$('motion-phases').children].forEach((b,i)=>{b.classList.toggle('is-active',i===phase);b.classList.toggle('is-complete',i<phase);b.setAttribute('aria-pressed',String(i===phase));});$('motion-seek').setAttribute('aria-valuetext',sceneMotion.phases[phase]);}
+ $('scene-outputs').classList.toggle('is-produced',progress>=.72&&!diagramMode);
 }
 function tick(now){
- raf=0;const dt=last?Math.min((now-last)/1000,.1):0;last=now;
- if(playing){if(!reduced.matches)clock+=dt;elapsed+=dt;if(elapsed>=6){if(sceneIndex<currentStage().scenes.length-1)selectScene(sceneIndex+1);else{stop();updatePlayback();}}}
- draw();if(playing&&visible&&!document.hidden&&!raf)raf=requestAnimationFrame(tick);
+ raf=0;const dt=last?Math.min((now-last)/1000,1/30):0;last=now;
+ if(motionPlaying){clock=Math.min(motionDuration,clock+dt*playbackSpeed);if(clock>=motionDuration){if(playing&&sceneIndex<currentStage().scenes.length-1){selectScene(sceneIndex+1);}else{motionPlaying=false;playing=false;updatePlayback();}}}
+ draw();if(motionPlaying&&visible&&!document.hidden&&!raf)raf=requestAnimationFrame(tick);
 }
-function kick(){if(playing&&visible&&!document.hidden&&!raf){last=0;raf=requestAnimationFrame(tick);}}
-$('play').addEventListener('click',()=>{if(playing){stop();updatePlayback();}else{if(sceneIndex===currentStage().scenes.length-1)selectScene(0);playing=true;updatePlayback();kick();}});
+function kick(){if(motionPlaying&&visible&&!document.hidden&&!raf){last=0;raf=requestAnimationFrame(tick);}}
+$('play').addEventListener('click',()=>{if(playing){stop();updatePlayback();}else{if(sceneIndex===currentStage().scenes.length-1)selectScene(0);if(diagramMode){diagramMode=false;mountMotion();}if(clock>=motionDuration)clock=0;playing=true;motionPlaying=true;updatePlayback();kick();}});
+$('motion-play').addEventListener('click',()=>{if(motionPlaying){stop();updatePlayback();}else{if(diagramMode){diagramMode=false;mountMotion();}if(clock>=motionDuration)clock=0;motionPlaying=true;updatePlayback();kick();}});
+$('motion-seek').addEventListener('input',()=>seek(Number($('motion-seek').value)/1000));
+$('motion-speed').addEventListener('change',()=>{playbackSpeed=Number($('motion-speed').value);});
+$('diagram-mode').addEventListener('click',()=>{stop();diagramMode=!diagramMode;if(!diagramMode){if(clock>=motionDuration)clock=0;motionPlaying=!reduced.matches;}mountMotion();draw();updatePlayback();kick();});
 $('previous-scene').addEventListener('click',()=>{stop();selectScene(sceneIndex-1);});
 $('next-scene').addEventListener('click',()=>{stop();selectScene(sceneIndex+1);});
 $('next-stage').addEventListener('click',()=>{if(stage<PROCESSES[processId].stages.length-1)selectStage(stage+1);});
-$('replay').addEventListener('click',()=>{stop();selectScene(0);});
+$('replay').addEventListener('click',()=>{stop();diagramMode=false;clock=reduced.matches?motionDuration:0;motionPlaying=!reduced.matches;mountMotion();draw();updatePlayback();kick();});
 $('zoom').addEventListener('click',()=>{const active=$('instrument').classList.toggle('is-zoomed');$('zoom').setAttribute('aria-pressed',String(active));put('zoom',active?'− 전체 보기':'＋ 확대');});
 document.querySelectorAll('[data-process]').forEach(b=>b.addEventListener('click',()=>{processId=b.dataset.process;renderProcess();}));
 document.querySelector('.process-nav').addEventListener('keydown',e=>{const tabs=[...document.querySelectorAll('[data-process]')];let i=tabs.indexOf(document.activeElement);if(i<0)return;if(e.key==='ArrowRight')i=(i+1)%tabs.length;else if(e.key==='ArrowLeft')i=(i+tabs.length-1)%tabs.length;else if(e.key==='Home')i=0;else if(e.key==='End')i=tabs.length-1;else return;e.preventDefault();tabs[i].click();tabs[i].focus();});
@@ -105,5 +127,5 @@ for(const source of SOURCES){const a=document.createElement('a');a.href=source.u
 const lessonNote=document.createElement('p');lessonNote.textContent=LESSON_NOTE;$('sources').prepend(lessonNote);
 new IntersectionObserver(entries=>{visible=entries.at(-1).isIntersecting;if(!visible){cancelAnimationFrame(raf);raf=0;last=0;}else kick();},{rootMargin:'80px'}).observe($('instrument'));
 document.addEventListener('visibilitychange',()=>{if(document.hidden){cancelAnimationFrame(raf);raf=0;last=0;}else kick();});
-reduced.addEventListener('change',()=>{if(reduced.matches){stop();updatePlayback();draw();}});
+reduced.addEventListener('change',()=>{if(reduced.matches){stop();clock=motionDuration;draw();updatePlayback();}});
 renderProcess();renderRecords();renderQuiz();

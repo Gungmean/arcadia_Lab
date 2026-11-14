@@ -65,19 +65,19 @@
     <div id="crosshair"></div>
 
     <div id="controls" class="panel">
-        <h3>🌌 시스템 제어 콘솔</h3>
+        <h3>진화 조건</h3>
         <div class="control-row">
             <label>초기 질량: 태양의 <span id="mass-val">100</span>배</label>
             <input type="range" id="mass-slider" min="0.1" max="100" step="0.1" value="100">
         </div>
         <div class="control-row">
-            <label>진행도 (Time): <span id="time-val">0</span>%</label>
+            <label>진화 진행: <span id="time-val">0</span>%</label>
             <input type="range" id="time-slider" min="0" max="100" step="0.05" value="0">
         </div>
         <div class="btn-group">
             <button id="btn-play">▶ 재생</button>
-            <button id="btn-pause" class="pause">⏸ 정지</button>
-            <button id="btn-reset" class="reset">↺ 리셋</button>
+            <button id="btn-pause" class="pause">⏸ 일시정지</button>
+            <button id="btn-reset" class="reset">↺ 처음으로</button>
         </div>
         <div class="speed-group">
             <button class="speed-btn" data-speed="0.01">0.01x</button>
@@ -89,22 +89,22 @@
     </div>
 
     <div id="info-panel" class="panel">
-        <h3>📊 물리 데이터</h3>
+        <h3>별의 상태</h3>
         <div class="stat-row"><span>진화 단계</span> <span id="stage-text" class="highlight">주계열성</span></div>
         <div class="stat-row"><span>근사 표면 온도</span> <span id="temp-text">5,800 K</span></div>
         <div class="stat-row"><span>근사 반지름</span> <span id="radius-text">1.0 R☉</span></div>
-        <div class="stat-row"><span>현상 상태</span> <span id="status-text" style="color: #38bdf8;">안정적인 핵융합</span></div>
+        <div class="stat-row"><span>일어나는 반응</span> <span id="status-text" style="color: #38bdf8;">안정적인 핵융합</span></div>
     </div>
 
     <div id="element-panel" class="panel">
-        <h3>🎯 개념 관측 스캐너</h3>
-        <div id="target-zone-display" class="target-zone">관측 대기 중...</div>
+        <h3>위치별 원소 구성 예시</h3>
+        <div id="target-zone-display" class="target-zone">관찰할 위치를 선택하세요</div>
         <div id="element-dynamic-content"></div>
     </div>
 
     <div id="instructions">
-        [조작] 좌클릭 드래그: 시점 회전 | 스크롤: 줌<br>
-        * 시야 정중앙(크로스헤어) 또는 마우스 커서가 가리키는 <b>깊이(표면/내부/중심핵)</b>를 탐색합니다. 원소 막대와 크기는 질적 개념도이며 축척 모형이 아닙니다.
+        드래그: 시점 회전 | 휠: 확대·축소<br>
+        화면 중앙의 표시나 마우스가 가리키는 <b>표면·내부·중심핵</b>의 설명을 볼 수 있습니다. 원소 막대는 구성 예시이며 실제 함량이나 측정값이 아닙니다. 별의 크기도 실제 축척과 다릅니다.
     </div>
 
     <script>
@@ -255,14 +255,14 @@
                     data.stage = '주계열성'; data.radius = mainSequenceRadius; data.temp = mainSequenceTemp;
                     data.status = '중심 수소 핵융합과 정역학적 평형';
                 } else if (p < 93) {
-                    data.stage = '적색거성 / AGB성'; data.radius = Math.max(10, mainSequenceRadius * 60); data.temp = 3400;
-                    data.status = '수소·헬륨 껍질 연소와 외층 팽창';
+                    data.stage = '적색거성·점근거성가지(AGB)'; data.radius = Math.max(10, mainSequenceRadius * 60); data.temp = 3400;
+                    data.status = '수소·헬륨 껍질 핵융합과 외층 팽창';
                 } else if (p < 97) {
                     data.stage = '행성상 성운'; data.radius = Math.max(3, mainSequenceRadius * 12); data.temp = 30000;
                     data.status = '외층 방출, 중심핵 노출';
                 } else {
                     data.stage = '백색왜성'; data.radius = 0.012; data.temp = 100000;
-                    data.status = '전자 축퇴압으로 지지되는 냉각 잔해'; data.stateCode = 5;
+                    data.status = '전자 축퇴압으로 버티며 식는 별의 잔해'; data.stateCode = 5;
                 }
             } else if (becomesNeutronStar) {
                 if (p < 70) {
@@ -276,7 +276,7 @@
                     data.status = '철핵 붕괴와 충격파에 의한 외층 방출'; data.stateCode = 1;
                 } else {
                     data.stage = '중성자별'; data.radius = 0.000014; data.temp = 1000000;
-                    data.status = '중성자 축퇴압으로 지지되는 초고밀도 잔해'; data.stateCode = 6;
+                    data.status = '중성자 축퇴압으로 버티는 고밀도 잔해'; data.stateCode = 6;
                 }
             } else if (p < 70) {
                 data.stage = '거대질량 주계열성'; data.radius = mainSequenceRadius; data.temp = mainSequenceTemp;
@@ -395,17 +395,17 @@
             const crosshair = document.getElementById('crosshair');
             
             // 중앙 조준선 애니메이션
-            if(targetZone !== "우주 공간" && targetZone !== "관측 대기 중...") crosshair.classList.add('active');
+            if(targetZone !== "우주 공간" && targetZone !== "관찰할 위치를 선택하세요") crosshair.classList.add('active');
             else crosshair.classList.remove('active');
 
             if (targetZone === "우주 공간") {
-                zoneDisplay.innerText = "스캔 영역: [우주 공간]";
+                zoneDisplay.innerText = "관찰 위치: 우주 공간";
                 zoneDisplay.style.color = "#64748b"; zoneDisplay.style.borderColor = "#334155";
-                container.innerHTML = `<p style="color: #64748b; font-size:0.9em; text-align:center;">항성이나 원반을 조준하세요.</p>`;
+                container.innerHTML = `<p style="color: #64748b; font-size:0.9em; text-align:center;">별이나 강착원반에 마우스를 올려 보세요.</p>`;
                 return;
             }
 
-            zoneDisplay.innerText = `스캔 영역: [${targetZone}]`;
+            zoneDisplay.innerText = `관찰 위치: ${targetZone.replace(/\s*\([A-Za-z\s]+\)/g, '')}`;
             zoneDisplay.style.color = "#22d3ee"; zoneDisplay.style.borderColor = "rgba(34, 211, 238, 0.4)";
 
             let elements = [];
@@ -428,23 +428,18 @@
             } else if (targetZone.includes("중심핵")) {
                 const subP = Math.min(1.0, progress / 98);
                 elements = [
-                    { name: '헬륨 잔재 (He)', ratio: Math.max(0, 20 * (1 - subP)), color: '#a855f7' },
+                    { name: '남아 있는 헬륨 (He)', ratio: Math.max(0, 20 * (1 - subP)), color: '#a855f7' },
                     { name: '탄소/산소 (C/O)', ratio: Math.max(0, 40 * (1 - subP)), color: '#facc15' },
-                    { name: '규소 (Si) 융합물', ratio: 30 * subP, color: '#f97316' },
-                    { name: '철 (Fe) 축적핵', ratio: 10 + (60 * subP), color: '#ef4444', shadow: '0 0 10px #ef4444' }
+                    { name: '규소 (Si)', ratio: 30 * subP, color: '#f97316' },
+                    { name: '중심핵에 쌓인 철 (Fe)', ratio: 10 + (60 * subP), color: '#ef4444', shadow: '0 0 10px #ef4444' }
                 ];
             } else if (targetZone.includes("강착원반")) {
-                elements = [
-                    { name: '초고온 붕괴 플라즈마', ratio: 40, color: '#f97316' },
-                    { name: '이온화 철 (Fe+)', ratio: 35, color: '#ef4444' },
-                    { name: '양자 축퇴 가스', ratio: 25, color: '#ec4899', shadow: '0 0 10px #ec4899' }
-                ];
+                container.innerHTML = '<p>블랙홀 주변의 물질이 원반을 이루며 낙하합니다. 고온에서 이온화된 기체가 빛을 내지만, 이 모형은 원소별 함량을 계산하지 않습니다.</p>';
+                return;
             } else if (targetZone.includes("사건의 지평선")) {
                 zoneDisplay.style.color = "#ef4444"; zoneDisplay.style.borderColor = "#ef4444";
-                elements = [
-                    { name: '시공간 곡률 (특이점)', ratio: 99.9, color: '#000000', border: '1px solid #ef4444', shadow: '0 0 15px #ef4444' },
-                    { name: '정보 (Hawking Rad.)', ratio: 0.1, color: '#ffffff' }
-                ];
+                container.innerHTML = '<p>사건의 지평선 안쪽에서 나온 빛은 바깥 관측자에게 도달할 수 없습니다. 따라서 이 영역의 원소 구성을 직접 관측할 수 없습니다.</p>';
+                return;
             } else if (targetZone.includes("초신성")) {
                 elements = [
                     { name: '방출된 외곽 수소/헬륨', ratio: 60, color: '#38bdf8' },
@@ -458,7 +453,7 @@
                     <div class="element-bar-container">
                         <div class="element-label">
                             <span>${el.name}</span>
-                            <span class="highlight">${el.ratio.toFixed(1)}%</span>
+
                         </div>
                         <div class="element-bar-bg">
                             <div class="element-bar-fill" style="width: ${el.ratio}%; background-color: ${el.color}; ${el.border ? 'border:'+el.border+';' : ''} ${el.shadow ? 'box-shadow:'+el.shadow+';' : ''}"></div>

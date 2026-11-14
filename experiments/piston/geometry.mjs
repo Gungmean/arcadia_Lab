@@ -64,5 +64,5 @@ export function rig(){
  const items=R.items.sort((a,b)=>a.key-b.key),view=G.viewOf(P);
  const data=items.map((v,i)=>({id:i,key:v.key,lift:v.move.reduce((s,x,j)=>s+x*view[j],0),moving:v.piece==='piston',group:v.group}));
  const body=items.map((v,i)=>`<g data-item="${i}" data-group="${v.group}" ${v.piece?'data-moving="true"':''}>${v.svg}</g>`).join('');
- return{svg:`<svg class="iso-svg" viewBox="0 0 760 650" role="img" aria-label="실린더·피스톤·로드·하중과 가열판의 등각 절개도"><g id="gas"></g><g id="parts">${body}</g><g id="particles" aria-hidden="true"></g></svg>`,data,count:items.length};
+ return{svg:`<svg class="iso-svg" viewBox="0 0 760 650" role="img" aria-label="실린더·피스톤 축·하중과 가열판의 내부 절개도"><g id="gas"></g><g id="parts">${body}</g><g id="particles" aria-hidden="true"></g></svg>`,data,count:items.length};
 }

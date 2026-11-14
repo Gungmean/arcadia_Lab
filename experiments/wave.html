@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../assets/arcadia.css">
-    <title>물결파 실험실 - 자유 업로드 에디션</title>
+    <title>물결파와 매질 진동 실험실</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -79,36 +79,36 @@
 <body class="arcadia-experiment" data-lab-kind="document">
 <nav class="ar-lab-nav" aria-label="아르카디아 실험실"><a class="brand-lockup" href="../index.html"><img class="club-logo" src="../assets/images/arcadia-club-logo.png" alt="아르카디아 동아리 로고"><span>ARCADIA / LAB</span></a><a class="ar-return" href="../2d.html">실험 목록</a></nav>
 
-<h2>🌊 물결파 및 매질 진동 실험실</h2>
-    <p class="desc">수면 입자의 타원 운동을 단순화해 관찰하는 심해파 개념 모델입니다.</p>
+<h2>물결파와 매질 진동 실험실</h2>
+    <p class="desc">파도가 이동할 때 물 입자가 제자리 주변에서 타원을 그리며 움직이는 모습을 관찰하세요. 심해파를 단순화한 모형입니다.</p>
     
     <canvas id="waveCanvas" width="800" height="400"></canvas>
 
     <div class="controls">
         <label class="file-upload-zone">
             <input type="file" id="imageFileInput" accept="image/*">
-            <span>📷 내 컴퓨터에서 이미지(오리, 배 등) 불러오기</span>
+            <span>물 위에 띄울 이미지 불러오기</span>
         </label>
 
         <div class="control-group">
-            <label>진폭 (파도의 높이) <span class="val" id="ampVal">40 px</span></label>
+            <label>진폭 (평균 수면에서의 높이) <span class="val" id="ampVal">40 px</span></label>
             <input type="range" id="amplitude" min="10" max="80" value="40">
         </div>
         <div class="control-group">
-            <label>파장 (Wavelength) <span class="val" id="waveVal">120 px</span></label>
+            <label>파장 (마루 사이 거리) <span class="val" id="waveVal">120 px</span></label>
             <input type="range" id="wavelength" min="60" max="250" value="120">
         </div>
         <div class="control-group">
-            <label>물체 크기 (사이즈) <span class="val" id="sizeVal">55 px</span></label>
+            <label>물체 크기 <span class="val" id="sizeVal">55 px</span></label>
             <input type="range" id="boatSize" min="20" max="100" value="55">
         </div>
         <div class="control-group">
-            <label>물체 X 위치 <span class="val" id="boatVal">400 px</span></label>
+            <label>물체의 가로 위치 <span class="val" id="boatVal">400 px</span></label>
             <input type="range" id="boatX" min="100" max="700" value="400">
         </div>
 
         <div class="stats" id="stats">
-            💡 배경이 투명한 PNG 이미지를 넣으시면 훨씬 자연스럽고 예쁘게 연출됩니다!
+            이미지의 배경도 함께 표시됩니다. 물체만 보이게 하려면 배경이 투명한 이미지를 사용하세요.
         </div>
     </div>
 

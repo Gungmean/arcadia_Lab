@@ -122,24 +122,24 @@
 <body class="arcadia-experiment" data-lab-kind="document">
 <nav class="ar-lab-nav" aria-label="아르카디아 실험실"><a class="brand-lockup" href="../index.html"><img class="club-logo" src="../assets/images/arcadia-club-logo.png" alt="아르카디아 동아리 로고"><span>ARCADIA / LAB</span></a><a class="ar-return" href="../2d.html">실험 목록</a></nav>
 
-<h2>🌊 진자 웨이브 실험실 (Pendulum Wave)</h2>
+<h2>진자 웨이브 실험실</h2>
     <canvas id="waveCanvas" width="800" height="500"></canvas>
 
     <div class="controls">
         <div class="control-group">
-            <label>기본 주기 횟수 (N) <span id="nVal">15</span></label>
+            <label>기준 진자의 왕복 횟수 (N) <span id="nVal">15</span></label>
             <input type="range" id="count" min="10" max="25" value="15">
         </div>
         <div class="control-group">
-            <label>실험 시간 (T) <span id="tVal">60 s</span></label>
+            <label>다시 정렬되는 시간 (T) <span id="tVal">60 s</span></label>
             <input type="range" id="time" min="30" max="120" value="60">
         </div>
 
-        <button onclick="initWave()">시뮬레이션 재시작</button>
+        <button onclick="initWave()">처음부터 다시 시작</button>
 
         <div class="stats">
-            각 진자는 서로 다른 길이를 가지며, 설정된 시간(T)이 지나면 다시 모두 일렬로 정렬됩니다.<br>
-            그 사이의 시간 동안 뱀 모양, 이중 나선 등 기하학적인 웨이브가 나타납니다.
+            설정한 시간(T) 동안 기준 진자는 N번, 다음 진자는 N+1번, 그다음은 N+2번 왕복합니다.<br>
+            진자마다 주기가 달라 파도 같은 배열이 나타나고, T초 뒤에는 모두 처음 위치로 돌아옵니다.
         </div>
     </div>
 

@@ -51,10 +51,10 @@
 <div id="canvas-container"></div>
 
     <div id="controls" class="panel">
-        <h3>시뮬레이션 제어 룸</h3>
+        <h3>관측 조건</h3>
         
         <div class="control-row">
-            <label>행성 타입 관측 선택</label>
+            <label>관측할 행성</label>
             <div class="btn-group">
                 <button id="btn-inner" class="active">내행성 (금성)</button>
                 <button id="btn-outer">외행성 (화성)</button>
@@ -62,44 +62,44 @@
         </div>
 
         <div class="control-row">
-            <label>지구 자전 (관측자 시간): <span id="val-rotation" class="highlight">12:00</span> 시</label>
+            <label>관측 시각: <span id="val-rotation" class="highlight">12:00</span> 시</label>
             <input type="range" id="slide-rotation" min="0" max="24" step="0.1" value="12">
             <div class="btn-group">
-                <button id="play-rotation" class="toggle-play">지구자전 자동 재생 🔄</button>
+                <button id="play-rotation" class="toggle-play">지구 자전 재생</button>
             </div>
         </div>
 
         <div class="control-row">
-            <label>사람 위치 (현재: <span id="val-latitude" class="highlight">90° 북극(수직 위)</span>)</label>
+            <label>관측자 위도 (현재: <span id="val-latitude" class="highlight">북위 90° · 북극</span>)</label>
             <input type="range" id="slide-latitude" min="0" max="90" step="1" value="90">
-            <div style="font-size:0.75em; color:#94a3b8; margin-top:4px;">* 90도(수직)에서는 태양이 지평선을 따라 돌기만 합니다. 뜨고 지는 걸 보려면 낮춰보세요.</div>
+            <div style="font-size:0.75em; color:#94a3b8; margin-top:4px;">북위 90°에서는 태양이 지평선을 따라 움직입니다. 위도를 낮추면 뜨고 지는 모습을 볼 수 있습니다.</div>
         </div>
 
         <div class="control-row">
             <label>행성 상대 위치 각도: <span id="val-orbit" class="highlight">45</span>°</label>
             <input type="range" id="slide-orbit" min="0" max="360" step="1" value="45">
             <div class="btn-group">
-                <button id="play-orbit" class="toggle-play">상대 위치 자동 이동 🔄</button>
+                <button id="play-orbit" class="toggle-play">행성 위치 재생</button>
             </div>
             <div style="font-size:0.75em; color:#94a3b8; margin-top:6px;">* 원형·동일 평면 궤도와 춘분 조건을 가정한 기하학 모형입니다. 자동 이동은 실제 공전 주기 재현이 아닙니다.</div>
         </div>
         
         <div class="btn-group">
-            <button id="btn-stop-all" style="background:#ef4444; border-color:#b91c1c;">🛑 전체 일시정지</button>
+            <button id="btn-stop-all" style="background:#ef4444; border-color:#b91c1c;">전체 일시정지</button>
         </div>
     </div>
 
     <div id="observer-view-panel" class="panel">
-        <h3>1인칭 시점 (방위: 동-남-서)</h3>
+        <h3>관측자가 보는 하늘 · 동–남–서</h3>
         <canvas id="observer-canvas" width="320" height="200"></canvas>
     </div>
 
     <div id="status-panel" class="panel">
-        <h3>천문 기하학 정보 (단순 모형)</h3>
-        <div class="stat-row"><span>관측 행성</span> <span id="txt-planet" class="highlight">금성 (Inner)</span></div>
+        <h3>행성의 위치 관계</h3>
+        <div class="stat-row"><span>관측 행성</span> <span id="txt-planet" class="highlight">금성</span></div>
         <div class="stat-row"><span>태양-지구-행성 사잇각</span> <span id="txt-angle">0.0°</span></div>
         <div class="stat-row"><span>이각 상태</span> <span id="txt-elongation">-</span></div>
-        <div class="stat-row"><span>특수 천문 현상</span> <span id="txt-special" class="special-case">일반 위치</span></div>
+        <div class="stat-row"><span>태양과 행성의 배치</span> <span id="txt-special" class="special-case">일반 위치</span></div>
     </div>
 
 
@@ -248,7 +248,7 @@
             mode = 'inner'; planetOrbitRadius = 9;
             document.getElementById('btn-inner').className = 'active';
             document.getElementById('btn-outer').className = '';
-            txtPlanet.innerText = "금성 (Inner)";
+            txtPlanet.innerText = "금성";
             scene.remove(planetOrbitLine);
             planetOrbitLine = createOrbitLine(planetOrbitRadius, 0xf472b6);
             scene.add(planetOrbitLine);
@@ -259,7 +259,7 @@
             mode = 'outer'; planetOrbitRadius = 24;
             document.getElementById('btn-inner').className = '';
             document.getElementById('btn-outer').className = 'active';
-            txtPlanet.innerText = "화성 (Outer)";
+            txtPlanet.innerText = "화성";
             scene.remove(planetOrbitLine);
             planetOrbitLine = createOrbitLine(planetOrbitRadius, 0xfb923c);
             scene.add(planetOrbitLine);
@@ -271,13 +271,13 @@
         
         slideLatitude.oninput = (e) => { 
             observerLatitude = parseInt(e.target.value); 
-            if(observerLatitude === 90) valLatitude.innerText = "90° 북극(수직 위)";
-            else if(observerLatitude === 0) valLatitude.innerText = "0° 적도(옆면)";
+            if(observerLatitude === 90) valLatitude.innerText = "북위 90° · 북극";
+            else if(observerLatitude === 0) valLatitude.innerText = "0° · 적도";
             else valLatitude.innerText = `${observerLatitude}° (중위도)`;
             updatePhysics(); 
         };
 
-        function setToggleStyle(btn, state) { btn.className = state ? "toggle-play playing" : "toggle-play"; btn.innerText = state ? "자동 가동 중 ⏸" : "자동 재생 🔄"; }
+        function setToggleStyle(btn, state) { btn.className = state ? "toggle-play playing" : "toggle-play"; btn.innerText = state ? "일시정지" : "재생"; }
         document.getElementById('play-rotation').onclick = function() { playRotation = !playRotation; setToggleStyle(this, playRotation); };
         document.getElementById('play-orbit').onclick = function() { playOrbit = !playOrbit; setToggleStyle(this, playOrbit); };
 
@@ -334,16 +334,16 @@
 
             if (mode === 'inner') {
                 if (elongationDeg < limit) {
-                    txtSpecial.innerText = (planetOrbitRadius < earthOrbitRadius) ? "내합 (Inferior)" : "외합 (Superior)";
+                    txtSpecial.innerText = (planetOrbitRadius < earthOrbitRadius) ? "내합" : "외합";
                 } else {
                     const maxElongationCalc = THREE.MathUtils.radToDeg(Math.asin(planetOrbitRadius / earthOrbitRadius));
                     if (Math.abs(elongationDeg - maxElongationCalc) < 2.5) txtSpecial.innerText = `${direction} 최대이각`;
                     else txtSpecial.innerText = "일반 위치";
                 }
             } else {
-                if (elongationDeg < limit) txtSpecial.innerText = "합 (Conjunction)";
-                else if (elongationDeg > 180 - limit) txtSpecial.innerText = "충 (Opposition)";
-                else if (Math.abs(elongationDeg - 90) < limit) txtSpecial.innerText = `${direction} 구 (Quadrature)`;
+                if (elongationDeg < limit) txtSpecial.innerText = "합";
+                else if (elongationDeg > 180 - limit) txtSpecial.innerText = "충";
+                else if (Math.abs(elongationDeg - 90) < limit) txtSpecial.innerText = `${direction} 구`;
                 else txtSpecial.innerText = "일반 위치";
             }
         }
@@ -371,9 +371,9 @@
             // ★ 요청하신 동(E) - 남(S) - 서(W) 순서로 텍스트 배치
             obsCtx.fillStyle = "#94a3b8";
             obsCtx.font = "bold 11px sans-serif";
-            obsCtx.fillText("동 (E)", w * 0.15, horizonY + 18);
-            obsCtx.fillText("남 (S)", w * 0.5 - 10, horizonY + 18);
-            obsCtx.fillText("서 (W)", w * 0.82, horizonY + 18);
+            obsCtx.fillText("동", w * 0.15, horizonY + 18);
+            obsCtx.fillText("남", w * 0.5 - 10, horizonY + 18);
+            obsCtx.fillText("서", w * 0.82, horizonY + 18);
 
             // 로컬 천구 좌표 계산 알고리즘
             const latRad = THREE.MathUtils.degToRad(observerLatitude);

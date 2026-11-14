@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../assets/arcadia.css">
-    <title>포물선 운동 실험실 - 경로 추적</title>
+    <title>포물선 운동과 궤적 실험실</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -115,7 +115,7 @@
 <body class="arcadia-experiment" data-lab-kind="document">
 <nav class="ar-lab-nav" aria-label="아르카디아 실험실"><a class="brand-lockup" href="../index.html"><img class="club-logo" src="../assets/images/arcadia-club-logo.png" alt="아르카디아 동아리 로고"><span>ARCADIA / LAB</span></a><a class="ar-return" href="../2d.html">실험 목록</a></nav>
 
-<h2>⚾ 경로 추적 포물선 실험실</h2>
+<h2>포물선 운동과 궤적 실험실</h2>
     <canvas id="simCanvas" width="800" height="400"></canvas>
 
     <div class="controls">
@@ -136,9 +136,9 @@
             <input type="range" id="traceAlpha" min="0.1" max="1.0" step="0.1" value="0.3">
         </div>
 
-        <button onclick="startSimulation()">발사 및 경로 그리기</button>
+        <button onclick="startSimulation()">발사</button>
 
-        <div class="stats" id="stats">시작 버튼을 눌러 공의 경로를 확인하세요.</div>
+        <div class="stats" id="stats">발사 버튼을 눌러 공의 궤적을 확인하세요.</div>
     </div>
 
     <script>
@@ -223,7 +223,7 @@
             if (t <= flightTime) {
                 animationId = requestAnimationFrame(() => draw(vx, vy0, g, flightTime, maxRange, scale));
             } else {
-                document.getElementById('stats').innerText = `최종 도달 거리: ${maxRange.toFixed(2)}m | 비행 시간: ${flightTime.toFixed(2)}s`;
+                document.getElementById('stats').innerText = `수평 도달 거리: ${maxRange.toFixed(2)} m | 비행 시간: ${flightTime.toFixed(2)} s`;
             }
         }
 

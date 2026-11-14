@@ -122,14 +122,14 @@
 <body class="arcadia-experiment" data-lab-kind="document">
 <nav class="ar-lab-nav" aria-label="아르카디아 실험실"><a class="brand-lockup" href="../index.html"><img class="club-logo" src="../assets/images/arcadia-club-logo.png" alt="아르카디아 동아리 로고"><span>ARCADIA / LAB</span></a><a class="ar-return" href="../2d.html">실험 목록</a></nav>
 
-<h2>🕰️ 공기 저항과 진자 감쇠 실험</h2>
-    <p class="desc">공기 밀도에 따른 항력으로 진자의 진폭이 줄어드는 정성 모델을 관찰하세요.</p>
+<h2>공기 저항과 진자 감쇠 실험</h2>
+    <p class="desc">공기 밀도를 바꾸며 진자의 흔들림이 얼마나 빨리 줄어드는지 관찰하세요. 정확한 측정값 대신 변화 경향을 보여 주는 정성 모형입니다.</p>
 
     <canvas id="collisionCanvas" width="800" height="450"></canvas>
 
     <div class="controls">
         <div class="control-group">
-            <label>분자 밀도 <span id="dVal">150</span></label>
+            <label>분자 수 (밀도 조절) <span id="dVal">150</span></label>
             <input type="range" id="density" min="50" max="400" value="150">
         </div>
         <div class="control-group">
@@ -139,7 +139,7 @@
 
         <button onclick="resetSim()">실험 시작</button>
 
-        <div class="stats" id="stats">공기 밀도가 클수록 항력에 의해 진폭이 감쇠하는 정성 모델입니다.</div>
+        <div class="stats" id="stats">공기 밀도가 클수록 공기 저항(항력)이 커져 진폭, 즉 흔들리는 폭이 더 빨리 줄어듭니다.</div>
     </div>
 
     <script>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../assets/arcadia.css">
-    <title>3D 인터랙티브 세포 구조 탐색기</title>
+    <title>세포 구조 탐색기</title>
     <!-- Three.js & OrbitControls & Tween.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -403,14 +403,14 @@
         <div class="header-left">
 
             <div class="title-group">
-                <h1 id="cellTitle">🧬 3D 인터랙티브 동물세포 모델</h1>
+                <h1 id="cellTitle">동물세포 구조</h1>
             </div>
         </div>
 
         <div class="header-right">
             <div class="mode-switch-group">
-                <button class="mode-btn active" id="btnAnimal" onclick="switchCellMode('animal')">🧫 동물세포</button>
-                <button class="mode-btn" id="btnPlant" onclick="switchCellMode('plant')">🌿 식물세포</button>
+                <button class="mode-btn active" id="btnAnimal" onclick="switchCellMode('animal')">동물세포</button>
+                <button class="mode-btn" id="btnPlant" onclick="switchCellMode('plant')">식물세포</button>
             </div>
         </div>
     </div>
@@ -425,7 +425,7 @@
     <div class="secretion-hud" id="secretionHud">
         <div class="secretion-step" id="step1">
             <div class="step-badge">1</div>
-            <span>리보솜 & 조면소포체</span>
+            <span>리보솜·조면소포체</span>
         </div>
         <div class="step-arrow">➔</div>
         <div class="secretion-step" id="step2">
@@ -440,25 +440,25 @@
         <div class="step-arrow">➔</div>
         <div class="secretion-step" id="step4">
             <div class="step-badge">4</div>
-            <span>분비 소포 & 세포막 방출</span>
+            <span>분비 소포·세포 밖 방출</span>
         </div>
     </div>
 
     <!-- 조작 힌트 -->
     <div class="interaction-hint">
-        마우스 드래그: 360° 회전 | 휠: 줌인/줌아웃 | 소기관 클릭: 초점 확대 및 기능 확인
+        드래그: 회전 | 휠: 확대·축소 | 소기관 선택: 위치와 기능 보기
     </div>
 
     <!-- 하단 액션 바 -->
     <div class="bottom-bar">
         <button class="ctrl-btn" id="btnSecretion" onclick="toggleSecretionAnimation()">
-            ✨ 단백질 분비 경로 시뮬레이션
+            단백질 분비 과정 보기
         </button>
         <button class="ctrl-btn" id="btnMembrane" onclick="toggleMembrane()">
-            🔍 세포막 투명도 조절
+            세포막 투명하게 보기
         </button>
         <button class="ctrl-btn" onclick="resetCamera()">
-            🔄 시점 리셋
+            시점 초기화
         </button>
     </div>
 
@@ -466,12 +466,12 @@
     <div class="organelle-card" id="organelleCard">
         <button class="card-close-btn" onclick="closeCard()">×</button>
         <div class="organelle-tag" id="cardTag">이중막 구조</div>
-        <div class="organelle-name" id="cardName">미토콘드리아 (Mitochondria)</div>
+        <div class="organelle-name" id="cardName">미토콘드리아</div>
         <div class="organelle-desc" id="cardDesc">
-            세포 호흡을 통해 유기물을 분해하여 생명 활동 에너지인 ATP를 합성하는 세포의 발전소입니다.
+            세포 호흡으로 유기물의 에너지를 ATP에 저장합니다.
         </div>
         <div class="exam-box" id="cardExam">
-            💡 <b>수능/내신 빈출 포인트</b>: 자체 DNA와 리보솜을 가지고 있어 스스로 복제 및 단백질 합성이 가능한 세포내 공생설의 증거!
+            <b>구조와 기능</b>: 자체 DNA와 리보솜을 가지고 있습니다. 이는 세포 내 공생설을 뒷받침하는 특징입니다.
         </div>
     </div>
 
@@ -479,18 +479,18 @@
         // --- 1. 세포소기관 데이터 정의 ---
         const ORGANELLE_DATA = {
             nucleus: {
-                name: "핵 (Nucleus & Nucleolus)",
+                name: "핵",
                 tag: "이중막 · 유전 정보 저장소",
                 tagColor: "rgba(168, 85, 247, 0.2)",
                 tagTextColor: "#c084fc",
-                desc: "DNA가 포함된 유전 물질(염색사)을 보관하며, 세포의 모든 생명 활동을 총괄하는 컨트롤 타워입니다. 핵공을 통해 RNA와 단백질이 출입합니다.",
+                desc: "DNA의 유전 정보를 보관하며 유전자 발현을 통해 세포 활동을 조절합니다. 핵공을 통해 RNA와 단백질이 출입합니다.",
                 exam: "핵막은 2장의 인지질 2중층으로 이루어진 이중막 구조이며, 내부의 '인(Nucleolus)'에서 리보솜 RNA(rRNA)가 합성됩니다.",
                 pos: { x: 0, y: 0, z: 0 },
                 camPos: { x: 0, y: 5, z: 22 }
             },
             mitochondria: {
-                name: "미토콘드리아 (Mitochondria)",
-                tag: "이중막 · 세포 호흡 & ATP 합성",
+                name: "미토콘드리아",
+                tag: "이중막 · 세포 호흡·ATP 합성",
                 tagColor: "rgba(249, 115, 22, 0.2)",
                 tagTextColor: "#fb923c",
                 desc: "세포 호흡이 일어나는 장소로, 포도당 등 유기물을 산소와 반응시켜 생명 활동의 에너지원인 ATP를 대량으로 합성합니다.",
@@ -499,27 +499,27 @@
                 camPos: { x: 16, y: -2, z: 16 }
             },
             er: {
-                name: "소포체 (Endoplasmic Reticulum)",
-                tag: "단일막 · 단백질 가공 & 지질 합성",
+                name: "소포체",
+                tag: "단일막 · 단백질 가공·지질 합성",
                 tagColor: "rgba(59, 130, 246, 0.2)",
                 tagTextColor: "#60a5fa",
-                desc: "핵막과 외막이 직접 연결되어 세포 내부 전체로 뻗어나가는 거대한 미로형 그물망 구조입니다. 리보솜이 빽빽하게 붙어 있는 [조면소포체]와 리보솜이 없는 관상 형태의 [활면소포체]로 구분됩니다.",
-                exam: "핵막과 연속적으로 연결된 통로망 구조이며, 조면소포체는 단백질의 3차원 입체 접힘(폴딩)과 가공을, 활면소포체는 인지질/스테로이드 합성 및 해독 작용을 담당합니다.",
+                desc: "핵막의 바깥막과 연결된 막 구조입니다. 표면에 리보솜이 붙은 조면소포체와 리보솜이 없는 활면소포체로 구분됩니다.",
+                exam: "조면소포체는 단백질의 접힘과 가공을, 활면소포체는 인지질·스테로이드 합성과 해독 작용을 담당합니다.",
                 pos: { x: -6, y: 5, z: -2 },
                 camPos: { x: -8, y: 8, z: 12 }
             },
             golgi: {
-                name: "골지체 (Golgi Apparatus)",
-                tag: "단일막 · 단백질 수송 & 외포 분비",
+                name: "골지체",
+                tag: "단일막 · 단백질 가공·분류·수송",
                 tagColor: "rgba(234, 179, 8, 0.2)",
                 tagTextColor: "#facc15",
                 desc: "핵막과 떨어져 독립적으로 존재하는 만곡된 시스터나(Cisterna) 주머니가 층층이 포개진 형태입니다. 주머니 양쪽 끝이 둥글게 부풀어 있으며, 주변에 수많은 수송/분비 소포들이 떨어져 나옵니다.",
-                exam: "소포체에서 온 수송소포를 받아(Cis면) 최종 당화 및 가공 후, 분비소낭(Trans면)에 담아 세포막으로 보내는 '우체국/물류센터' 역할을 수행합니다.",
+                exam: "소포체에서 온 수송 소포를 받아 단백질을 가공·분류합니다. cis면으로 받아들인 물질을 trans면에서 소포에 담아 목적지로 보냅니다.",
                 pos: { x: -12, y: -5, z: 7 },
                 camPos: { x: -16, y: -4, z: 16 }
             },
             lysosome: {
-                name: "리소좀 (Lysosome)",
+                name: "리소좀",
                 tag: "단일막 · 세포 내 소화",
                 tagColor: "rgba(239, 68, 68, 0.2)",
                 tagTextColor: "#f87171",
@@ -529,18 +529,18 @@
                 camPos: { x: 10, y: 12, z: -2 }
             },
             chloroplast: {
-                name: "엽록체 (Chloroplast) [식물세포]",
-                tag: "이중막 · 광합성 & 포도당 합성",
+                name: "엽록체",
+                tag: "이중막 · 광합성",
                 tagColor: "rgba(16, 185, 129, 0.2)",
                 tagTextColor: "#34d399",
-                desc: "빛에너지를 흡수하여 물과 이산화탄소로부터 포도당과 산소를 합성하는 광합성 장소입니다. 내부에는 동전 모양의 틸라코이드가 쌓인 '그라나'와 기질인 '스트로마'가 정교하게 구성되어 있습니다.",
+                desc: "빛에너지를 흡수하여 물과 이산화탄소로부터 포도당과 산소를 합성하는 광합성 장소입니다. 안에는 틸라코이드가 쌓인 그라나와 이를 둘러싼 스트로마가 있습니다.",
                 exam: "엽록체 내부의 '그라나(틸라코이드 막)'에서 명반응(광인산화/ATP합성)이, '스트로마(기질)'에서 캘빈 회로가 일어나 탄수화물 합성에 쓰이는 G3P를 만듭니다.",
                 pos: { x: 12, y: 6, z: -8 },
                 camPos: { x: 15, y: 8, z: -1 }
             },
             vacuole: {
-                name: "중심 액포 (Central Vacuole) [식물세포]",
-                tag: "단일막 · 삼투압 조절 & 물질 저장",
+                name: "중심 액포",
+                tag: "단일막 · 삼투압 조절·물질 저장",
                 tagColor: "rgba(6, 182, 212, 0.2)",
                 tagTextColor: "#22d3ee",
                 desc: "성숙한 식물 세포에서 큰 부피를 차지하며, 물, 무기염류, 색소, 노폐물 등을 저장하고 세포의 형태 유지 및 삼투압을 조절합니다.",
@@ -549,8 +549,8 @@
                 camPos: { x: -12, y: 0, z: -2 }
             },
             ribosome: {
-                name: "리보솜 (Ribosome)",
-                tag: "막 없음 · 단백질 합성 공장",
+                name: "리보솜",
+                tag: "막 없음 · 단백질 합성",
                 tagColor: "rgba(244, 114, 182, 0.2)",
                 tagTextColor: "#f472b6",
                 desc: "rRNA와 단백질로 이루어진 아주 작은 알갱이로, mRNA의 유전 암호(코돈)를 해독하여 아미노산을 연결하는 단백질 합성이 일어납니다.",
@@ -1175,7 +1175,7 @@
             document.getElementById('cardTag').style.color = data.tagTextColor;
             document.getElementById('cardName').innerText = data.name;
             document.getElementById('cardDesc').innerText = data.desc;
-            document.getElementById('cardExam').innerHTML = `💡 <b>수능/내신 빈출 포인트</b>: ${data.exam}`;
+            document.getElementById('cardExam').innerHTML = `<b>구조와 기능</b>: ${data.exam}`;
 
             document.getElementById('organelleCard').classList.add('open');
         }
@@ -1399,7 +1399,7 @@
             currentMode = mode;
             document.getElementById('btnAnimal').classList.toggle('active', mode === 'animal');
             document.getElementById('btnPlant').classList.toggle('active', mode === 'plant');
-            document.getElementById('cellTitle').innerText = mode === 'animal' ? '🧫 3D 인터랙티브 동물세포 모델' : '🌿 3D 인터랙티브 식물세포 모델';
+            document.getElementById('cellTitle').innerText = mode === 'animal' ? '동물세포 구조' : '식물세포 구조';
 
             createCellModel();
             buildQuickMenu();

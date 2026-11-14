@@ -22,9 +22,9 @@ function draw(){
  const ink=getComputedStyle(document.body).getPropertyValue('--accent').trim();for(const p of[water,surface])p.setAttribute('fill',ink);water.setAttribute('opacity',String(.1+Math.min(.18,Math.abs(s.deltaT)*.018)));surface.setAttribute('opacity','.2');
  $('#reaction-picker').hidden=cal;$('#calibration-note').hidden=!cal;$$('[data-reaction-control]').forEach(n=>n.hidden=cal);
  $('#reaction-calculation').hidden=cal;$('#calibration-calculation').hidden=!cal;
- set('principle-kicker',cal?'01 · 장치의 열용량을 먼저 알아내기':'02 · 반응계와 열적 주위의 에너지 보존');
- set('principle-title',cal?'물만 데워지는 것은 아닙니다':'용액이 따뜻해지면, 반응은 열을 내보냅니다');
- if(!cal&&r.kind==='흡열')set('principle-title','용액이 차가워지면, 반응은 열을 받습니다');
+ set('principle-kicker',cal?'01 · 열량계의 열용량':'02 · 반응계와 열적 주위의 에너지 보존');
+ set('principle-title',cal?'물과 열량계가 함께 가열됩니다':'발열 반응과 용액의 온도 상승');
+ if(!cal&&r.kind==='흡열')set('principle-title','흡열 반응과 용액의 온도 하강');
  set('principle-caption',cal?'전기 에너지를 물과 장치가 함께 받습니다. 외부 열교환이 없으면 E = (mc + C열량계)ΔT입니다.':'용액의 온도 변화에서 반응이 주고받은 열을 추정합니다. 반응 1 mol 기준값과 한 회 실험의 열을 구별하세요.');
  const formula=$('#main-formula');
  if(formula.dataset.mode!==options.mode){

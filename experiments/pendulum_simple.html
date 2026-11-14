@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../assets/arcadia.css">
-    <title>단진자 실험실 - 다크 에디션</title>
+    <title>단진자 운동과 궤적 실험실</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -116,7 +116,7 @@
 <body class="arcadia-experiment" data-lab-kind="document">
 <nav class="ar-lab-nav" aria-label="아르카디아 실험실"><a class="brand-lockup" href="../index.html"><img class="club-logo" src="../assets/images/arcadia-club-logo.png" alt="아르카디아 동아리 로고"><span>ARCADIA / LAB</span></a><a class="ar-return" href="../2d.html">실험 목록</a></nav>
 
-<h2>🕰️ 경로 추적 단진자 실험실</h2>
+<h2>단진자 운동과 궤적 실험실</h2>
     <canvas id="pendulumCanvas" width="800" height="450"></canvas>
 
     <div class="controls">
@@ -139,7 +139,7 @@
 
         <button onclick="resetSimulation()">실험 시작 / 초기화</button>
 
-        <div class="stats" id="stats">이론적 주기(T): 0s | 실시간 각도: 0°</div>
+        <div class="stats" id="stats">작은 각도에서의 이론 주기(T): 0 s</div>
     </div>
 
     <script>
@@ -169,7 +169,7 @@
 
             const realG = parseFloat(document.getElementById('gravity').value);
             const T = 2 * Math.PI * Math.sqrt(lengthMeters / realG);
-            document.getElementById('stats').innerText = `소각도 이론 주기(T): ${T.toFixed(2)}s | 15° 이하 범위에서 실시간으로 계산합니다.`;
+            document.getElementById('stats').innerText = `작은 각도에서의 이론 주기(T): ${T.toFixed(2)} s | 이론식 적용 범위: 시작 각도 15° 이하`;
 
             lastTime = performance.now();
             update(lastTime);
